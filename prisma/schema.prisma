@@ -1,0 +1,75 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 1. MODELO USER (Usuarios / Compradores)
+// Este modelo es necesario para guardar los favoritos
+model User {
+  id        String     @id // Aquí guardaremos el ID de Clerk (user_2b...)
+  email     String     @unique
+  createdAt DateTime   @default(now())
+  
+  favorites Favorite[] // Relación con los favoritos
+}
+
+// 2. MODELO PRODUCT (Tus productos)
+model Product {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  price       Int
+  category    String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  images      ProductImage[]
+  
+  seller      Seller?   @relation(fields: [sellerId], references: [id])
+  sellerId    String?
+
+  favorites   Favorite[] // 👈 Relación añadida correctamente aquí
+}
+
+// 3. MODELO PRODUCTIMAGE (Fotos)
+model ProductImage {
+  id        String  @id @default(uuid())
+  url       String
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+// 4. MODELO SELLER (Vendedores)
+model Seller {
+  id          String    @id @default(uuid())
+  storeName   String
+  email       String    @unique
+  phoneNumber String?
+  isVerified  Boolean   @default(false)
+  rating      Float     @default(5.0)
+  reviews     Int       @default(0)
+  avatar      String?
+  createdAt   DateTime  @default(now())
+  
+  products    Product[]
+}
+
+// 5. MODELO FAVORITE (La tabla intermedia para los Likes)
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId]) // Evita duplicados (no puedes dar like 2 veces al mismo)
+}

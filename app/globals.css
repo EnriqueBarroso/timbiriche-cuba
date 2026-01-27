@@ -1,26 +1,162 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
+/* 1. CONFIGURACIÓN DEL TEMA (TAILWIND V4)
+  Aquí conectamos tus variables CSS con las clases de utilidad de Tailwind.
+  Ej: --color-primary permite usar 'bg-primary' o 'text-primary'
+*/
+@theme {
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  
+  /* Animaciones personalizadas */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from { height: 0 }
+    to { height: var(--radix-accordion-content-height) }
+  }
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height) }
+    to { height: 0 }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* 2. VARIABLES CSS (Valores de colores)
+*/
+@layer base {
+  :root {
+    --background: 0 0% 97%;
+    --foreground: 220 20% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+    --primary: 0 0% 12%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 10% 94%;
+    --secondary-foreground: 220 20% 20%;
+    --muted: 220 10% 92%;
+    --muted-foreground: 220 10% 45%;
+    --accent: 0 76% 71%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 10% 90%;
+    --input: 220 10% 92%;
+    --ring: 0 76% 71%;
+    --radius: 0.75rem;
+
+    /* Tokens visuales extra */
+    --flash-gradient: linear-gradient(135deg, hsl(0 76% 71%) 0%, hsl(25 95% 60%) 100%);
+    --card-shadow: 0 2px 8px -2px hsl(220 20% 10% / 0.08);
+    --card-shadow-hover: 0 4px 16px -4px hsl(220 20% 10% / 0.12);
+    --whatsapp: 142 70% 45%;
+  }
+
+  .dark {
+    --background: 220 20% 8%;
+    --foreground: 0 0% 95%;
+    --card: 220 20% 12%;
+    --card-foreground: 0 0% 95%;
+    --popover: 220 20% 12%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 220 20% 10%;
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 0 0% 90%;
+    --muted: 220 15% 20%;
+    --muted-foreground: 220 10% 60%;
+    --accent: 0 76% 65%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 0 76% 65%;
+  }
+}
+
+/* 3. ESTILOS BASE
+*/
+@layer base {
+  * {
+    /* CAMBIO CLAVE: Usamos CSS estándar para evitar el error de @apply */
+    border-color: var(--border); 
+    outline-color: var(--ring);
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* 4. UTILIDADES PERSONALIZADAS
+*/
+@layer utilities {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+  }
+
+  /* Clases de componentes Lovable */
+  .flash-badge {
+    background: var(--flash-gradient);
+    @apply text-white font-semibold px-3 py-1 rounded-full text-xs;
+  }
+  .product-card {
+    box-shadow: var(--card-shadow);
+    @apply bg-card rounded-xl overflow-hidden transition-all duration-200;
+  }
+  .product-card:active {
+    box-shadow: var(--card-shadow-hover);
+    @apply scale-[0.98];
+  }
+  .btn-whatsapp {
+    background: hsl(var(--whatsapp));
+    @apply text-white font-semibold py-4 px-6 rounded-full flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg;
+  }
+  .btn-whatsapp:hover {
+    background: hsl(142 70% 40%);
+  }
+  .verified-badge {
+    @apply bg-emerald-100 text-emerald-700 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1;
+  }
 }
