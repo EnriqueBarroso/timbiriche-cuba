@@ -4,12 +4,19 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'res.cloudinary.com', // Permitimos fotos de Cloudinary
-        pathname: '**',
+        hostname: 'res.cloudinary.com', // Para las imágenes de tus productos
       },
       {
         protocol: 'https',
-        hostname: 'placehold.co', // Permitimos placeholders si usas
+        hostname: 'ui-avatars.com', // Para los avatares generados por defecto
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com', // Para las fotos de perfil de usuarios de Clerk
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com', // Por si usas fotos de prueba de Unsplash
       },
     ],
   },

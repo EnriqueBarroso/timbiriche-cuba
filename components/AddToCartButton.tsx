@@ -1,17 +1,18 @@
-"use client"
+"use client";
 
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-import { toast } from "sonner"; 
+import { toast } from "sonner"; // Asegúrate de tener instalado sonner, si no usa alert()
 
 interface Props {
   product: {
     id: string | number;
     title: string;
     price: number;
-    images: { url: string }[]; 
+    images: { url: string }[];
+    currency?: string; // Hacemos opcional por si acaso
   };
-  compact?: boolean; 
+  compact?: boolean;
 }
 
 export default function AddToCartButton({ product }: Props) {
@@ -24,22 +25,25 @@ export default function AddToCartButton({ product }: Props) {
     addItem({
        id: String(product.id),
        title: product.title,
-       price: product.price / 100, // Recuerda: DB en centavos -> App en dólares
-       image: product.images[0]?.url || "https://placehold.co/200",
+       price: product.price / 100, // DB en centavos -> App en dólares
+       image: product.images[0]?.url || "/placeholder.jpg",
+       quantity: 1,       // 👈 FALTABA ESTO
+       currency: "USD"    // 👈 FALTABA ESTO (O usa product.currency si lo tienes)
     });
 
-    // IMPORTANTE: Feedback para el usuario
-    toast.success("Guardado en tu lista");
+    // Feedback visual
+    // Si no tienes 'sonner' instalado, cambia esto por console.log o alert
+    toast.success("Añadido al carrito");
   };
   
   return (
     <button 
       onClick={handleAddToCart}
-      className="w-full h-full min-h-[50px] bg-gray-100 text-gray-700 rounded-xl flex items-center justify-center hover:bg-gray-200 transition-colors border border-gray-200 shadow-sm active:scale-95"
-      title="Guardar en mi lista"
-      aria-label="Guardar producto"
+      className="w-full h-full min-h-[50px] bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center hover:bg-blue-100 transition-colors border border-blue-100 shadow-sm active:scale-95"
+      title="Añadir al carrito"
+      aria-label="Añadir al carrito"
     >
-      <ShoppingCart className="w-5 h-5" />
+      <ShoppingCart className="w-6 h-6" />
     </button>
   );
 }

@@ -1,83 +1,57 @@
-"use client"
+"use client";
 
-import { Product } from "@/types";
-import { Edit, Trash2, Eye } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 interface Props {
-  product: Product;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  product: any;
 }
 
 export default function MyProductCard({ product }: Props) {
-  const router = useRouter();
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleDelete = async () => {
-    if (!confirm("¿Estás seguro de que quieres borrar este producto?")) return;
-
-    setIsDeleting(true);
-    try {
-      const res = await fetch(`/api/products/${product.id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) throw new Error("Error al borrar");
-
-      toast.success("Producto eliminado");
-      router.refresh(); // Recarga la página para que desaparezca
-    } catch (error) {
-      toast.error("No se pudo eliminar");
-      setIsDeleting(false);
-    }
-  };
+  // Aseguramos datos para que no falle
+  const title = product.title || "Producto sin nombre";
+  const price = product.price || 0;
+  const image = product.images?.[0]?.url || "/placeholder.jpg";
+  const date = new Date(product.createdAt).toLocaleDateString();
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow">
-      
-      {/* Imagen + Estado */}
-      <div className="h-48 bg-gray-100 relative group">
-        {product.images[0] ? (
-          <img src={product.images[0].url} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">Sin Foto</div>
-        )}
+    <Link href={`/product/${product.id}`} className="block h-full">
+      <article className="h-full flex flex-col bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
         
-        {/* Overlay para ver producto */}
-        <Link href={`/product/${product.id}`} className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-           <span className="bg-white/90 text-gray-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">
-             <Eye className="w-3 h-3" /> Ver anuncio
-           </span>
-        </Link>
-      </div>
-
-      {/* Info */}
-      <div className="p-4 flex-1 flex flex-col">
-        <h3 className="font-bold text-gray-900 line-clamp-1">{product.title}</h3>
-        <p className="text-blue-600 font-bold mb-4">${(product.price / 100).toFixed(2)}</p>
-
-        <div className="mt-auto flex gap-2">
-          {/* Botón Editar */}
-          {/* Nota: Necesitaremos crear la página /editar/[id] más adelante */}
-          <Link 
-            href={`/editar/${product.id}`}
-            className="flex-1 flex items-center justify-center gap-2 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-200 transition-colors"
-          >
-            <Edit className="w-4 h-4" /> Editar
-          </Link>
-
-          {/* Botón Borrar */}
-          <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="flex-1 flex items-center justify-center gap-2 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100 transition-colors disabled:opacity-50"
-          >
-            {isDeleting ? "..." : <><Trash2 className="w-4 h-4" /> Borrar</>}
-          </button>
+        {/* Imagen */}
+        <div className="relative aspect-square bg-gray-100">
+          <Image
+            src={image}
+            alt={title}
+            fill
+            className="object-cover transition-transform duration-500 hover:scale-105"
+          />
+          {/* Badge de estado */}
+          <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full font-medium">
+            Activo
+          </div>
         </div>
-      </div>
-    </div>
+
+        {/* Info */}
+        <div className="p-4 flex flex-col flex-1">
+          <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1" title={title}>
+            {title}
+          </h3>
+          <p className="text-xs text-gray-400 mb-3">
+            Publicado el {date}
+          </p>
+          
+          <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between">
+            <span className="text-lg font-bold text-gray-900">
+              ${(price / 100).toFixed(2)}
+            </span>
+            <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
+              Ver ficha
+            </span>
+          </div>
+        </div>
+      </article>
+    </Link>
   );
 }

@@ -1,49 +1,42 @@
-import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
-import { PenLine } from "lucide-react";
-// Importamos el formulario que acabamos de revisar
+import { currentUser } from "@clerk/nextjs/server";
+import { notFound, redirect } from "next/navigation";
 import EditForm from "@/components/EditForm";
 
-// 1. Definimos las Props correctamente
 interface Props {
-    params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>;
 }
 
 export default async function EditPage({ params }: Props) {
-    // 2. Esperamos a que los parámetros estén listos (Next.js 15+)
-    const { id } = await params;
+  // 1. Verificamos Auth
+  const user = await currentUser();
+  if (!user) return redirect("/");
 
-    const user = await currentUser();
+  const { id } = await params;
 
-    if (!user) return redirect("/sign-in");
+  // 2. Buscamos el producto
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: { images: true, seller: true }
+  });
 
-    // 3. Buscar Producto
-    const product = await prisma.product.findUnique({
-        where: { id },
-        include: { seller: true, images: true }
-    });
+  // 3. Validaciones de Seguridad
+  if (!product) return notFound();
+  
+  const userEmail = user.emailAddresses[0]?.emailAddress;
+  if (product.seller?.email !== userEmail) {
+    // Si intentas editar algo que no es tuyo -> Home
+    return redirect("/");
+  }
 
-    // 4. Seguridad: Si no es tuyo, fuera.
-    if (!product || !product.seller || product.seller.email !== user.emailAddresses[0].emailAddress) {
-        return redirect("/"); // Si falla algo, te manda a la Home
-    }
-
-    return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4 pb-32">
-            <div className="max-w-2xl mx-auto">
-
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-blue-100 rounded-full text-blue-600">
-                        <PenLine className="w-6 h-6" />
-                    </div>
-                    <h1 className="text-2xl font-bold text-gray-900">Editar Publicación</h1>
-                </div>
-
-                {/* Renderizamos el formulario */}
-                <EditForm product={product} />
-
-            </div>
-        </div>
-    );
+  return (
+    <div className="min-h-screen bg-gray-50 py-10 px-4">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">Editar Publicación</h1>
+        
+        {/* Renderizamos el formulario con los datos cargados */}
+        <EditForm product={product} />
+      </div>
+    </div>
+  );
 }

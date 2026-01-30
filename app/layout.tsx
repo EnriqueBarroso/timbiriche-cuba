@@ -1,44 +1,58 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer"; // 1. IMPORTAR AQUI
-import { ClerkProvider } from "@clerk/nextjs";
-import { CartProvider } from "@/contexts/CartContext";
+import type { Metadata, Viewport } from 'next'
+import { Inter } from 'next/font/google'
+import { ClerkProvider } from '@clerk/nextjs'
+import { esES } from '@clerk/localizations'
+import { Navbar } from '@/components/Navbar'
+import Footer from '@/components/Footer'
+import { FavoritesProvider } from '@/contexts/FavoritesContext'
+
+// 👇 IMPORTACIÓN DIRECTA (Debe coincidir EXACTAMENTE con la del Navbar)
+import { CartProvider } from '@/contexts/CartContext'
+
+import './globals.css'
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Timbiriche",
-  description: "Marketplace Cubano",
-};
+  title: 'Timbiriche',
+  description: 'Marketplace cubano.',
+}
+
+export const viewport: Viewport = {
+  themeColor: '#ffffff',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider localization={esES}>
       <html lang="es">
-        <body className={`${inter.className} bg-red-100 text-gray-900 antialiased min-h-screen flex flex-col`}>
-          {/* Nota: añadí 'min-h-screen flex flex-col' al body para empujar el footer abajo si la pagina es corta */}
-          
-          <CartProvider>
-            <Navbar />
-            
-            {/* El contenido principal crece para ocupar el espacio disponible */}
-            <main className="flex-1">
-              {children}
-            </main>
+        <body className={`${inter.className} antialiased min-h-screen flex flex-col bg-white text-gray-900`}>
 
-            {/* 2. AÑADIR AQUI AL FINAL */}
-            <Footer />
-            
-          </CartProvider>
-          
+          {/* 👇 El Provider envuelve DIRECTAMENTE al Navbar y al contenido */}
+          <FavoritesProvider>
+            <CartProvider>
+
+              <Navbar />
+
+              <main className="flex-1">
+                {children}
+              </main>
+
+              <Footer />
+
+            </CartProvider>
+          </FavoritesProvider>
+          {/* 👆 Fin del Provider */}
+
         </body>
       </html>
     </ClerkProvider>
-  );
+  )
 }

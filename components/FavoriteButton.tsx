@@ -1,54 +1,43 @@
-"use client"
+"use client";
 
-import { useState } from "react";
 import { Heart } from "lucide-react";
-import { toggleFavorite } from "@/lib/actions";
-import { useRouter } from "next/navigation";
+import { useFavorites, FavoriteItem } from "@/contexts/FavoritesContext";
 
 interface Props {
-  productId: string;
-  initialIsFavorite: boolean;
+  product: FavoriteItem; // Recibimos el objeto completo
 }
 
-export default function FavoriteButton({ productId, initialIsFavorite }: Props) {
-  const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+export default function FavoriteButton({ product }: Props) {
+  // Usamos el hook del contexto en lugar de Server Actions
+  const { isFavorite, toggleFavorite } = useFavorites();
+  
+  // Comprobamos si YA está en favoritos
+  const isLiked = isFavorite(product.id);
 
-  const handleClick = async (e: React.MouseEvent) => {
-    e.preventDefault(); // Evita que al hacer click se abra el producto
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Evita entrar al producto
     e.stopPropagation();
-
-    if (isLoading) return;
-
-    // 1. Cambio Optimista (Cambia el color YA, sin esperar al servidor)
-    const newState = !isFavorite;
-    setIsFavorite(newState);
-    setIsLoading(true);
-
-    try {
-      // 2. Llamamos al servidor
-      await toggleFavorite(productId);
-    } catch (error) {
-      // Si falla, revertimos el cambio
-      setIsFavorite(!newState);
-      alert("Hubo un error al guardar favorito");
-    } finally {
-      setIsLoading(false);
-      router.refresh(); // Refresca los datos en segundo plano
-    }
+    
+    // Guardamos/Quitamos del LocalStorage
+    toggleFavorite(product);
   };
 
   return (
     <button
       onClick={handleClick}
       className={`
-        p-2 rounded-full transition-all hover:scale-110 active:scale-95 shadow-sm
-        ${isFavorite ? "bg-red-50 text-red-500" : "bg-white/80 text-gray-400 hover:text-red-400"}
+        flex h-9 w-9 items-center justify-center rounded-full 
+        backdrop-blur-sm shadow-sm transition-all duration-200
+        hover:scale-110 active:scale-95 z-20
+        ${isLiked 
+          ? "bg-white text-red-500 hover:bg-red-50" 
+          : "bg-white/90 text-gray-400 hover:text-red-500 hover:bg-white"
+        }
       `}
+      title={isLiked ? "Quitar de favoritos" : "Añadir a favoritos"}
     >
       <Heart 
-        className={`w-5 h-5 ${isFavorite ? "fill-current" : ""}`} 
+        className={`h-5 w-5 transition-colors ${isLiked ? "fill-current" : ""}`} 
         strokeWidth={2}
       />
     </button>

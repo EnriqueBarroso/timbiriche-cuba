@@ -1,19 +1,20 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import MyProductCard from "@/components/MyProductCard";
-import { PackageOpen, Plus, Trash2 } from "lucide-react"; // Importamos Trash2
+import MyProductCard from "@/components/MyProductCard"; // 👇 Necesitamos crear este componente abajo
+import { PackageOpen, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { Product } from "@/types";
-import { deleteProduct } from "@/lib/actions"; // Importamos la acción de borrar
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Product } from "@/types"; // Si no tienes types, puedes usar any en el map
+import { deleteProduct } from "@/lib/actions";
 
 export default async function MyProductsPage() {
   const user = await currentUser();
-  if (!user) return redirect("/sign-in");
+  if (!user) return redirect("/"); // Si no estás logueado, fuera.
 
   const email = user.emailAddresses[0].emailAddress;
 
-  // ESTO ES LO QUE FUNCIONABA: Buscamos por tu Email de vendedor
+  // Buscamos al vendedor por su email y traemos sus productos
   const seller = await prisma.seller.findUnique({
     where: { email },
     include: {
@@ -27,7 +28,7 @@ export default async function MyProductsPage() {
   const products = seller?.products || [];
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen py-8 px-4 bg-gray-50">
       <div className="max-w-6xl mx-auto">
         
         {/* Header */}
@@ -41,18 +42,19 @@ export default async function MyProductsPage() {
           </Link>
         </div>
 
-        {/* Grid */}
+        {/* Grid de Productos */}
         {products.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
-              // Envolvemos en relative group para posicionar la papelera
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {products.map((product: any) => (
+              // Envolvemos en relative group para posicionar la papelera encima de la tarjeta
               <div key={product.id} className="relative group">
                 
-                {/* Tu tarjeta original */}
-                <MyProductCard product={product as unknown as Product} />
+                {/* 1. La tarjeta visual (sin lógica de botones) */}
+                <MyProductCard product={product} />
                 
-                {/* BOTÓN DE BORRAR (Lo nuevo) */}
-                <div className="absolute top-2 right-2 z-10">
+                {/* 2. BOTÓN DE BORRAR (Superpuesto) */}
+                <div className="absolute top-2 right-2 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                   <form action={async () => {
                     "use server";
                     await deleteProduct(product.id);

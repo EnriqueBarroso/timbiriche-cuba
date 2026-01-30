@@ -1,165 +1,212 @@
-"use client"
+"use client";
 
-import { Search, ShoppingCart, Bell, Menu, PackageOpen, Settings, Package, Heart } from "lucide-react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { 
+  Search, 
+  Heart, 
+  Store, 
+  User, 
+  Menu, 
+  X, 
+  ShoppingBag, 
+  ShoppingCart,
+  Package // 👈 1. Importamos el icono para Mis Publicaciones
+} from "lucide-react";
+import { 
+  SignInButton, 
+  SignedIn, 
+  SignedOut, 
+  UserButton 
+} from "@clerk/nextjs";
 import { useCart } from "@/contexts/CartContext";
-import CategoriesDrawer from "@/components/CategoriesDrawer";
 
-// 1. IMPORTAR COMPONENTES DE CLERK
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
+export function Navbar() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [query, setQuery] = useState(searchParams.get("search") || "");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  const { cartCount } = useCart(); 
+  
+  const [mounted, setMounted] = useState(false);
 
-export default function Navbar() {
-    const { totalItems } = useCart();
-    const [categoriesOpen, setCategoriesOpen] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
 
-    const [searchQuery, setSearchQuery] = useState("");
-    const router = useRouter();
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      router.push(`/?search=${encodeURIComponent(query)}`);
+      setIsMobileMenuOpen(false);
+    } else {
+      router.push("/");
+    }
+  };
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            router.push(`/buscar?q=${encodeURIComponent(searchQuery)}`);
-        }
-    };
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
+        
+        {/* LOGO & MENU */}
+        <div className="flex items-center gap-2 md:gap-4">
+          <button 
+            className="md:hidden text-gray-500 hover:text-gray-900 focus:outline-none"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
 
-    return (
-        <>
-            <header className="sticky top-0 z-50 bg-white safe-area-top border-b border-gray-200 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 lg:px-8">
-                    
-                    {/* FILA PRINCIPAL (Altura fija 80px para dar aire) */}
-                    <div className="h-20 flex items-center justify-between gap-4">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="bg-red-600 text-white p-1.5 rounded-lg group-hover:rotate-3 transition-transform shadow-sm">
+              <ShoppingBag className="w-5 h-5" />
+            </div>
+            <span className="hidden sm:block text-xl font-extrabold tracking-tight text-gray-900">
+              Timbi<span className="text-blue-600">riche</span> 🇨🇺
+            </span>
+            <span className="sm:hidden text-lg font-extrabold tracking-tight text-gray-900">
+              Timbi<span className="text-blue-600">riche</span>
+            </span>
+          </Link>
+        </div>
 
-                        {/* BLOQUE IZQUIERDO: Menú + Logo (No se encogen) */}
-                        <div className="flex items-center gap-3 flex-shrink-0">
-                            {/* 1. BOTÓN MENÚ */}
-                            <button
-                                onClick={() => setCategoriesOpen(true)}
-                                className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors"
-                                aria-label="Abrir menú"
-                            >
-                                <Menu className="w-6 h-6 text-gray-700" />
-                            </button>
+        {/* BUSCADOR DESKTOP */}
+        <div className="hidden flex-1 px-8 md:flex md:max-w-xl">
+          <form onSubmit={handleSearch} className="w-full relative group">
+            <input
+              type="text"
+              placeholder="Buscar en Cuba..."
+              className="w-full rounded-full border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-12 text-sm outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+            <button 
+              type="submit"
+              className="absolute right-1.5 top-1.5 rounded-full bg-blue-600 p-1.5 text-white shadow-sm hover:bg-blue-700 transition-colors"
+            >
+              <Search className="h-3.5 w-3.5" />
+            </button>
+          </form>
+        </div>
 
-                            {/* 2. LOGO */}
-                            <Link href="/" className="flex-shrink-0">
-                                <h1 className="text-xl font-bold text-gray-900 tracking-tight hidden sm:block">
-                                    Timbi<span className="text-blue-600">riche</span> 🇨🇺
-                                </h1>
-                                {/* Logo versión móvil */}
-                                <h1 className="text-xl font-bold text-gray-900 tracking-tight sm:hidden">
-                                    Timbi<span className="text-blue-600">.</span>
-                                </h1>
-                            </Link>
-                        </div>
+        {/* NAVEGACIÓN */}
+        <nav className="flex items-center gap-1 md:gap-2">
+          
+          <Link href="/vender"> 
+            <button className="hidden md:flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+              <Store className="h-4.5 w-4.5" />
+              <span>Vender</span>
+            </button>
+          </Link>
 
-                        {/* BLOQUE CENTRAL: BUSCADOR (Oculto en móvil, visible en escritorio) */}
-                        {/* max-w-xl limita el ancho para que no aplaste a los demás */}
-                        <div className="hidden md:flex flex-1 max-w-xl mx-auto px-4">
-                            <form onSubmit={handleSearch} className="w-full relative">
-                                <button type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600">
-                                    <Search className="w-4 h-4" />
-                                </button>
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Buscar..."
-                                    className="w-full bg-gray-100 text-gray-900 placeholder:text-gray-500 text-sm rounded-full py-2.5 pl-9 pr-4 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all border border-transparent focus:border-blue-500/20 focus:bg-white"
-                                />
-                            </form>
-                        </div>
+          {/* 👇 2. BOTÓN "MIS PUBLICACIONES" (Solo visible si estás logueado) */}
+          <SignedIn>
+            <Link href="/mis-publicaciones">
+              <button 
+                className="hidden md:flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+                title="Gestionar mis productos"
+              >
+                <Package className="h-4.5 w-4.5" />
+                <span>Mis cosas</span>
+              </button>
+            </Link>
+          </SignedIn>
 
-                        {/* BLOQUE DERECHO: ICONOS DE ACCIÓN (No se encogen) */}
-                        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* CARRITO */}
+          <Link href="/carrito">
+            <button className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 transition-colors relative group">
+              <ShoppingCart className="h-5 w-5 group-hover:text-blue-600 transition-colors" />
+              {mounted && cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-sm ring-2 ring-white animate-in zoom-in">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </Link>
 
-                            {/* Campana */}
-                            <button className="hidden lg:block p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                <Bell className="w-5 h-5 text-gray-600" />
-                            </button>
+          {/* FAVORITOS */}
+          <Link href="/favoritos">
+            <button className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 transition-colors relative group">
+              <Heart className="h-5 w-5 group-hover:text-red-500 transition-colors" />
+            </button>
+          </Link>
 
-                            {/* Carrito */}
-                            <Link
-                                href="/carrito"
-                                className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
-                            >
-                                <ShoppingCart className="w-6 h-6 text-gray-700" />
-                                {totalItems > 0 && (
-                                    <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-in zoom-in">
-                                        {totalItems}
-                                    </span>
-                                )}
-                            </Link>
+          <div className="h-6 w-px bg-gray-200 mx-1 hidden md:block"></div>
 
-                            {/* --- ZONA DE USUARIO CLERK --- */}
-                            <div className="flex items-center pl-2 ml-1 border-l border-gray-200">
-                                <SignedOut>
-                                    <SignInButton mode="modal">
-                                        <button className="text-sm font-bold text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-full transition-colors border border-blue-100 whitespace-nowrap">
-                                            Entrar
-                                        </button>
-                                    </SignInButton>
-                                </SignedOut>
+          <div className="ml-1">
+            <SignedIn>
+              <UserButton 
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: "h-9 w-9 ring-2 ring-gray-100 hover:ring-blue-500 transition-all"
+                  }
+                }}
+              />
+            </SignedIn>
+            
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="flex h-9 items-center gap-2 rounded-full bg-gray-900 px-4 text-sm font-medium text-white shadow hover:bg-gray-800 transition-all hover:scale-105">
+                  <User className="h-4 w-4" />
+                  <span>Ingresar</span>
+                </button>
+              </SignInButton>
+            </SignedOut>
+          </div>
+        </nav>
+      </div>
 
-                                <SignedIn>
-                                    {/* Iconos extra visibles solo si estás logueado */}
-                                    <div className="hidden sm:flex items-center mr-2 gap-1">
-                                        <Link href="/favoritos" className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full transition-all" title="Mis Favoritos">
-                                            <Heart className="w-5 h-5" />
-                                        </Link>
-                                        <Link href="/mis-publicaciones" className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all" title="Mis Publicaciones">
-                                            <Package className="w-5 h-5" />
-                                        </Link>
-                                        <Link href="/perfil" className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all" title="Configurar">
-                                            <Settings className="w-5 h-5" />
-                                        </Link>
-                                    </div>
+      {/* MENÚ MÓVIL (Expandible) */}
+      {isMobileMenuOpen && (
+        <div className="border-t border-gray-100 bg-white p-4 md:hidden flex flex-col gap-4 animate-in slide-in-from-top-2">
+          
+          <form onSubmit={handleSearch} className="relative">
+            <input
+              type="text"
+              placeholder="¿Qué estás buscando?"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-blue-500 focus:bg-white"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          </form>
 
-                                    <UserButton
-                                        afterSignOutUrl="/"
-                                        appearance={{
-                                            elements: {
-                                                avatarBox: "w-9 h-9 border-2 border-white shadow-sm"
-                                            }
-                                        }}
-                                    >
-                                        <UserButton.MenuItems>
-                                            <UserButton.Link
-                                                label="Mis Publicaciones"
-                                                labelIcon={<PackageOpen className="w-4 h-4" />}
-                                                href="/mis-publicaciones"
-                                            />
-                                            <UserButton.Action label="manageAccount" />
-                                        </UserButton.MenuItems>
-                                    </UserButton>
-                                </SignedIn>
-                            </div>
-                        </div>
-                    </div>
+          <div className="flex flex-col gap-2">
+            <Link 
+              href="/vender" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 text-gray-900 font-medium"
+            >
+              <Store className="h-5 w-5" /> Vender Producto
+            </Link>
+            
+            {/* Link Móvil para Mis Publicaciones */}
+            <SignedIn>
+              <Link 
+                href="/mis-publicaciones" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-600 font-medium"
+              >
+                <Package className="h-5 w-5" /> Mis Publicaciones
+              </Link>
+            </SignedIn>
 
-                    {/* BUSCADOR MÓVIL (Solo visible en pantallas pequeñas, debajo de la fila principal) */}
-                    <div className="md:hidden pb-3">
-                        <form onSubmit={handleSearch} className="relative w-full">
-                            <button type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                                <Search className="w-4 h-4" />
-                            </button>
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Buscar en Timbiriche..."
-                                className="w-full bg-gray-100 text-gray-900 text-sm rounded-full py-2.5 pl-9 pr-4 outline-none focus:bg-white border border-transparent focus:border-gray-200"
-                            />
-                        </form>
-                    </div>
+            <Link 
+              href="/favoritos" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-600 font-medium"
+            >
+              <Heart className="h-5 w-5" /> Mis Favoritos
+            </Link>
+          </div>
 
-                </div>
-            </header>
-
-            {/* Drawer Lateral */}
-            <CategoriesDrawer open={categoriesOpen} onOpenChange={setCategoriesOpen} />
-        </>
-    );
-};
+        </div>
+      )}
+    </header>
+  );
+}

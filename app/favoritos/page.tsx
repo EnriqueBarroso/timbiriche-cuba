@@ -1,53 +1,53 @@
-import ProductCard from "@/components/ProductCard";
-import { getMyFavorites } from "@/lib/actions";
+"use client";
+
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { Heart, ArrowLeft } from "lucide-react";
+import { useFavorites } from "@/contexts/FavoritesContext";
+import { ProductCard } from "@/components/ProductCard";
 
-export default async function FavoritesPage() {
-    const products = await getMyFavorites();
+export default function FavoritesPage() {
+  const { favorites } = useFavorites();
 
+  if (favorites.length === 0) {
     return (
-        <div className="min-h-screen py-10">
-            <main className="max-w-7xl mx-auto px-4">
-
-                {/* Encabezado */}
-                <div className="mb-8 flex items-center gap-3">
-                    <div className="p-3 bg-red-100 rounded-full text-red-600">
-                        <Heart className="w-8 h-8 fill-current" />
-                    </div>
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Mis Favoritos</h1>
-                        <p className="text-gray-500">
-                            {products.length === 0
-                                ? "Aún no has guardado nada."
-                                : `Tienes ${products.length} productos guardados.`}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Estado Vacío */}
-                {products.length === 0 ? (
-                    <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-gray-100">
-                        <p className="text-xl text-gray-400 mb-6">Tu lista de deseos está vacía 🕸️</p>
-                        <Link
-                            href="/"
-                            className="px-8 py-3 bg-black text-white rounded-full font-bold hover:bg-gray-800 transition-all"
-                        >
-                            Ir a explorar productos
-                        </Link>
-                    </div>
-                ) : (
-                    /* Rejilla de Favoritos */
-                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 gap-y-10 md:gap-8">
-                        {/* Copia esta línea de comentario EXTACTAMENTE como está: */}
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        {products.map((product: any) => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
-                )}
-
-            </main>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-4 bg-gray-50">
+        <div className="bg-white p-6 rounded-full shadow-sm mb-4">
+          <Heart size={48} className="text-gray-300" />
         </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Sin favoritos aún</h2>
+        <p className="text-gray-500 mb-8 text-center max-w-sm">
+          Guarda lo que te gusta para no perderlo de vista.
+        </p>
+        <Link 
+          href="/" 
+          className="bg-blue-600 text-white px-8 py-3 rounded-full font-medium hover:bg-blue-700 transition-colors"
+        >
+          Explorar
+        </Link>
+      </div>
     );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 md:py-12">
+      <div className="max-w-7xl mx-auto px-4">
+        
+        <div className="flex items-center gap-2 mb-8">
+          <Link href="/" className="p-2 hover:bg-white rounded-full transition-colors text-gray-500">
+            <ArrowLeft size={20} />
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Mis Favoritos ({favorites.length})
+          </h1>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {favorites.map((item) => (
+            // Reutilizamos la tarjeta, le pasamos el item como 'product'
+            <ProductCard key={item.id} product={item} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
