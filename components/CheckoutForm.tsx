@@ -27,7 +27,7 @@ export default function CheckoutForm() {
     phone: "",
     address: "",
   });
-  
+
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormData, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -47,9 +47,9 @@ export default function CheckoutForm() {
 
     if (!result.success) {
       const fieldErrors: Partial<Record<keyof CheckoutFormData, string>> = {};
-      result.error.errors.forEach((err) => {
-        const field = err.path[0] as keyof CheckoutFormData;
-        fieldErrors[field] = err.message;
+      result.error.issues.forEach((issue) => {      // ✅ Cambia el nombre del parámetro
+        const field = issue.path[0] as keyof CheckoutFormData;  // ✅ Usa "issue"
+        fieldErrors[field] = issue.message;                      // ✅ Usa "issue"
       });
       setErrors(fieldErrors);
       setIsSubmitting(false);
@@ -68,7 +68,7 @@ export default function CheckoutForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
       <h2 className="text-xl font-bold text-gray-900 mb-2">Datos de Entrega en Cuba</h2>
-      
+
       {/* Nombre */}
       <div>
         <label className="block text-sm font-bold text-gray-700 mb-2">
@@ -79,9 +79,8 @@ export default function CheckoutForm() {
           value={formData.recipientName}
           onChange={(e) => handleChange("recipientName", e.target.value)}
           placeholder="Ej: María Pérez"
-          className={`w-full px-4 py-3 rounded-xl bg-gray-50 text-gray-900 border-2 transition-all outline-none ${
-            errors.recipientName ? "border-red-500 bg-red-50" : "border-transparent focus:border-blue-500 focus:bg-white"
-          }`}
+          className={`w-full px-4 py-3 rounded-xl bg-gray-50 text-gray-900 border-2 transition-all outline-none ${errors.recipientName ? "border-red-500 bg-red-50" : "border-transparent focus:border-blue-500 focus:bg-white"
+            }`}
         />
         {errors.recipientName && (
           <p className="text-xs text-red-500 mt-1 font-bold">{errors.recipientName}</p>
@@ -98,9 +97,8 @@ export default function CheckoutForm() {
           value={formData.phone}
           onChange={(e) => handleChange("phone", e.target.value)}
           placeholder="Ej: +53 5 123 4567"
-          className={`w-full px-4 py-3 rounded-xl bg-gray-50 text-gray-900 border-2 transition-all outline-none ${
-            errors.phone ? "border-red-500 bg-red-50" : "border-transparent focus:border-blue-500 focus:bg-white"
-          }`}
+          className={`w-full px-4 py-3 rounded-xl bg-gray-50 text-gray-900 border-2 transition-all outline-none ${errors.phone ? "border-red-500 bg-red-50" : "border-transparent focus:border-blue-500 focus:bg-white"
+            }`}
         />
         {errors.phone && (
           <p className="text-xs text-red-500 mt-1 font-bold">{errors.phone}</p>
@@ -117,9 +115,8 @@ export default function CheckoutForm() {
           onChange={(e) => handleChange("address", e.target.value)}
           placeholder="Ej: Calle 23 #456, Apto 2, Vedado, La Habana"
           rows={3}
-          className={`w-full px-4 py-3 rounded-xl bg-gray-50 text-gray-900 border-2 transition-all outline-none resize-none ${
-            errors.address ? "border-red-500 bg-red-50" : "border-transparent focus:border-blue-500 focus:bg-white"
-          }`}
+          className={`w-full px-4 py-3 rounded-xl bg-gray-50 text-gray-900 border-2 transition-all outline-none resize-none ${errors.address ? "border-red-500 bg-red-50" : "border-transparent focus:border-blue-500 focus:bg-white"
+            }`}
         />
         {errors.address && (
           <p className="text-xs text-red-500 mt-1 font-bold">{errors.address}</p>
@@ -134,7 +131,7 @@ export default function CheckoutForm() {
       >
         {isSubmitting ? "Procesando..." : "Confirmar Pedido"}
       </button>
-      
+
       <p className="text-xs text-center text-gray-400">
         El pago se coordina directamente con el vendedor tras confirmar.
       </p>

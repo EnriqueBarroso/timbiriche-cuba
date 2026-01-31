@@ -4,9 +4,9 @@
 import { useCart } from "@/contexts/CartContext";
 
 export default function OrderSummary() {
-  const { items, totalPrice } = useCart();
+  const { items, cartTotal } = useCart();
   const envio = 0.00; // Podríamos hacerlo dinámico luego
-  const total = totalPrice + envio;
+  const total = cartTotal + envio;
 
   if (items.length === 0) {
     return null; // No mostrar nada si no hay items (o redirigir)
@@ -38,7 +38,7 @@ export default function OrderSummary() {
       <div className="border-t border-gray-100 pt-4 space-y-2">
         <div className="flex justify-between text-sm text-gray-600">
           <span>Subtotal</span>
-          <span>${totalPrice.toFixed(2)}</span>
+          <span>${cartTotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm text-gray-600">
           <span>Envío</span>
@@ -51,4 +51,4 @@ export default function OrderSummary() {
       </div>
     </div>
   );
-};
+}

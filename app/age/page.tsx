@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { ShieldCheck } from "lucide-react";
 
-export default function AgePage() {
+function AgeVerificationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isChecked, setIsChecked] = useState(false);
@@ -77,5 +78,17 @@ export default function AgePage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function AgePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-gray-600">Cargando...</div>
+      </div>
+    }>
+      <AgeVerificationContent />
+    </Suspense>
   );
 }

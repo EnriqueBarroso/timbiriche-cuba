@@ -199,18 +199,18 @@ export async function updateProduct(productId: string, data: {
   // 3. Actualizamos la imagen (Si cambió)
   // Nota: Esto asume que actualizamos la primera imagen encontrada.
   // Si tu lógica de imágenes es más compleja, avísame.
-  const firstImage = await prisma.image.findFirst({
+  const firstImage = await prisma.productImage.findFirst({
     where: { productId: productId }
   });
 
   if (firstImage) {
-    await prisma.image.update({
+    await prisma.productImage.update({
       where: { id: firstImage.id },
       data: { url: data.imageUrl }
     });
   } else if (data.imageUrl) {
     // Si no tenía imagen y ahora sí, la creamos
-    await prisma.image.create({
+    await prisma.productImage.create({
       data: {
         url: data.imageUrl,
         productId: productId

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+// 1. Añade Suspense a los imports
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { 
@@ -12,7 +13,7 @@ import {
   X, 
   ShoppingBag, 
   ShoppingCart,
-  Package // 👈 1. Importamos el icono para Mis Publicaciones
+  Package 
 } from "lucide-react";
 import { 
   SignInButton, 
@@ -22,9 +23,11 @@ import {
 } from "@clerk/nextjs";
 import { useCart } from "@/contexts/CartContext";
 
-export function Navbar() {
+// 2. Cambia el nombre de tu función actual a "NavbarContent"
+// (MANTÉN TODO EL CÓDIGO INTERNO IGUAL, solo cambia el nombre aquí)
+function NavbarContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams(); // 👈 El culpable del error
   const [query, setQuery] = useState(searchParams.get("search") || "");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
@@ -103,7 +106,7 @@ export function Navbar() {
             </button>
           </Link>
 
-          {/* 👇 2. BOTÓN "MIS PUBLICACIONES" (Solo visible si estás logueado) */}
+          {/* BOTÓN "MIS PUBLICACIONES" */}
           <SignedIn>
             <Link href="/mis-publicaciones">
               <button 
@@ -161,7 +164,7 @@ export function Navbar() {
         </nav>
       </div>
 
-      {/* MENÚ MÓVIL (Expandible) */}
+      {/* MENÚ MÓVIL */}
       {isMobileMenuOpen && (
         <div className="border-t border-gray-100 bg-white p-4 md:hidden flex flex-col gap-4 animate-in slide-in-from-top-2">
           
@@ -185,7 +188,6 @@ export function Navbar() {
               <Store className="h-5 w-5" /> Vender Producto
             </Link>
             
-            {/* Link Móvil para Mis Publicaciones */}
             <SignedIn>
               <Link 
                 href="/mis-publicaciones" 
@@ -208,5 +210,15 @@ export function Navbar() {
         </div>
       )}
     </header>
+  );
+}
+
+// 3. Crea esta nueva función "Navbar" que envuelve a la anterior
+export function Navbar() {
+  return (
+    // Fallback simple: una caja blanca de 16px de alto para que no salte el diseño mientras carga
+    <Suspense fallback={<div className="h-16 w-full bg-white/80 border-b border-gray-100" />}>
+      <NavbarContent />
+    </Suspense>
   );
 }
