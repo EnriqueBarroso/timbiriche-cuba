@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Facebook, Instagram, Twitter, Mail, Phone, ShoppingBag, Heart } from "lucide-react";
+import { Facebook, Instagram, Twitter, Mail, Phone, ShoppingBag, ShoppingCart } from "lucide-react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -26,9 +26,15 @@ export default function Footer() {
               Conectamos gente real con productos reales, sin complicaciones.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-gray-400 hover:text-blue-600 transition-colors"><Facebook className="w-5 h-5" /></a>
-              <a href="#" className="text-gray-400 hover:text-pink-600 transition-colors"><Instagram className="w-5 h-5" /></a>
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors"><Twitter className="w-5 h-5" /></a>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-600 transition-colors">
+                <Facebook className="w-5 h-5" />
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-pink-600 transition-colors">
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-400 transition-colors">
+                <Twitter className="w-5 h-5" />
+              </a>
             </div>
           </div>
 
@@ -38,8 +44,13 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-gray-500">
               <li><Link href="/" className="hover:text-red-600 transition-colors">Inicio</Link></li>
               <li><Link href="/vender" className="hover:text-red-600 transition-colors">Vender un producto</Link></li>
-              <li><Link href="/buscar" className="hover:text-red-600 transition-colors">Todas las Categorías</Link></li>
-              <li><Link href="/favoritos" className="hover:text-red-600 transition-colors">Mi Lista de Deseos</Link></li>
+              <li><Link href="/?category=all" className="hover:text-red-600 transition-colors">Todas las Categorías</Link></li>
+              <li>
+                <Link href="/carrito" className="hover:text-red-600 transition-colors flex items-center gap-1.5">
+                  <ShoppingCart className="w-3.5 h-3.5" />
+                  Mi Carrito
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -47,10 +58,10 @@ export default function Footer() {
           <div>
             <h3 className="font-bold text-gray-900 mb-4">Ayuda</h3>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li><a href="#" className="hover:text-red-600 transition-colors">Centro de Ayuda</a></li>
-              <li><a href="#" className="hover:text-red-600 transition-colors">Reglas de Publicación</a></li>
-              <li><a href="#" className="hover:text-red-600 transition-colors">Consejos de Seguridad</a></li>
-              <li><a href="#" className="hover:text-red-600 transition-colors">Reportar un problema</a></li>
+              <li><Link href="/ayuda" className="hover:text-red-600 transition-colors">Centro de Ayuda</Link></li>
+              <li><Link href="/ayuda#seguridad" className="hover:text-red-600 transition-colors">Consejos de Seguridad</Link></li>
+              <li><Link href="/terminos" className="hover:text-red-600 transition-colors">Términos y Condiciones</Link></li>
+              <li><Link href="/ayuda#contacto" className="hover:text-red-600 transition-colors">Reportar un problema</Link></li>
             </ul>
           </div>
 
@@ -60,14 +71,18 @@ export default function Footer() {
             <ul className="space-y-3 text-sm text-gray-500">
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-gray-400" />
-                <span>soporte@timbiriche.cu</span>
+                <a href="mailto:soporte@timbiriche.cu" className="hover:text-red-600 transition-colors">
+                  soporte@timbiriche.cu
+                </a>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-gray-400" />
-                <span>+53 5 555 5555</span>
+                <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer" className="hover:text-red-600 transition-colors">
+                  +53 5 555 5555
+                </a>
               </li>
               <li className="pt-2">
-                <p className="text-xs text-gray-400 mb-2">Hecho con ❤️ en La Habana</p>
+                <p className="text-xs text-gray-400">Hecho con ❤️ en La Habana</p>
               </li>
             </ul>
           </div>
@@ -77,9 +92,9 @@ export default function Footer() {
         <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400">
           <p>© {currentYear} Timbiriche. Todos los derechos reservados.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-gray-900">Privacidad</a>
-            <a href="#" className="hover:text-gray-900">Términos</a>
-            <a href="#" className="hover:text-gray-900">Cookies</a>
+            <Link href="/terminos#privacidad" className="hover:text-gray-900 transition-colors">Privacidad</Link>
+            <Link href="/terminos" className="hover:text-gray-900 transition-colors">Términos</Link>
+            <Link href="/ayuda" className="hover:text-gray-900 transition-colors">Ayuda</Link>
           </div>
         </div>
 

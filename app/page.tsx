@@ -49,7 +49,7 @@ export default async function Home({
       {/* 1. Carrusel de Categorías (Pegajoso debajo del Navbar) */}
       <CategoriesBar />
       
-      <main className="flex-1">
+      <main className="min-h-screen pb-20"> {/* ✅ Sin color, dejará ver el fondo global */}
         {/* 2. Hero Section (Solo se muestra si no hay búsqueda/categoría activa) */}
         {!params.search && !params.category && (
            <HeroSection />
