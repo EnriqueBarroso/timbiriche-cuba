@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma"
 import { ProductCard } from "@/components/ProductCard"
 import { HeroSection } from "@/components/HeroSection"
-import { CategoriesBar } from "@/components/CategoriesBar" // 👈 Restaurado
-import { Search } from "lucide-react"
+import { CategoriesBar } from "@/components/CategoriesBar"
+import { Search, X } from "lucide-react"
 import Link from "next/link"
 
 // Función para obtener productos (Server Side)
@@ -50,12 +50,43 @@ export default async function Home({
       <CategoriesBar />
       
       <main className="flex-1">
-        {/* 2. Hero Section (Solo se muestra si no hay búsqueda/categoría activa para no molestar) */}
+        {/* 2. Hero Section (Solo se muestra si no hay búsqueda/categoría activa) */}
         {!params.search && !params.category && (
            <HeroSection />
         )}
 
-        {/* 3. Grid de Productos */}
+        {/* 3. Banner de Filtros Activos (Nuevo) */}
+        {(params.search || params.category) && (
+          <div className="bg-blue-50 border-b border-blue-100 py-3">
+            <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-sm font-medium text-blue-900">
+                  Filtrando:
+                </p>
+                {params.search && (
+                  <span className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                    <Search className="h-3.5 w-3.5" />
+                    &quot;{params.search}&quot;
+                  </span>
+                )}
+                {params.category && params.category !== "all" && (
+                  <span className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                    📂 {params.category}
+                  </span>
+                )}
+              </div>
+              <Link 
+                href="/" 
+                className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+              >
+                <X className="h-4 w-4" />
+                Limpiar
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* 4. Grid de Productos */}
         <div className="mx-auto max-w-7xl px-4 py-12 md:px-6">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold tracking-tight text-foreground">
