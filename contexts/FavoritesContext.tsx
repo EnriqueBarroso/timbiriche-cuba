@@ -1,8 +1,11 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useRef } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Product } from "@/types"; // Asegúrate de que esta ruta sea correcta
 
-// Definimos qué datos guardamos de cada favorito
+// Definimos la estructura de un ítem favorito
+// (Usualmente es igual al producto, o una versión simplificada)
 export type FavoriteItem = {
   id: string;
   title: string;
@@ -11,79 +14,86 @@ export type FavoriteItem = {
   currency: string;
   seller?: {
     name: string;
-    phone: string;
+    phone?: string;
     avatar?: string;
   };
 };
 
-type FavoritesContextType = {
+interface FavoritesContextType {
   favorites: FavoriteItem[];
-  addToFavorites: (item: FavoriteItem) => void;
-  removeFromFavorites: (id: string) => void;
-  isFavorite: (id: string) => boolean;
-  toggleFavorite: (item: FavoriteItem) => void;
-  favoritesCount: number;
-};
+  addToFavorites: (product: FavoriteItem | Product) => void;
+  removeFromFavorites: (productId: string) => void;
+  isFavorite: (productId: string) => boolean;
+  toggleFavorite: (product: FavoriteItem | Product) => void;
+  isLoaded: boolean;
+}
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
-  
-  // Usamos un ref para evitar que la carga inicial vacía sobrescriba el localStorage
-  const isFirstRender = useRef(true);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // 1. CARGAR FAVORITOS AL INICIO
   useEffect(() => {
-    setIsMounted(true);
-    const saved = localStorage.getItem("timbiriche-favorites");
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem("timbiriche-favorites");
+      if (saved) {
         setFavorites(JSON.parse(saved));
-      } catch (error) {
-        console.error("Error al cargar favoritos:", error);
       }
+    } catch (error) {
+      console.error("Error al cargar favoritos:", error);
+    } finally {
+      // Marcamos que ya se cargó para mostrar la UI real
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsLoaded(true);
     }
   }, []);
 
-  // 2. GUARDAR FAVORITOS CUANDO CAMBIEN
+  // 2. GUARDAR CAMBIOS EN LOCALSTORAGE
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    
-    if (isMounted) {
+    if (isLoaded) {
       localStorage.setItem("timbiriche-favorites", JSON.stringify(favorites));
     }
-  }, [favorites, isMounted]);
+  }, [favorites, isLoaded]);
 
-  // --- FUNCIONES LÓGICAS ---
+  // --- FUNCIONES ---
 
-  const addToFavorites = (item: FavoriteItem) => {
-    setFavorites((prev) => {
-      // Si ya existe, no hacemos nada (evitar duplicados)
-      if (prev.some((i) => i.id === item.id)) return prev;
-      return [...prev, item];
-    });
+  const isFavorite = (productId: string) => {
+    return favorites.some((item) => item.id === productId);
   };
 
-  const removeFromFavorites = (id: string) => {
-    setFavorites((prev) => prev.filter((i) => i.id !== id));
+  const addToFavorites = (product: FavoriteItem | Product) => {
+    // Normalizamos el objeto para guardar solo lo necesario
+    const newItem: FavoriteItem = {
+      id: product.id,
+      title: product.title,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      price: (product as any).price, // Casting por seguridad si los tipos difieren
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      image: (product as any).images?.[0]?.url || (product as any).image || "/placeholder.jpg",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      currency: (product as any).currency || "USD",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      seller: (product as any).seller
+    };
+
+    if (!isFavorite(newItem.id)) {
+      setFavorites((prev) => [...prev, newItem]);
+      toast.success("Añadido a favoritos ❤️");
+    }
   };
 
-  // Verifica si un ID ya está en la lista
-  const isFavorite = (id: string) => {
-    return favorites.some((item) => item.id === id);
+  const removeFromFavorites = (productId: string) => {
+    setFavorites((prev) => prev.filter((item) => item.id !== productId));
+    toast.info("Eliminado de favoritos");
   };
 
-  // Función inteligente: Si está lo quita, si no está lo pone
-  const toggleFavorite = (item: FavoriteItem) => {
-    if (isFavorite(item.id)) {
-      removeFromFavorites(item.id);
+  const toggleFavorite = (product: FavoriteItem | Product) => {
+    if (isFavorite(product.id)) {
+      removeFromFavorites(product.id);
     } else {
-      addToFavorites(item);
+      addToFavorites(product);
     }
   };
 
@@ -95,7 +105,7 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
         removeFromFavorites,
         isFavorite,
         toggleFavorite,
-        favoritesCount: favorites.length,
+        isLoaded,
       }}
     >
       {children}
@@ -103,11 +113,10 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Hook personalizado para usar el contexto
-export const useFavorites = () => {
+export function useFavorites() {
   const context = useContext(FavoritesContext);
   if (context === undefined) {
     throw new Error("useFavorites must be used within a FavoritesProvider");
   }
   return context;
-};
+}
