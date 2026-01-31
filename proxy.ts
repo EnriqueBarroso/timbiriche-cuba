@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 const PUBLIC_FILE = /\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|json|map|mp4|webm)$/i;
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // ✅ Deja pasar assets y rutas públicas sin age-gate
