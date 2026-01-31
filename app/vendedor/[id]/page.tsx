@@ -1,7 +1,7 @@
 // app/vendedor/[id]/page.tsx
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import ProductCard from "@/components/ProductCard";
+import { ProductCard } from "@/components/ProductCard";
 import { BadgeCheck, MapPin, Calendar, Star, MessageCircle, Store } from "lucide-react";
 import { Product } from "@/types";
 
