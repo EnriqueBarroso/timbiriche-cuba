@@ -1,8 +1,10 @@
-// components/CheckoutForm.tsx
-"use client"
+"use client";
 
 import { useState } from "react";
 import { z } from "zod";
+import { useCart } from "@/contexts/CartContext"; // 👈 Importamos el carrito
+import { useRouter } from "next/navigation";
+import { MessageCircle } from "lucide-react";
 
 // Validaciones para Cuba
 const checkoutSchema = z.object({
@@ -22,6 +24,10 @@ const checkoutSchema = z.object({
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
 export default function CheckoutForm() {
+  // Conectamos con el Carrito Global
+  const { items, cartTotal, clearCart } = useCart();
+  const router = useRouter();
+
   const [formData, setFormData] = useState<CheckoutFormData>({
     recipientName: "",
     phone: "",
@@ -47,27 +53,68 @@ export default function CheckoutForm() {
 
     if (!result.success) {
       const fieldErrors: Partial<Record<keyof CheckoutFormData, string>> = {};
-      result.error.issues.forEach((issue) => {      // ✅ Cambia el nombre del parámetro
-        const field = issue.path[0] as keyof CheckoutFormData;  // ✅ Usa "issue"
-        fieldErrors[field] = issue.message;                      // ✅ Usa "issue"
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof CheckoutFormData;
+        fieldErrors[field] = issue.message;
       });
       setErrors(fieldErrors);
       setIsSubmitting(false);
       return;
     }
 
-    // 2. Simular envío (Aquí luego conectaremos con WhatsApp o Base de Datos)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    // 2. VERIFICAR QUE HAYA ITEMS
+    if (items.length === 0) {
+      alert("El carrito está vacío");
+      setIsSubmitting(false);
+      return;
+    }
 
-    // Éxito
-    alert(`¡Pedido Confirmado!\nEnviaremos a: ${formData.address}`);
+    // 3. LOGICA DE WHATSAPP REAL 🟢
+    
+    // ⚠️ IMPORTANTE: Pon aquí tu número de teléfono (Admin) con código de país
+    // O usa una variable de entorno: process.env.NEXT_PUBLIC_ADMIN_PHONE
+    const ADMIN_PHONE = "5300000000"; // <--- ¡CAMBIA ESTO POR TU NÚMERO!
+
+    // Construimos el mensaje (Ticket de compra)
+    let message = `*¡NUEVO PEDIDO DE TIMBIRICHE!* 🇨🇺\n\n`;
+    
+    message += `👤 *Cliente:* ${formData.recipientName}\n`;
+    message += `📞 *Contacto:* ${formData.phone}\n`;
+    message += `📍 *Dirección:* ${formData.address}\n\n`;
+    
+    message += `🛒 *DETALLE DEL PEDIDO:*\n`;
+    items.forEach((item) => {
+       // Usamos un emoji o marcador para separar
+       message += `▪️ ${item.quantity}x ${item.title} - $${item.price * item.quantity}\n`;
+       // Si quieres incluir el vendedor:
+       // message += `   (Vendedor: ${item.seller?.storeName || 'Desconocido'})\n`;
+    });
+
+    message += `\n💰 *TOTAL A PAGAR: $${cartTotal}*`;
+    message += `\n\n_Enviado desde la web de Timbiriche_`;
+
+    // 4. Redirigir a WhatsApp
+    const whatsappUrl = `https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(message)}`;
+    
+    // Abrimos en nueva pestaña
+    window.open(whatsappUrl, '_blank');
+
+    // 5. Limpieza final
+    clearCart(); // Vaciamos el carrito visualmente
+    alert("¡Pedido enviado a WhatsApp! Nos pondremos en contacto contigo pronto.");
+    router.push("/"); // Volvemos al inicio
+    
     setIsSubmitting(false);
-    setFormData({ recipientName: "", phone: "", address: "" }); // Limpiar form
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-      <h2 className="text-xl font-bold text-gray-900 mb-2">Datos de Entrega en Cuba</h2>
+      <div className="flex items-center gap-2 mb-4">
+        <div className="bg-green-100 p-2 rounded-full">
+           <MessageCircle className="w-5 h-5 text-green-600" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900">Finalizar Compra</h2>
+      </div>
 
       {/* Nombre */}
       <div>
@@ -127,13 +174,18 @@ export default function CheckoutForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl text-lg transition-transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20"
+        className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 px-6 rounded-xl text-lg transition-transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-600/20 flex items-center justify-center gap-2"
       >
-        {isSubmitting ? "Procesando..." : "Confirmar Pedido"}
+        {isSubmitting ? "Procesando..." : (
+            <>
+                <span>Enviar Pedido por WhatsApp</span>
+                <MessageCircle className="w-6 h-6" />
+            </>
+        )}
       </button>
 
-      <p className="text-xs text-center text-gray-400">
-        El pago se coordina directamente con el vendedor tras confirmar.
+      <p className="text-xs text-center text-gray-400 mt-4">
+        Al hacer clic, se abrirá WhatsApp con el resumen de tu pedido para coordinar el pago y la entrega.
       </p>
     </form>
   );
