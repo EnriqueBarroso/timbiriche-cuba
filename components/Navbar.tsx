@@ -1,6 +1,5 @@
 "use client";
 
-// 1. Añade Suspense a los imports
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -24,26 +23,27 @@ import {
 import { useCart } from "@/contexts/CartContext";
 import { useUser } from "@clerk/nextjs";
 
-// 2. Cambia el nombre de tu función actual a "NavbarContent"
-// (MANTÉN TODO EL CÓDIGO INTERNO IGUAL, solo cambia el nombre aquí)
+// ⚠️ PON AQUÍ TU EMAIL EXACTO
+const ADMIN_EMAIL = "tu_email_real@gmail.com"; 
+
+// 1. Lógica interna (renombrada para usarla dentro del Suspense)
 function NavbarContent() {
   const router = useRouter();
-  const searchParams = useSearchParams(); // 👈 El culpable del error
+  const searchParams = useSearchParams(); 
   const [query, setQuery] = useState(searchParams.get("search") || "");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const { cartCount } = useCart();
-
   const [mounted, setMounted] = useState(false);
 
   const { user } = useUser();
-  const isAdmin = user?.primaryEmailAddress?.emailAddress === "tu_email_real@gmail.com";
+  const isAdmin = user?.primaryEmailAddress?.emailAddress === ADMIN_EMAIL;
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
-
+  
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
@@ -110,7 +110,6 @@ function NavbarContent() {
             </button>
           </Link>
 
-          {/* BOTÓN "MIS PUBLICACIONES" */}
           <SignedIn>
             <Link href="/mis-publicaciones">
               <button
@@ -123,7 +122,6 @@ function NavbarContent() {
             </Link>
           </SignedIn>
 
-          {/* CARRITO */}
           <Link href="/carrito">
             <button className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 transition-colors relative group">
               <ShoppingCart className="h-5 w-5 group-hover:text-blue-600 transition-colors" />
@@ -135,7 +133,6 @@ function NavbarContent() {
             </button>
           </Link>
 
-          {/* FAVORITOS */}
           <Link href="/favoritos">
             <button className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 transition-colors relative group">
               <Heart className="h-5 w-5 group-hover:text-red-500 transition-colors" />
@@ -146,14 +143,16 @@ function NavbarContent() {
 
           <div className="ml-1">
             <SignedIn>
-              <UserButton
-                afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    avatarBox: "h-9 w-9 ring-2 ring-gray-100 hover:ring-blue-500 transition-all"
-                  }
-                }}
-              />
+              <div className="flex items-center gap-2">
+                 {isAdmin && (
+                    <Link href="/admin">
+                       <button className="hidden md:block bg-black text-white px-3 py-1 rounded-full text-xs font-bold border border-gray-700">
+                         ADMIN
+                       </button>
+                    </Link>
+                 )}
+                 <UserButton afterSignOutUrl="/" />
+              </div>
             </SignedIn>
 
             <SignedOut>
@@ -168,10 +167,8 @@ function NavbarContent() {
         </nav>
       </div>
 
-      {/* MENÚ MÓVIL */}
       {isMobileMenuOpen && (
         <div className="border-t border-gray-100 bg-white p-4 md:hidden flex flex-col gap-4 animate-in slide-in-from-top-2">
-
           <form onSubmit={handleSearch} className="relative">
             <input
               type="text"
@@ -211,24 +208,22 @@ function NavbarContent() {
             </Link>
 
             {isAdmin && (
-              <Link href="/admin">
-                <button className="bg-black text-white px-3 py-1 rounded-full text-xs font-bold border border-gray-700 ml-2">
-                  ADMIN
+              <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>
+                <button className="w-full bg-black text-white p-3 rounded-xl font-bold border border-gray-700 flex items-center justify-center gap-2">
+                  <Store className="w-4 h-4" /> PANEL ADMIN
                 </button>
               </Link>
             )}
           </div>
-
         </div>
       )}
     </header>
   );
 }
 
-// 3. Crea esta nueva función "Navbar" que envuelve a la anterior
-export function Navbar() {
+// 2. EXPORTACIÓN POR DEFECTO (Esto arregla el error)
+export default function Navbar() {
   return (
-    // Fallback simple: una caja blanca de 16px de alto para que no salte el diseño mientras carga
     <Suspense fallback={<div className="h-16 w-full bg-white/80 border-b border-gray-100" />}>
       <NavbarContent />
     </Suspense>

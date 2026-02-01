@@ -2,23 +2,32 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
-// Definimos los tipos, asegúrate de que coincidan con los tuyos
-import { Product } from "@/types"; 
+// Importamos Product solo para recibirlo en la función addItem, 
+// pero NO lo usaremos para heredar el tipo CartItem
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import { Product } from "@/types"; // O "any" si prefieres evitar líos de tipos por ahora
 
-export type CartItem = Product & {
+// 1. DEFINICIÓN MANUAL (Para asegurar que 'image' existe y es string)
+export type CartItem = {
+  id: string;
+  title: string;
+  price: number;
+  image: string;      // 👈 AQUÍ ESTÁ EL ARREGLO (Singular y String)
   quantity: number;
-  selectedVariant?: string; // Por si tienes tallas/colores
+  currency: string;
+  sellerName?: string;
 };
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addItem: (product: any) => void; // Usamos any en la entrada para ser flexibles con lo que viene de la DB
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   cartCount: number;
   cartTotal: number;
-  isLoaded: boolean; // Para saber si ya leímos localStorage
+  isLoaded: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -27,9 +36,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // 1. Cargar del LocalStorage al iniciar
+  // 1. Cargar del LocalStorage
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     try {
       const savedCart = localStorage.getItem("timbiriche-cart");
       if (savedCart) {
@@ -38,26 +46,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Error cargando el carrito:", error);
     } finally {
-      // Marcamos como cargado AL FINAL para evitar parpadeos
       setIsLoaded(true);
     }
   }, []);
 
-  // 2. Guardar en LocalStorage cada vez que cambian los items
+  // 2. Guardar en LocalStorage
   useEffect(() => {
-    if (isLoaded) { // Solo guardamos si ya terminamos la carga inicial
+    if (isLoaded) {
       localStorage.setItem("timbiriche-cart", JSON.stringify(items));
     }
   }, [items, isLoaded]);
 
-  // --- FUNCIONES DEL CARRITO ---
+  // --- FUNCIONES ---
 
-  const addItem = (product: Product) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const addItem = (product: any) => {
     setItems((currentItems) => {
       const existingItem = currentItems.find((item) => item.id === product.id);
       
       if (existingItem) {
-        toast.success("Cantidad actualizada en el carrito");
+        toast.success("Cantidad actualizada");
         return currentItems.map((item) =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -65,14 +73,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         );
       }
 
-      toast.success("Producto añadido al carrito");
-      return [...currentItems, { ...product, quantity: 1 }];
+      // 🔍 TRUCO: Detectamos la imagen correcta antes de guardar
+      // Si viene 'images' (array), cogemos la primera. Si viene 'image' (string), la usamos.
+      const mainImage = product.images?.[0]?.url || product.image || "https://placehold.co/600x400";
+      
+      const newItem: CartItem = {
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        image: mainImage, // 👈 Guardamos el string limpio
+        quantity: 1,
+        currency: product.currency || "USD",
+        sellerName: product.seller?.storeName || "Vendedor"
+      };
+
+      toast.success("Añadido al carrito");
+      return [...currentItems, newItem];
     });
   };
 
   const removeItem = (productId: string) => {
     setItems((currentItems) => currentItems.filter((item) => item.id !== productId));
-    toast.error("Producto eliminado");
+    toast.error("Eliminado del carrito");
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
@@ -92,7 +114,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     toast.success("Carrito vaciado");
   };
 
-  // Cálculos derivados
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const cartTotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
