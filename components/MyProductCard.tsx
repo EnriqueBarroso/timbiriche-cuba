@@ -12,7 +12,13 @@ export default function MyProductCard({ product }: Props) {
   // Aseguramos datos para que no falle
   const title = product.title || "Producto sin nombre";
   const price = product.price || 0;
-  const image = product.images?.[0]?.url || "/placeholder.jpg";
+  
+  // CORRECCIÓN AQUÍ: Usamos placehold.co si no hay imagen
+  const imageRaw = product.images?.[0]?.url;
+  const image = (imageRaw && imageRaw.startsWith('http')) 
+    ? imageRaw 
+    : "https://placehold.co/600x400/png?text=Sin+Foto"; // 👈 URL segura
+
   const date = new Date(product.createdAt).toLocaleDateString();
 
   return (

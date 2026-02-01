@@ -4,24 +4,25 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { 
-  Search, 
-  Heart, 
-  Store, 
-  User, 
-  Menu, 
-  X, 
-  ShoppingBag, 
+import {
+  Search,
+  Heart,
+  Store,
+  User,
+  Menu,
+  X,
+  ShoppingBag,
   ShoppingCart,
-  Package 
+  Package
 } from "lucide-react";
-import { 
-  SignInButton, 
-  SignedIn, 
-  SignedOut, 
-  UserButton 
+import {
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton
 } from "@clerk/nextjs";
 import { useCart } from "@/contexts/CartContext";
+import { useUser } from "@clerk/nextjs";
 
 // 2. Cambia el nombre de tu función actual a "NavbarContent"
 // (MANTÉN TODO EL CÓDIGO INTERNO IGUAL, solo cambia el nombre aquí)
@@ -30,10 +31,13 @@ function NavbarContent() {
   const searchParams = useSearchParams(); // 👈 El culpable del error
   const [query, setQuery] = useState(searchParams.get("search") || "");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  const { cartCount } = useCart(); 
-  
+
+  const { cartCount } = useCart();
+
   const [mounted, setMounted] = useState(false);
+
+  const { user } = useUser();
+  const isAdmin = user?.primaryEmailAddress?.emailAddress === "tu_email_real@gmail.com";
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -53,10 +57,10 @@ function NavbarContent() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
-        
+
         {/* LOGO & MENU */}
         <div className="flex items-center gap-2 md:gap-4">
-          <button 
+          <button
             className="md:hidden text-gray-500 hover:text-gray-900 focus:outline-none"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
@@ -87,7 +91,7 @@ function NavbarContent() {
               onChange={(e) => setQuery(e.target.value)}
             />
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-            <button 
+            <button
               type="submit"
               className="absolute right-1.5 top-1.5 rounded-full bg-blue-600 p-1.5 text-white shadow-sm hover:bg-blue-700 transition-colors"
             >
@@ -98,8 +102,8 @@ function NavbarContent() {
 
         {/* NAVEGACIÓN */}
         <nav className="flex items-center gap-1 md:gap-2">
-          
-          <Link href="/vender"> 
+
+          <Link href="/vender">
             <button className="hidden md:flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
               <Store className="h-4.5 w-4.5" />
               <span>Vender</span>
@@ -109,7 +113,7 @@ function NavbarContent() {
           {/* BOTÓN "MIS PUBLICACIONES" */}
           <SignedIn>
             <Link href="/mis-publicaciones">
-              <button 
+              <button
                 className="hidden md:flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
                 title="Gestionar mis productos"
               >
@@ -142,7 +146,7 @@ function NavbarContent() {
 
           <div className="ml-1">
             <SignedIn>
-              <UserButton 
+              <UserButton
                 afterSignOutUrl="/"
                 appearance={{
                   elements: {
@@ -151,7 +155,7 @@ function NavbarContent() {
                 }}
               />
             </SignedIn>
-            
+
             <SignedOut>
               <SignInButton mode="modal">
                 <button className="flex h-9 items-center gap-2 rounded-full bg-gray-900 px-4 text-sm font-medium text-white shadow hover:bg-gray-800 transition-all hover:scale-105">
@@ -167,7 +171,7 @@ function NavbarContent() {
       {/* MENÚ MÓVIL */}
       {isMobileMenuOpen && (
         <div className="border-t border-gray-100 bg-white p-4 md:hidden flex flex-col gap-4 animate-in slide-in-from-top-2">
-          
+
           <form onSubmit={handleSearch} className="relative">
             <input
               type="text"
@@ -180,17 +184,17 @@ function NavbarContent() {
           </form>
 
           <div className="flex flex-col gap-2">
-            <Link 
-              href="/vender" 
+            <Link
+              href="/vender"
               onClick={() => setIsMobileMenuOpen(false)}
               className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 text-gray-900 font-medium"
             >
               <Store className="h-5 w-5" /> Vender Producto
             </Link>
-            
+
             <SignedIn>
-              <Link 
-                href="/mis-publicaciones" 
+              <Link
+                href="/mis-publicaciones"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-600 font-medium"
               >
@@ -198,13 +202,21 @@ function NavbarContent() {
               </Link>
             </SignedIn>
 
-            <Link 
-              href="/favoritos" 
+            <Link
+              href="/favoritos"
               onClick={() => setIsMobileMenuOpen(false)}
               className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-600 font-medium"
             >
               <Heart className="h-5 w-5" /> Mis Favoritos
             </Link>
+
+            {isAdmin && (
+              <Link href="/admin">
+                <button className="bg-black text-white px-3 py-1 rounded-full text-xs font-bold border border-gray-700 ml-2">
+                  ADMIN
+                </button>
+              </Link>
+            )}
           </div>
 
         </div>

@@ -31,7 +31,7 @@ export default function RootLayout({
   return (
     <ClerkProvider localization={esES}>
       <html lang="es">
-        <body className={`${inter.className} antialiased min-h-screen flex flex-col bg-blue-50 text-gray-900`}>
+        <body className={`${inter.className} antialiased min-h-screen flex flex-col bg-blue-100 text-gray-900`}>
 
           <FavoritesProvider>
             <CartProvider>
