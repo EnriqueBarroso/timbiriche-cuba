@@ -17,7 +17,7 @@ export default function VenderPage() {
     title: "",
     price: "",
     currency: "USD",
-    category: "tech",
+    category: "food",
     description: "",
     image: "",
   });
@@ -159,14 +159,16 @@ export default function VenderPage() {
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             >
-              <option value="tech">Tecnología</option>
-              <option value="home">Hogar</option>
-              <option value="fashion">Moda</option>
-              <option value="vehicles">Vehículos</option>
-              <option value="sports">Deportes</option>
-              <option value="kids">Niños</option>
-              <option value="art">Arte y Colección</option>
-              <option value="services">Servicios</option>
+              {/* Opción por defecto */}
+              <option value="" disabled>Selecciona una categoría</option>
+              
+              {/* --- LAS 6 IMPRESCINDIBLES --- */}
+              <option value="food">🍗 Combos y Alimentos</option>
+              <option value="parts">🔧 Piezas y Accesorios</option>
+              <option value="home">🛋️ Hogar y Decoración</option>
+              <option value="logistics">🛵 Logística y Mensajería</option>
+              <option value="tech">📱 Tecnología (Celulares/Laptops)</option>
+              <option value="fashion">👗 Ropa y Moda</option>
             </select>
           </div>
 

@@ -1,16 +1,25 @@
 "use client"
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Car, Home, Smartphone, Shirt, Wrench, MoreHorizontal, LayoutGrid } from "lucide-react";
+import { 
+  LayoutGrid, 
+  Utensils, 
+  Car, 
+  Armchair, 
+  Bike, 
+  Smartphone, 
+  Shirt 
+} from "lucide-react";
 
+// --- TU NUEVO MIX ESTRATÉGICO ---
 const categories = [
   { id: "all", label: "Todo", icon: LayoutGrid },
-  { id: "vehiculos", label: "Autos", icon: Car },
-  { id: "inmuebles", label: "Casas", icon: Home },
-  { id: "electronica", label: "Tecno", icon: Smartphone },
-  { id: "moda", label: "Moda", icon: Shirt },
-  { id: "servicios", label: "Servicios", icon: Wrench },
-  { id: "otros", label: "Otros", icon: MoreHorizontal },
+  { id: "food", label: "Alimentos", icon: Utensils },
+  { id: "parts", label: "Piezas", icon: Car },
+  { id: "home", label: "Hogar", icon: Armchair },
+  { id: "logistics", label: "Mensajería", icon: Bike },
+  { id: "tech", label: "Tecnología", icon: Smartphone },
+  { id: "fashion", label: "Moda", icon: Shirt },
 ];
 
 export default function CategoryFilter() {
@@ -32,7 +41,7 @@ export default function CategoryFilter() {
     <div className="w-full border-b border-gray-100 bg-white sticky top-0 z-10">
       <div className="max-w-7xl mx-auto px-4 py-3">
         {/* Contenedor Flex con Scroll Horizontal */}
-        <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-2 md:pb-0">
           
           {categories.map((cat) => {
             const Icon = cat.icon;
@@ -50,12 +59,11 @@ export default function CategoryFilter() {
                   }
                 `}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-gray-500"}`} />
                 {cat.label}
               </button>
             );
           })}
-          
         </div>
       </div>
     </div>

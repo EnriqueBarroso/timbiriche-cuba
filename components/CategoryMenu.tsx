@@ -12,27 +12,27 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
 
-// Datos de ejemplo para el menú
+// Datos actualizados para el MVP
 const categories = [
   {
-    title: "Comida y Bebida",
-    href: "/categoria/comida",
-    description: "Cakes, carnes, combos y todo para la familia.",
+    title: "🍗 Combos y Alimentos",
+    href: "/?category=food",
+    description: "Cakes, carnes, combos familiares y agro.",
   },
   {
-    title: "Electrodomésticos",
-    href: "/categoria/electro",
-    description: "Splits, freezers, ventiladores y más.",
+    title: "🔧 Piezas y Motores",
+    href: "/?category=parts",
+    description: "Repuestos para motos, autos y bicicletas.",
   },
   {
-    title: "Aseo Personal",
-    href: "/categoria/aseo",
-    description: "Jabones, champú y productos de higiene.",
+    title: "🛋️ Hogar y Electro",
+    href: "/?category=home",
+    description: "Splits, freezers, muebles y decoración.",
   },
   {
-    title: "Envíos Aéreos",
-    href: "/envios",
-    description: "Servicio de paquetería rápida a toda la isla.",
+    title: "🛵 Mensajería",
+    href: "/?category=logistics",
+    description: "Servicios de entrega y mudanzas rápidas.",
   },
 ]
 
@@ -46,9 +46,8 @@ export default function CategoryMenu() {
             Categorías
           </NavigationMenuTrigger>
           
-          {/* El contenido que se despliega */}
           <NavigationMenuContent>
-            <ul className="grid w-[300px] gap-3 p-4 md:w-[400px] md:grid-cols-2 lg:w-[500px] bg-white rounded-xl shadow-xl border border-gray-100">
+            <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
               {categories.map((component) => (
                 <li key={component.title}>
                   <NavigationMenuLink asChild>
@@ -70,15 +69,14 @@ export default function CategoryMenu() {
           </NavigationMenuContent>
         </NavigationMenuItem>
         
-        {/* Enlace simple sin desplegable */}
+        {/* Enlace directo a ofertas */}
         <NavigationMenuItem>
           <Link href="/ofertas" legacyBehavior passHref>
-            <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 text-red-600">
-              Ofertas
+            <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 text-red-600 font-bold">
+              🔥 Ofertas Flash
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>
-
       </NavigationMenuList>
     </NavigationMenu>
   )

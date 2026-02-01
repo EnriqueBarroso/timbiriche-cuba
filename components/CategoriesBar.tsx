@@ -1,34 +1,30 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { 
-  Smartphone, 
-  Home, 
-  Shirt, 
-  Car, 
-  Dumbbell, 
-  Baby, 
-  Palette, 
-  Wrench,
+import { useState, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Sparkles,    // Todo
+  Utensils,    // Alimentos (🍗)
+  Car,         // Piezas (🔧)
+  Armchair,    // Hogar (🛋️) - Usamos Armchair o Home
+  Bike,        // Mensajería (🛵)
+  Smartphone,  // Tecnología (📱)
+  Shirt,       // Moda (👗)
   ChevronLeft,
   ChevronRight,
-  Sparkles,
-  LayoutGrid
-} from "lucide-react"
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
-// Definimos las categorías con sus IDs (deben coincidir con tu DB o lógica de filtro)
+// --- TU NUEVO MIX DE CATEGORÍAS ---
 const categories = [
-  { id: "all", name: "Todo", icon: LayoutGrid },
+  { id: "all", name: "Todo", icon: Sparkles },
+  { id: "food", name: "Combos y Alimentos", icon: Utensils },
+  { id: "parts", name: "Piezas y Accesorios", icon: Car },
+  { id: "home", name: "Hogar y Decoración", icon: Armchair },
+  { id: "logistics", name: "Mensajería", icon: Bike },
   { id: "tech", name: "Tecnología", icon: Smartphone },
-  { id: "home", name: "Hogar", icon: Home },
-  { id: "fashion", name: "Moda", icon: Shirt },
-  { id: "vehicles", name: "Vehículos", icon: Car },
-  { id: "sports", name: "Deportes", icon: Dumbbell },
-  { id: "kids", name: "Niños", icon: Baby },
-  { id: "art", name: "Arte", icon: Palette },
-  { id: "services", name: "Servicios", icon: Wrench },
-]
+  { id: "fashion", name: "Ropa y Moda", icon: Shirt },
+];
 
 export function CategoriesBar() {
   const router = useRouter()
