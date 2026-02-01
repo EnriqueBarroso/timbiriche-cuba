@@ -12,9 +12,25 @@ import './globals.css'
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Timbiriche',
-  description: 'Marketplace cubano.',
-}
+  title: "Timbiriche Cuba | Tu tienda online",
+  description: "Compra ropa, zapatos y accesorios en Cuba al mejor precio. Envíos rápidos y pagos seguros.",
+  openGraph: {
+    title: "Timbiriche Cuba | Marketplace",
+    description: "Lo mejor de la moda en Cuba a un clic. ¡Entra y mira las ofertas!",
+    url: "https://timbiriche-cuba.vercel.app", // Tu URL real
+    siteName: "Timbiriche Cuba",
+    images: [
+      {
+        url: "https://timbiriche-cuba.vercel.app/og-image.jpg", // O una URL de Cloudinary directa
+        width: 1200,
+        height: 630,
+        alt: "Timbiriche Cuba Preview",
+      },
+    ],
+    locale: "es_CU",
+    type: "website",
+  },
+};
 
 export const viewport: Viewport = {
   themeColor: '#EFF6FF', // ← Cambié a azul claro (blue-50)

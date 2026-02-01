@@ -3,16 +3,16 @@ import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { Check, Trash2, ShieldAlert, Store } from "lucide-react";
 import { revalidatePath } from "next/cache";
-
-// ⚠️ IMPORTANTE: Pon aquí el email exacto con el que te registraste
-const ADMIN_EMAIL = "tu_email_real@gmail.com"; 
+import { isAdmin } from '@/lib/utils'; // ✅ Import correcto
 
 export default async function AdminPage() {
   const user = await currentUser();
 
   // 1. Seguridad: Si no es el admin, lo mandamos al inicio
   const userEmail = user?.emailAddresses[0]?.emailAddress;
-  if (userEmail !== ADMIN_EMAIL) {
+  
+  // ✅ USAMOS la función isAdmin (eliminas la comparación directa con ADMIN_EMAIL)
+  if (!isAdmin(userEmail)) {
     return redirect("/");
   }
 
@@ -25,7 +25,6 @@ export default async function AdminPage() {
   const allProducts = await prisma.product.findMany({
     take: 20,
     orderBy: { createdAt: 'desc' },
-    // 👇 AQUÍ ESTABA EL ERROR: Añadimos 'images: true'
     include: { 
       seller: true,
       images: true 
@@ -117,10 +116,6 @@ export default async function AdminPage() {
                         <button 
                             className="text-red-500 p-2 hover:bg-red-50 rounded-full transition-colors" 
                             title="Borrar Producto Inmediatamente"
-                            onClick={(e) => {
-                                // Nota: confirm() puede no funcionar en server actions puros sin JS cliente,
-                                // pero funcionará como protección básica o se puede quitar.
-                            }}
                         >
                             <Trash2 size={20} />
                         </button>

@@ -22,11 +22,8 @@ import {
 } from "@clerk/nextjs";
 import { useCart } from "@/contexts/CartContext";
 import { useUser } from "@clerk/nextjs";
+import { isAdmin } from '@/lib/utils';
 
-// ⚠️ PON AQUÍ TU EMAIL EXACTO
-const ADMIN_EMAIL = "tu_email_real@gmail.com"; 
-
-// 1. Lógica interna (renombrada para usarla dentro del Suspense)
 function NavbarContent() {
   const router = useRouter();
   const searchParams = useSearchParams(); 
@@ -37,10 +34,11 @@ function NavbarContent() {
   const [mounted, setMounted] = useState(false);
 
   const { user } = useUser();
-  const isAdmin = user?.primaryEmailAddress?.emailAddress === ADMIN_EMAIL;
+  const userIsAdmin = isAdmin(user?.primaryEmailAddress?.emailAddress);
 
+  // ✅ SOLUCIÓN: Añadir comentario específico para desactivar la regla
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     setMounted(true);
   }, []);
   
@@ -144,7 +142,7 @@ function NavbarContent() {
           <div className="ml-1">
             <SignedIn>
               <div className="flex items-center gap-2">
-                 {isAdmin && (
+                 {userIsAdmin && (
                     <Link href="/admin">
                        <button className="hidden md:block bg-black text-white px-3 py-1 rounded-full text-xs font-bold border border-gray-700">
                          ADMIN
@@ -207,7 +205,7 @@ function NavbarContent() {
               <Heart className="h-5 w-5" /> Mis Favoritos
             </Link>
 
-            {isAdmin && (
+            {userIsAdmin && (
               <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>
                 <button className="w-full bg-black text-white p-3 rounded-xl font-bold border border-gray-700 flex items-center justify-center gap-2">
                   <Store className="w-4 h-4" /> PANEL ADMIN
@@ -221,7 +219,6 @@ function NavbarContent() {
   );
 }
 
-// 2. EXPORTACIÓN POR DEFECTO (Esto arregla el error)
 export default function Navbar() {
   return (
     <Suspense fallback={<div className="h-16 w-full bg-white/80 border-b border-gray-100" />}>
