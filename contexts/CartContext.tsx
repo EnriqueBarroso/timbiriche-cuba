@@ -1,18 +1,16 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { toast } from "sonner";
-// Importamos Product solo para recibirlo en la función addItem, 
-// pero NO lo usaremos para heredar el tipo CartItem
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-import { Product } from "@/types"; // O "any" si prefieres evitar líos de tipos por ahora
+// ❌ BORRAMOS EL IMPORT DE TOAST AQUÍ, YA NO HACE FALTA
+// import { toast } from "sonner"; 
+import { toast } from "sonner"; // Puedes dejarlo para removeItem si quieres, pero para addItem NO.
 
-// 1. DEFINICIÓN MANUAL (Para asegurar que 'image' existe y es string)
+// ... (El resto de tus types siguen igual) ...
 export type CartItem = {
   id: string;
   title: string;
   price: number;
-  image: string;      // 👈 AQUÍ ESTÁ EL ARREGLO (Singular y String)
+  image: string;
   quantity: number;
   currency: string;
   sellerName?: string;
@@ -21,7 +19,7 @@ export type CartItem = {
 interface CartContextType {
   items: CartItem[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  addItem: (product: any) => void; // Usamos any en la entrada para ser flexibles con lo que viene de la DB
+  addItem: (product: any) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -65,7 +63,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const existingItem = currentItems.find((item) => item.id === product.id);
       
       if (existingItem) {
-        toast.success("Cantidad actualizada");
+        // ❌ AQUÍ BORRAMOS EL TOAST.SUCCESS (Ya lo hace la UI)
         return currentItems.map((item) =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -73,28 +71,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         );
       }
 
-      // 🔍 TRUCO: Detectamos la imagen correcta antes de guardar
-      // Si viene 'images' (array), cogemos la primera. Si viene 'image' (string), la usamos.
       const mainImage = product.images?.[0]?.url || product.image || "https://placehold.co/600x400";
       
       const newItem: CartItem = {
         id: product.id,
         title: product.title,
         price: product.price,
-        image: mainImage, // 👈 Guardamos el string limpio
+        image: mainImage,
         quantity: 1,
         currency: product.currency || "USD",
         sellerName: product.seller?.storeName || "Vendedor"
       };
-
-      toast.success("Añadido al carrito");
+      
+      // ❌ AQUÍ TAMBIÉN BORRAMOS EL TOAST.SUCCESS
       return [...currentItems, newItem];
     });
   };
 
   const removeItem = (productId: string) => {
     setItems((currentItems) => currentItems.filter((item) => item.id !== productId));
-    toast.error("Eliminado del carrito");
+    toast.error("Eliminado del carrito"); // Este lo puedes dejar si quieres, o quitarlo también.
   };
 
   const updateQuantity = (productId: string, quantity: number) => {

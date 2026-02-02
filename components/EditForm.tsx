@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { Save, ImageIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { CldUploadWidget } from 'next-cloudinary';
-// 👇 Importamos la acción del servidor
 import { updateProduct } from "@/lib/actions"; 
+import { CATEGORIES } from "@/lib/categories"; // 👈 IMPORTAMOS LA FUENTE DE LA VERDAD
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  product: any; // Usamos any para flexibilidad
+  product: any;
 }
 
 export default function EditForm({ product }: Props) {
@@ -19,18 +19,17 @@ export default function EditForm({ product }: Props) {
   
   const [formData, setFormData] = useState({
     title: product.title || "",
-    // Si tu precio viene en centavos (ej: 5000), lo convertimos a string (50.00) para el input
     price: product.price ? (product.price / 100).toString() : "0",
     description: product.description || "",
-    category: product.category || "otros",
+    category: product.category || "others",
     imageUrl: product.images?.[0]?.url || "",
-    isActive: product.isActive ?? true // Default true si no existe
+    isActive: product.isActive ?? true 
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    // Truco para leer checkbox en TypeScript
-    const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const newValue = type === 'checkbox' ? (e.target as any).checked : value;
     setFormData({ ...formData, [name]: newValue });
   };
 
@@ -39,10 +38,9 @@ export default function EditForm({ product }: Props) {
     setIsSubmitting(true);
 
     try {
-      // 👇 LLAMADA AL SERVER ACTION EN LUGAR DE FETCH
       await updateProduct(product.id, {
         title: formData.title,
-        price: parseFloat(formData.price) * 100, // Convertimos de vuelta a centavos
+        price: parseFloat(formData.price) * 100,
         description: formData.description,
         category: formData.category,
         imageUrl: formData.imageUrl,
@@ -50,7 +48,7 @@ export default function EditForm({ product }: Props) {
       });
 
       toast.success("Producto actualizado correctamente");
-      router.push("/mis-publicaciones");
+      router.push("/mis-publicaciones"); // O router.back()
       router.refresh(); 
 
     } catch (error) {
@@ -112,12 +110,13 @@ export default function EditForm({ product }: Props) {
             onChange={handleChange}
             className="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"
           >
-              <option value="tecnologia">Tecnología</option>
-              <option value="moda">Moda</option>
-              <option value="hogar">Hogar</option>
-              <option value="vehiculos">Vehículos</option>
-              <option value="deportes">Deportes</option>
-              <option value="entretenimiento">Ocio</option>
+            <option value="" disabled>Selecciona una opción</option>
+            {/* 👇 Generamos las opciones dinámicamente, excluyendo 'all' */}
+            {CATEGORIES.filter(cat => cat.id !== 'all').map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.label}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -135,7 +134,7 @@ export default function EditForm({ product }: Props) {
            
            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <CldUploadWidget 
-                uploadPreset="timbiriche_preset" // ⚠️ Asegúrate que este preset existe en tu Cloudinary
+                uploadPreset="timbiriche_preset" 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onSuccess={(result: any) => setFormData({ ...formData, imageUrl: result.info.secure_url })}
               >

@@ -2,10 +2,11 @@ import { prisma } from "@/lib/prisma"
 import { ProductCard } from "@/components/ProductCard"
 import { HeroSection } from "@/components/HeroSection"
 import { CategoriesBar } from "@/components/CategoriesBar"
+import { SearchBar } from "@/components/SearchBar"
 import { Search, X } from "lucide-react"
 import Link from "next/link"
 
-// Función para obtener productos (Server Side)
+// ✅ FUNCIÓN PARA OBTENER PRODUCTOS (Server Side)
 async function getProducts(search?: string, category?: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = {};
@@ -49,13 +50,16 @@ export default async function Home({
       {/* 1. Carrusel de Categorías (Pegajoso debajo del Navbar) */}
       <CategoriesBar />
       
-      <main className="min-h-screen pb-20"> {/* ✅ Sin color, dejará ver el fondo global */}
-        {/* 2. Hero Section (Solo se muestra si no hay búsqueda/categoría activa) */}
+      {/* 2. Barra de Búsqueda (Solo Móvil) */}
+      <SearchBar />
+      
+      <main className="min-h-screen pb-20">
+        {/* 3. Hero Section (Solo se muestra si no hay búsqueda/categoría activa) */}
         {!params.search && !params.category && (
            <HeroSection />
         )}
 
-        {/* 3. Banner de Filtros Activos (Nuevo) */}
+        {/* 4. Banner de Filtros Activos */}
         {(params.search || params.category) && (
           <div className="bg-blue-50 border-b border-blue-100 py-3">
             <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
@@ -86,8 +90,8 @@ export default async function Home({
           </div>
         )}
 
-        {/* 4. Grid de Productos */}
-        <div className="mx-auto max-w-7xl px-4 py-12 md:px-6">
+        {/* 5. Grid de Productos */}
+        <div id="products" className="mx-auto max-w-7xl px-4 py-12 md:px-6">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold tracking-tight text-foreground">
               {params.search 
@@ -103,7 +107,7 @@ export default async function Home({
           </div>
 
           {products.length > 0 ? (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {products.map((product: any) => (
                 <ProductCard key={product.id} product={product} />

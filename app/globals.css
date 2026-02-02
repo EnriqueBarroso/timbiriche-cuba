@@ -2,6 +2,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   /* --- BASE: Blanco Puro y Gris Pizarra --- */
   --background: 0 0% 100%;

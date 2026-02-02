@@ -1,4 +1,3 @@
-// components/CategoryMenu.tsx
 "use client"
 
 import * as React from "react"
@@ -11,55 +10,35 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
-
-// Datos actualizados para el MVP
-const categories = [
-  {
-    title: "🍗 Combos y Alimentos",
-    href: "/?category=food",
-    description: "Cakes, carnes, combos familiares y agro.",
-  },
-  {
-    title: "🔧 Piezas y Motores",
-    href: "/?category=parts",
-    description: "Repuestos para motos, autos y bicicletas.",
-  },
-  {
-    title: "🛋️ Hogar y Electro",
-    href: "/?category=home",
-    description: "Splits, freezers, muebles y decoración.",
-  },
-  {
-    title: "🛵 Mensajería",
-    href: "/?category=logistics",
-    description: "Servicios de entrega y mudanzas rápidas.",
-  },
-]
+import { CATEGORIES } from "@/lib/categories";
 
 export default function CategoryMenu() {
+  // Filtramos 'all' y tomamos solo las primeras 4 o todas, según diseño.
+  const displayCategories = CATEGORIES.filter(c => c.id !== 'all').slice(0, 6);
+
   return (
     <NavigationMenu>
       <NavigationMenuList>
         <NavigationMenuItem>
-          {/* El botón que activa el menú */}
           <NavigationMenuTrigger className="bg-transparent hover:bg-gray-100 text-gray-700">
             Categorías
           </NavigationMenuTrigger>
           
           <NavigationMenuContent>
             <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-              {categories.map((component) => (
-                <li key={component.title}>
+              {displayCategories.map((cat) => (
+                <li key={cat.id}>
                   <NavigationMenuLink asChild>
                     <Link
-                      href={component.href}
+                      href={`/?category=${cat.id}`}
                       className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700"
                     >
                       <div className="text-sm font-medium leading-none text-gray-900">
-                        {component.title}
+                        {cat.icon && <cat.icon className="inline w-4 h-4 mr-2 mb-0.5"/>}
+                        {cat.label}
                       </div>
                       <p className="line-clamp-2 text-sm leading-snug text-gray-500 mt-1">
-                        {component.description}
+                        {cat.description}
                       </p>
                     </Link>
                   </NavigationMenuLink>
@@ -69,7 +48,6 @@ export default function CategoryMenu() {
           </NavigationMenuContent>
         </NavigationMenuItem>
         
-        {/* Enlace directo a ofertas */}
         <NavigationMenuItem>
           <Link href="/ofertas" legacyBehavior passHref>
             <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 text-red-600 font-bold">

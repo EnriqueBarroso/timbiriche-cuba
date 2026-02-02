@@ -2,15 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Trash2, ArrowLeft, MessageCircle, ShoppingBag } from "lucide-react";
+import { Trash2, ArrowLeft, MessageCircle, ShoppingBag, Plus, Minus } from "lucide-react"; // Añadí Plus y Minus
 import { useCart } from "@/contexts/CartContext";
 
 export default function CartPage() {
-  // Obtenemos los datos del contexto
-  const { items, removeItem, cartTotal, clearCart } = useCart();
+  // 1. Añadimos updateQuantity al destructuring
+  const { items, removeItem, updateQuantity, cartTotal, clearCart } = useCart();
 
-  // 🔥 CORRECCIÓN DEL ERROR:
-  // Aseguramos que el total sea un número. Si es undefined/null, usamos 0.
   const safeTotal = cartTotal || 0;
 
   // --- GENERADOR DE PEDIDO WHATSAPP ---
@@ -20,14 +18,15 @@ export default function CartPage() {
     let message = "Hola! 👋 Quiero realizar el siguiente pedido en Timbiriche:\n\n";
     
     items.forEach((item) => {
-      message += `▪️ ${item.quantity}x *${item.title}* - $${(item.price * item.quantity).toFixed(2)}\n`;
+      // Intentamos obtener el nombre del vendedor si existe
+      const sellerInfo = item.sellerName ? ` (Tienda: ${item.sellerName})` : "";
+      message += `▪️ ${item.quantity}x *${item.title}* ${sellerInfo} - $${(item.price * item.quantity).toFixed(2)}\n`;
     });
 
     message += `\n💰 *TOTAL ESTIMADO: $${safeTotal.toFixed(2)}*`;
     message += `\n\nQuedo a la espera para coordinar la entrega. Gracias!`;
 
-    // Usamos un número genérico de soporte o administración
-    // En el futuro, esto podría separar pedidos por vendedor
+    // ⚠️ RECUERDA CAMBIAR ESTE NÚMERO POR EL TUYO REAL
     const adminPhone = "5300000000"; 
     return `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
   };
@@ -72,12 +71,12 @@ export default function CartPage() {
             {items.map((item) => (
               <div 
                 key={item.id} 
-                className="flex gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100 transition-transform hover:scale-[1.01]"
+                className="flex gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100 transition-transform hover:shadow-md"
               >
                 {/* Imagen */}
                 <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100 border border-gray-200">
                   <Image
-                    src={item.image || "/placeholder.jpg"}
+                    src={item.image || "https://placehold.co/600x400"}
                     alt={item.title}
                     fill
                     className="object-cover"
@@ -88,34 +87,57 @@ export default function CartPage() {
                 <div className="flex flex-1 flex-col justify-between">
                   <div>
                     <h3 className="font-semibold text-gray-900 line-clamp-2">{item.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      ${item.price} x {item.quantity}
-                    </p>
+                    {item.sellerName && (
+                       <p className="text-xs text-gray-400 mt-1">Vendedor: {item.sellerName}</p>
+                    )}
                   </div>
                   
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="font-bold text-gray-900">
-                      ${(item.price * item.quantity).toFixed(2)}
-                    </span>
+                  <div className="flex items-center justify-between mt-3">
                     
-                    <button 
-                      onClick={() => removeItem(item.id)}
-                      className="text-red-500 p-2 hover:bg-red-50 rounded-lg transition-colors text-sm flex items-center gap-1"
-                    >
-                      <Trash2 size={16} />
-                      <span className="hidden sm:inline">Eliminar</span>
-                    </button>
+                    {/* 2. CONTROLES DE CANTIDAD (NUEVO) */}
+                    <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200">
+                        <button 
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className="p-1.5 hover:bg-gray-200 rounded-l-lg text-gray-600 transition-colors"
+                            disabled={item.quantity <= 1}
+                        >
+                            <Minus size={14} />
+                        </button>
+                        <span className="w-8 text-center text-sm font-medium text-gray-900">{item.quantity}</span>
+                        <button 
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="p-1.5 hover:bg-gray-200 rounded-r-lg text-gray-600 transition-colors"
+                        >
+                            <Plus size={14} />
+                        </button>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                        <span className="font-bold text-gray-900">
+                        ${(item.price * item.quantity).toFixed(2)}
+                        </span>
+                        
+                        <button 
+                        onClick={() => removeItem(item.id)}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        title="Eliminar producto"
+                        >
+                        <Trash2 size={18} />
+                        </button>
+                    </div>
                   </div>
                 </div>
               </div>
             ))}
 
-            <button 
-              onClick={clearCart}
-              className="text-sm text-gray-500 underline hover:text-red-500 transition-colors px-4"
-            >
-              Vaciar carrito
-            </button>
+            <div className="flex justify-end pt-2">
+                <button 
+                onClick={clearCart}
+                className="text-sm text-red-500 hover:text-red-700 hover:underline flex items-center gap-1 transition-colors"
+                >
+                <Trash2 size={14} /> Vaciar todo el carrito
+                </button>
+            </div>
           </div>
 
           {/* RESUMEN DE ORDEN (Derecha / Sticky) */}
@@ -135,7 +157,6 @@ export default function CartPage() {
                 <div className="h-px bg-gray-100 my-2"></div>
                 <div className="flex justify-between items-end">
                   <span className="text-gray-900 font-bold">Total</span>
-                  {/* 👇 AQUÍ ESTABA EL ERROR (Ahora usamos safeTotal) */}
                   <span className="text-2xl font-extrabold text-gray-900">
                     ${safeTotal.toFixed(2)}
                   </span>

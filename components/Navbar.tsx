@@ -23,10 +23,11 @@ import {
 import { useCart } from "@/contexts/CartContext";
 import { useUser } from "@clerk/nextjs";
 import { isAdmin } from '@/lib/utils';
+import { useFavorites } from "@/contexts/FavoritesContext";
 
 function NavbarContent() {
   const router = useRouter();
-  const searchParams = useSearchParams(); 
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState(searchParams.get("search") || "");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -36,12 +37,13 @@ function NavbarContent() {
   const { user } = useUser();
   const userIsAdmin = isAdmin(user?.primaryEmailAddress?.emailAddress);
 
-  // ✅ SOLUCIÓN: Añadir comentario específico para desactivar la regla
+  const { favorites } = useFavorites();
+
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    setMounted(true);
-  }, []);
-  
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  setMounted(true);
+}, []);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
@@ -134,6 +136,11 @@ function NavbarContent() {
           <Link href="/favoritos">
             <button className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 transition-colors relative group">
               <Heart className="h-5 w-5 group-hover:text-red-500 transition-colors" />
+              {favorites.length > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
+                  {favorites.length}
+                </span>
+              )}
             </button>
           </Link>
 
@@ -142,14 +149,14 @@ function NavbarContent() {
           <div className="ml-1">
             <SignedIn>
               <div className="flex items-center gap-2">
-                 {userIsAdmin && (
-                    <Link href="/admin">
-                       <button className="hidden md:block bg-black text-white px-3 py-1 rounded-full text-xs font-bold border border-gray-700">
-                         ADMIN
-                       </button>
-                    </Link>
-                 )}
-                 <UserButton afterSignOutUrl="/" />
+                {userIsAdmin && (
+                  <Link href="/admin">
+                    <button className="hidden md:block bg-black text-white px-3 py-1 rounded-full text-xs font-bold border border-gray-700">
+                      ADMIN
+                    </button>
+                  </Link>
+                )}
+                <UserButton afterSignOutUrl="/" />
               </div>
             </SignedIn>
 
@@ -165,54 +172,43 @@ function NavbarContent() {
         </nav>
       </div>
 
+      {/* MENÚ MÓVIL - SIN BUSCADOR */}
       {isMobileMenuOpen && (
-        <div className="border-t border-gray-100 bg-white p-4 md:hidden flex flex-col gap-4 animate-in slide-in-from-top-2">
-          <form onSubmit={handleSearch} className="relative">
-            <input
-              type="text"
-              placeholder="¿Qué estás buscando?"
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-blue-500 focus:bg-white"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          </form>
+        <div className="border-t border-gray-100 bg-white p-4 md:hidden flex flex-col gap-2 animate-in slide-in-from-top-2">
+          
+          <Link
+            href="/vender"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 text-gray-900 font-medium hover:bg-gray-100 transition-colors"
+          >
+            <Store className="h-5 w-5" /> Vender Producto
+          </Link>
 
-          <div className="flex flex-col gap-2">
+          <SignedIn>
             <Link
-              href="/vender"
+              href="/mis-publicaciones"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 text-gray-900 font-medium"
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-600 font-medium transition-colors"
             >
-              <Store className="h-5 w-5" /> Vender Producto
+              <Package className="h-5 w-5" /> Mis Publicaciones
             </Link>
+          </SignedIn>
 
-            <SignedIn>
-              <Link
-                href="/mis-publicaciones"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-600 font-medium"
-              >
-                <Package className="h-5 w-5" /> Mis Publicaciones
-              </Link>
-            </SignedIn>
+          <Link
+            href="/favoritos"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-600 font-medium transition-colors"
+          >
+            <Heart className="h-5 w-5" /> Mis Favoritos
+          </Link>
 
-            <Link
-              href="/favoritos"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-600 font-medium"
-            >
-              <Heart className="h-5 w-5" /> Mis Favoritos
+          {userIsAdmin && (
+            <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>
+              <button className="w-full bg-black text-white p-3 rounded-xl font-bold border border-gray-700 flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors">
+                <Store className="w-4 h-4" /> PANEL ADMIN
+              </button>
             </Link>
-
-            {userIsAdmin && (
-              <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>
-                <button className="w-full bg-black text-white p-3 rounded-xl font-bold border border-gray-700 flex items-center justify-center gap-2">
-                  <Store className="w-4 h-4" /> PANEL ADMIN
-                </button>
-              </Link>
-            )}
-          </div>
+          )}
         </div>
       )}
     </header>
