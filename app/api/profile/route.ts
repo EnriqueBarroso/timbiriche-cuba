@@ -13,8 +13,6 @@ export async function PATCH(request: Request) {
 
     const email = user.emailAddresses[0].emailAddress;
     const body = await request.json();
-    
-    console.log("📥 Recibiendo datos para:", email);
     const { storeName, phoneNumber } = body;
 
     // Buscamos si existe
@@ -25,23 +23,21 @@ export async function PATCH(request: Request) {
     let result;
 
     if (existingSeller) {
-      // --- CASO A: ACTUALIZAR ---
+      // Actualizar vendedor existente
       result = await prisma.seller.update({
         where: { email },
         data: {
           storeName,
-          phoneNumber, 
-          // ❌ BORRAMOS userId: user.id (Esto causaba el error)
+          phoneNumber,
         },
       });
     } else {
-      // --- CASO B: CREAR ---
+      // Crear nuevo vendedor
       result = await prisma.seller.create({
         data: {
           email,
           storeName: storeName || "Vendedor Nuevo",
           phoneNumber,
-          // ❌ BORRAMOS userId: user.id AQUÍ TAMBIÉN
         },
       });
     }
@@ -49,7 +45,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json(result);
 
   } catch (error) {
-    console.error("❌ ERROR AL GUARDAR PERFIL:", error);
+    console.error("Error al guardar perfil:", error); // ✅ MANTENER (console.error)
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }

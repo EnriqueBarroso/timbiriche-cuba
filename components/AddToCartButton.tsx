@@ -2,7 +2,7 @@
 
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-import { toast } from "sonner"; // Asegúrate de tener instalado sonner, si no usa alert()
+import { toast } from "sonner";
 
 interface Props {
   product: {
@@ -10,7 +10,7 @@ interface Props {
     title: string;
     price: number;
     images: { url: string }[];
-    currency?: string; // Hacemos opcional por si acaso
+    currency?: string;
   };
   compact?: boolean;
 }
@@ -25,14 +25,12 @@ export default function AddToCartButton({ product }: Props) {
     addItem({
        id: String(product.id),
        title: product.title,
-       price: product.price / 100, // DB en centavos -> App en dólares
+       price: product.price / 100, // Convertir de centavos a dólares
        image: product.images[0]?.url || "/placeholder.jpg",
-       quantity: 1,       // 👈 FALTABA ESTO
-       currency: "USD"    // 👈 FALTABA ESTO (O usa product.currency si lo tienes)
+       quantity: 1,
+       currency: "USD"
     });
 
-    // Feedback visual
-    // Si no tienes 'sonner' instalado, cambia esto por console.log o alert
     toast.success("Añadido al carrito");
   };
   

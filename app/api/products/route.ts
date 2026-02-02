@@ -13,17 +13,6 @@ export async function POST(request: Request) {
     const email = user.emailAddresses[0].emailAddress;
     const body = await request.json();
     
-    // --- 🔍 DEBUGGING: VER QUÉ LLEGA ---
-    console.log("------------------------------------------------");
-    console.log("📥 DATOS RECIBIDOS EN EL SERVIDOR:");
-    console.log("Título:", body.title);
-    console.log("Precio:", body.price);
-    console.log("Categoría:", body.category);
-    console.log("Imagen URL:", body.imageUrl);
-    console.log("Email Usuario:", email);
-    console.log("------------------------------------------------");
-    // ------------------------------------
-
     const { title, description, price, category, imageUrl } = body;
 
     // Validación estricta
