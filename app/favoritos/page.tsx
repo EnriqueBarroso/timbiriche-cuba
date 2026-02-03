@@ -20,9 +20,9 @@ export default function FavoritesPage() {
         </p>
         <Link 
           href="/" 
-          className="bg-blue-600 text-white px-8 py-3 rounded-full font-medium hover:bg-blue-700 transition-colors"
+          className="bg-blue-600 text-white px-8 py-3 rounded-full font-medium hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
         >
-          Explorar
+          Explorar Productos
         </Link>
       </div>
     );
@@ -37,15 +37,28 @@ export default function FavoritesPage() {
             <ArrowLeft size={20} />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">
-            Mis Favoritos ({favorites.length})
+            Mis Favoritos <span className="text-blue-600">({favorites.length})</span>
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {favorites.map((item) => (
-            // Reutilizamos la tarjeta, le pasamos el item como 'product'
-            <ProductCard key={item.id} product={item} />
-          ))}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          {favorites.map((item) => {
+            // ✅ ADAPTAMOS el formato para que ProductCard lo entienda
+            const adaptedProduct = {
+              id: item.id,
+              title: item.title,
+              price: item.price, // Ya está en centavos desde FavoritesContext
+              currency: item.currency || "USD",
+              images: [{ url: item.image }], // ← Convertimos string a array de objetos
+              seller: {
+                storeName: item.seller?.name || "Vendedor",
+                phoneNumber: item.seller?.phone || "",
+                avatar: item.seller?.avatar || undefined,
+              }
+            };
+            
+            return <ProductCard key={item.id} product={adaptedProduct} />;
+          })}
         </div>
       </div>
     </div>
