@@ -1,40 +1,14 @@
-import { prisma } from "@/lib/prisma"
+// app/page.tsx
 import { ProductCard } from "@/components/ProductCard"
 import { HeroSection } from "@/components/HeroSection"
 import { CategoriesBar } from "@/components/CategoriesBar"
 import { SearchBar } from "@/components/SearchBar"
 import { Search, X } from "lucide-react"
 import Link from "next/link"
+// 👇 1. IMPORTAMOS LA FUNCIÓN BUENA (Con paginación automática)
+import { getProducts } from "@/lib/actions" 
 
-// ✅ FUNCIÓN PARA OBTENER PRODUCTOS (Server Side)
-async function getProducts(search?: string, category?: string) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = {};
-
-  if (search) {
-    where.OR = [
-      { title: { contains: search, mode: "insensitive" } },
-      { description: { contains: search, mode: "insensitive" } },
-    ];
-  }
-
-  if (category && category !== "all") {
-    where.category = category;
-  }
-
-  try {
-    return await prisma.product.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      include: {
-        images: true,
-        seller: true,
-      },
-    });
-  } catch (error) {
-    return [];
-  }
-}
+// ❌ AQUÍ BORRAMOS LA FUNCIÓN LOCAL "async function getProducts..." QUE TENÍAS
 
 export default async function Home({
   searchParams,
@@ -42,19 +16,25 @@ export default async function Home({
   searchParams: Promise<{ search?: string; category?: string }>;
 }) {
   const params = await searchParams;
-  const products = await getProducts(params.search, params.category);
+  
+  // 👇 2. USAMOS LA FUNCIÓN IMPORTADA
+  // Esta limita a 12 productos automáticamente y es más segura
+  const products = await getProducts({
+    query: params.search,
+    category: params.category
+  });
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       
-      {/* 1. Carrusel de Categorías (Pegajoso debajo del Navbar) */}
+      {/* 1. Carrusel de Categorías */}
       <CategoriesBar />
       
-      {/* 2. Barra de Búsqueda (Solo Móvil) */}
+      {/* 2. Barra de Búsqueda (Móvil) */}
       <SearchBar />
       
       <main className="min-h-screen pb-20">
-        {/* 3. Hero Section (Solo se muestra si no hay búsqueda/categoría activa) */}
+        {/* 3. Hero Section (Solo si no hay filtros activos) */}
         {!params.search && !params.category && (
            <HeroSection />
         )}

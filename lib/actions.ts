@@ -217,3 +217,36 @@ export async function updateProduct(productId: string, data: {
   revalidatePath(`/product/${productId}`);
   revalidatePath("/mis-publicaciones");
 }
+
+// 6. ACTUALIZAR PERFIL DE VENDEDOR
+export async function updateProfile(data: { storeName: string; phoneNumber: string; avatar?: string }) {
+  const user = await currentUser();
+  if (!user) throw new Error("No autorizado");
+
+  const email = user.emailAddresses[0].emailAddress;
+
+  // Actualizamos o creamos el vendedor
+  await prisma.seller.upsert({
+    where: { email },
+    update: {
+      storeName: data.storeName,
+      phoneNumber: data.phoneNumber,
+      // Solo actualizamos avatar si viene uno nuevo
+      ...(data.avatar && { avatar: data.avatar }),
+    },
+    create: {
+      email,
+      storeName: data.storeName,
+      phoneNumber: data.phoneNumber,
+      avatar: data.avatar || user.imageUrl,
+      isVerified: false,
+      id: user.id, 
+    },
+  });
+
+  // Revalidamos rutas clave
+  revalidatePath("/perfil");
+  revalidatePath("/vender");
+  revalidatePath("/mis-publicaciones");
+  // Si tienes una página de perfil pública, revalídala también si es necesario
+}
