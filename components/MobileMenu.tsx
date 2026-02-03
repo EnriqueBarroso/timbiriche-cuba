@@ -1,93 +1,172 @@
-// components/MobileMenu.tsx
-"use client"
+"use client";
 
-import { Menu, Home, Package, Truck, Info, Phone, User, Heart, Settings, LogOut } from "lucide-react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTrigger,
-  SheetFooter
-} from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Menu, HelpCircle, FileText, ChevronRight, LayoutGrid, Zap, Truck, User, LogIn } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { CATEGORIES } from "@/lib/categories";
+import { useUser, SignedOut, SignInButton } from "@clerk/nextjs";
 
 export default function MobileMenu() {
-  return (
-    <Sheet>
-      {/* Botón Hamburguesa Mejorado */}
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden hover:bg-gray-100 rounded-full">
-          <Menu className="h-6 w-6 text-gray-800" />
-        </Button>
-      </SheetTrigger>
+  const [open, setOpen] = useState(false);
+  const { user, isSignedIn } = useUser();
 
-      {/* El Panel Lateral */}
-      <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 flex flex-col bg-gray-50 border-r-gray-200">
+  const categoriesList = CATEGORIES.filter(c => c.id !== 'all');
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <button className="p-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-full lg:hidden transition-colors">
+          <Menu size={24} />
+        </button>
+      </SheetTrigger>
+      
+      {/* Quitamos el padding por defecto (p-0) para que la cabecera toque los bordes */}
+      <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 border-r-0 flex flex-col bg-gray-50/50">
         
-        {/* 1. CABECERA DE PERFIL (Estilo App) */}
-        <SheetHeader className="bg-white p-6 border-b border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">
-              <User className="w-6 h-6" />
+        {/* 1. CABECERA CON GRADIENTE */}
+        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 pb-8 text-white">
+          <SheetHeader className="text-left">
+            <SheetTitle className="text-2xl font-black text-white flex items-center gap-2">
+              Timbi<span className="text-blue-200">riche</span>
+            </SheetTitle>
+          </SheetHeader>
+          
+          <div className="mt-6 flex items-center gap-3">
+            <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm border border-white/30">
+              {isSignedIn && user?.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={user.imageUrl} alt="Avatar" className="h-full w-full rounded-full object-cover" />
+              ) : (
+                <User className="text-blue-100" size={24} />
+              )}
             </div>
-            <div className="text-left">
-              <p className="text-sm text-gray-500 font-medium">Bienvenido,</p>
-              <h3 className="text-gray-900 font-bold text-lg leading-none">Invitado</h3>
+            <div>
+               {isSignedIn ? (
+                 <>
+                   <p className="text-blue-100 text-xs font-medium uppercase tracking-wider">Hola de nuevo</p>
+                   <p className="font-bold text-lg leading-tight truncate max-w-[180px]">
+                     {user?.firstName || "Usuario"}
+                   </p>
+                 </>
+               ) : (
+                 <SignedOut>
+                    <p className="text-blue-100 text-xs font-medium mb-1">Bienvenido a Timbiriche</p>
+                    <SignInButton mode="modal">
+                      <button onClick={() => setOpen(false)} className="flex items-center gap-2 bg-white text-blue-700 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-blue-50 transition-colors shadow-sm">
+                        <LogIn size={14} /> Iniciar Sesión
+                      </button>
+                    </SignInButton>
+                 </SignedOut>
+               )}
             </div>
           </div>
-          <Button className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 shadow-sm shadow-blue-200">
-            Iniciar Sesión / Registrarse
-          </Button>
-        </SheetHeader>
-        
-        {/* 2. CUERPO DEL MENÚ (Scrollable) */}
-        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-          
-          <p className="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-2">Explorar</p>
-          
-          <MenuItem href="/" icon={<Home className="w-5 h-5 text-gray-500" />} label="Inicio" />
-          <MenuItem href="/ofertas" icon={<Heart className="w-5 h-5 text-red-500" />} label="Ofertas Flash" />
-          <MenuItem href="/categorias" icon={<Package className="w-5 h-5 text-blue-500" />} label="Todas las Categorías" />
-          
-          <div className="my-4 border-t border-gray-200/50 mx-4" /> {/* Separador sutil */}
-          
-          <p className="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Servicios</p>
-          
-          <MenuItem href="/envios" icon={<Truck className="w-5 h-5 text-green-600" />} label="Envíos a Cuba" />
-          <MenuItem href="/vender" icon={<StoreIcon className="w-5 h-5 text-purple-600" />} label="Vender Producto" />
         </div>
 
-        {/* 3. FOOTER FIJO (Ayuda) */}
-        <SheetFooter className="bg-white p-4 border-t border-gray-100">
-          <Link href="/ayuda" className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl w-full border border-gray-100 hover:bg-gray-100 transition-colors">
-             <div className="bg-white p-2 rounded-full shadow-sm">
-                <Phone className="w-4 h-4 text-gray-700" />
-             </div>
-             <div>
-               <p className="text-xs text-gray-500 font-medium">Soporte 24/7</p>
-               <p className="text-sm font-bold text-gray-900">Contáctanos</p>
-             </div>
-          </Link>
-        </SheetFooter>
+        {/* CONTENIDO CON SCROLL */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          
+          {/* SECCIÓN 1: ACCIONES RÁPIDAS */}
+          <div className="space-y-3">
+            {/* OFERTAS FLASH (Estilo Vibrante) */}
+            <Link
+                href="/ofertas"
+                onClick={() => setOpen(false)}
+                className="relative overflow-hidden flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/20 group hover:scale-[1.02] transition-transform"
+            >
+                <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/20 rounded-full blur-2xl"></div>
+                
+                <div className="flex items-center gap-4 relative z-10">
+                    <div className="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm">
+                        <Zap size={20} className="text-yellow-300 fill-yellow-300" />
+                    </div>
+                    <div>
+                        <p className="font-bold text-lg leading-none">Ofertas Flash</p>
+                        <p className="text-orange-100 text-xs mt-1 font-medium">¡Descuentos hoy!</p>
+                    </div>
+                </div>
+                <ChevronRight size={20} className="text-white/70 relative z-10" />
+            </Link>
 
+            {/* ENVÍOS A CUBA */}
+            <Link
+                href="/envios"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between p-3 rounded-2xl bg-white border border-blue-100 shadow-sm hover:border-blue-300 hover:shadow-md transition-all group"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="bg-blue-50 text-blue-600 p-2.5 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <Truck size={20} />
+                    </div>
+                    <span className="font-bold text-gray-800">Envíos a Cuba</span>
+                </div>
+            </Link>
+          </div>
+
+          {/* SECCIÓN 2: CATEGORÍAS */}
+          <div>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1 flex items-center gap-2">
+              <LayoutGrid size={12} /> Categorías
+            </h3>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <Link
+                href="/categorias"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between p-3.5 hover:bg-gray-50 transition-colors border-b border-gray-100"
+              >
+                <span className="font-medium text-gray-700 text-sm">Ver todas las categorías</span>
+                <ChevronRight size={16} className="text-gray-300" />
+              </Link>
+
+              {categoriesList.map((cat) => {
+                const Icon = cat.icon;
+                return (
+                  <Link
+                    key={cat.id}
+                    href={`/?category=${cat.id}`}
+                    onClick={() => setOpen(false)}
+                    className="flex items-center justify-between p-3.5 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0 group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon size={18} className="text-gray-400 group-hover:text-blue-600 transition-colors" />
+                      <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900">
+                        {cat.label}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* SECCIÓN 3: LEGAL */}
+          <div className="pb-8">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-2">
+              <Link
+                href="/ayuda"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <HelpCircle size={18} className="text-gray-400" />
+                <span className="text-sm font-medium">Ayuda y Soporte</span>
+              </Link>
+              <Link
+                href="/terminos"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <FileText size={18} className="text-gray-400" />
+                <span className="text-sm font-medium">Términos y Condiciones</span>
+              </Link>
+            </div>
+            
+            <p className="text-center text-[10px] text-gray-400 mt-6">
+              © 2024 Timbiriche Cuba v1.0
+            </p>
+          </div>
+
+        </div>
       </SheetContent>
     </Sheet>
-  )
-}
-
-// Sub-componente para limpiar el código repetitivo
-function MenuItem({ href, icon, label }: { href: string, icon: any, label: string }) {
-  return (
-    <Link href={href} className="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-white hover:shadow-sm rounded-xl transition-all active:scale-[0.98]">
-      {icon}
-      <span>{label}</span>
-    </Link>
-  )
-}
-
-function StoreIcon(props: any) {
-  return (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg>
-  )
+  );
 }
