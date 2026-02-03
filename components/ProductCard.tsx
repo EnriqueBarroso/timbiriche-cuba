@@ -13,13 +13,16 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const mainImage = product.images?.[0]?.url || "/placeholder.png";
-  
+
   const title = product.title || "Producto sin nombre";
   const price = product.price || 0;
   const displayPrice = price / 100;
   const currency = product.currency || "USD";
   const sellerName = product.seller?.storeName || product.seller?.name || "Vendedor";
   const sellerPhone = product.seller?.phoneNumber || "";
+  const cleanPhone = sellerPhone.replace(/\D/g, ''); // Eliminar todo lo que no sea dígito
+  const hasValidPhone = cleanPhone.length >= 8; // Mínimo 8 dígitos para ser válido
+
 
   const favoriteData = {
     id: product.id,
@@ -31,8 +34,8 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   const whatsappMessage = `Hola, vi tu anuncio en Timbiriche: *${title}*. ¿Sigue disponible?`;
-  const whatsappLink = sellerPhone 
-    ? `https://wa.me/${sellerPhone.replace(/\D/g,'')}?text=${encodeURIComponent(whatsappMessage)}` 
+  const whatsappLink = hasValidPhone
+    ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`
     : "#";
 
   const handleContactClick = (e: React.MouseEvent) => {
@@ -44,20 +47,20 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-100 transition-all duration-300 hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-1">
-      
+
       {/* Imagen del Producto */}
       <div className="relative aspect-square overflow-hidden bg-gray-100">
         <Link href={`/product/${product.id}`} className="block h-full w-full">
-          <Image 
-            src={mainImage} 
-            alt={title} 
-            fill 
+          <Image
+            src={mainImage}
+            alt={title}
+            fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105" 
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             priority={false}
           />
         </Link>
-        
+
         {/* Botón de Favoritos */}
         <div className="absolute right-2 top-2 md:right-3 md:top-3 z-10">
           <FavoriteButton product={favoriteData} />
@@ -66,7 +69,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
       {/* Contenido de la Card */}
       <div className="flex flex-1 flex-col p-3 md:p-4">
-        
+
         {/* Título */}
         <Link href={`/product/${product.id}`}>
           <h3 className="mb-2 line-clamp-2 text-[13px] md:text-sm font-semibold leading-snug text-gray-800 min-h-[2.6em] hover:text-blue-600 transition-colors">
@@ -94,18 +97,18 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Botón de Contacto - Ahora ocupa todo el ancho */}
         <div className="mt-auto">
-          {sellerPhone ? (
-            <a 
-              href={whatsappLink} 
-              target="_blank" 
-              rel="noopener noreferrer" 
+          {hasValidPhone ? (
+            <a
+              href={whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex w-full items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-[#25D366] py-3 md:py-2.5 text-[13px] md:text-sm font-semibold text-white transition-all hover:bg-[#20bd5a] active:scale-95 shadow-sm"
             >
               <MessageCircle size={16} className="md:w-[18px] md:h-[18px] shrink-0" />
               <span>Contactar</span>
             </a>
           ) : (
-            <button 
+            <button
               onClick={handleContactClick}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-100 text-gray-400 text-[13px] md:text-sm font-semibold cursor-not-allowed py-3 md:py-2.5"
             >

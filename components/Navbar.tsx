@@ -172,6 +172,13 @@ function NavbarContent() {
             >
               <Package className="h-5 w-5" /> Mis Publicaciones
             </Link>
+            <Link
+              href="/perfil"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-600 font-medium"
+            >
+              <User className="h-5 w-5" /> Mi Perfil
+            </Link>
           </SignedIn>
 
           <Link

@@ -13,39 +13,50 @@ export async function PATCH(request: Request) {
 
     const email = user.emailAddresses[0].emailAddress;
     const body = await request.json();
-    const { storeName, phoneNumber } = body;
+    const { storeName, phoneNumber, avatar } = body;
 
-    // Buscamos si existe
-    const existingSeller = await prisma.seller.findUnique({
-      where: { email },
-    });
-
-    let result;
-
-    if (existingSeller) {
-      // Actualizar vendedor existente
-      result = await prisma.seller.update({
-        where: { email },
-        data: {
-          storeName,
-          phoneNumber,
-        },
-      });
-    } else {
-      // Crear nuevo vendedor
-      result = await prisma.seller.create({
-        data: {
-          email,
-          storeName: storeName || "Vendedor Nuevo",
-          phoneNumber,
-        },
-      });
+    // ✅ VALIDACIONES
+    if (!storeName || !phoneNumber) {
+      return NextResponse.json(
+        { error: "Nombre de tienda y teléfono son obligatorios" },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json(result);
+    // ✅ Validar teléfono (mínimo 8 dígitos)
+    const cleanPhone = phoneNumber.replace(/\D/g, '');
+    if (cleanPhone.length < 8) {
+      return NextResponse.json(
+        { error: "El teléfono debe tener al menos 8 dígitos" },
+        { status: 400 }
+      );
+    }
+
+    // ✅ UPSERT: Crear o actualizar en una sola operación
+    const seller = await prisma.seller.upsert({
+      where: { email },
+      update: {
+        storeName,
+        phoneNumber,
+        ...(avatar && { avatar }), // Solo actualiza avatar si viene en el body
+      },
+      create: {
+        id: user.id, // ← Importante: mantener consistencia con Clerk
+        email,
+        storeName,
+        phoneNumber,
+        avatar: avatar || user.imageUrl,
+        isVerified: false,
+      },
+    });
+
+    return NextResponse.json({ success: true, seller });
 
   } catch (error) {
-    console.error("Error al guardar perfil:", error); // ✅ MANTENER (console.error)
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+    console.error("Error al guardar perfil:", error);
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 }

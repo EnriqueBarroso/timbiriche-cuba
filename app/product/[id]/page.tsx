@@ -42,10 +42,10 @@ export default async function ProductPage({ params }: Props) {
 
   const imagesList = product.images.map(img => img.url)
   const priceDollars = (product.price / 100).toFixed(2)
-
+  
   const rawPhone = product.seller?.phoneNumber || '';
   const phone = rawPhone.replace(/\D/g, '');
-  const hasPhone = phone.length > 0;
+  const hasPhone = phone.length >= 8;
   const whatsappUrl = hasPhone
     ? `https://wa.me/${phone}?text=${encodeURIComponent(`Hola, vi tu anuncio *${product.title}* en Timbiriche y me interesa.`)}`
     : '#';
