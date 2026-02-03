@@ -136,7 +136,15 @@ function NavbarContent() {
                     </button>
                   </Link>
                 )}
-                <UserButton afterSignOutUrl="/" />
+                <UserButton afterSignOutUrl="/">
+                  <UserButton.MenuItems>
+                    <UserButton.Link
+                      label="Mi Perfil"
+                      labelIcon={<User size={16} />}
+                      href="/perfil"
+                    />
+                  </UserButton.MenuItems>
+                </UserButton>
               </div>
             </SignedIn>
 
@@ -171,13 +179,6 @@ function NavbarContent() {
               className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-600 font-medium transition-colors"
             >
               <Package className="h-5 w-5" /> Mis Publicaciones
-            </Link>
-            <Link
-              href="/perfil"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-600 font-medium"
-            >
-              <User className="h-5 w-5" /> Mi Perfil
             </Link>
           </SignedIn>
 
