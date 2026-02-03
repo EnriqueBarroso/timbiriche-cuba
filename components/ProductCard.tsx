@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
 import FavoriteButton from "@/components/FavoriteButton";
-import { getProductImage } from "@/lib/images";
 import { toast } from "sonner";
 
 interface ProductCardProps {
@@ -15,7 +14,9 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
-  const mainImage = getProductImage(product);
+  
+  // ✅ CORREGIDO: Obtener imagen sin función auxiliar
+  const mainImage = product.images?.[0]?.url || "/placeholder.png";
   
   const title = product.title || "Producto sin nombre";
   const price = product.price || 0;

@@ -29,7 +29,7 @@ export function SearchBar() {
         <input
           type="text"
           placeholder="¿Qué estás buscando?"
-          className="w-full rounded-full border border-gray-200 bg-gray-50 py-3 pl-11 pr-11 text-sm outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+          className="w-full rounded-full border border-gray-200 bg-gray-50 py-3 pl-11 pr-11 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
