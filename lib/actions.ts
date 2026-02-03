@@ -111,7 +111,7 @@ export async function createProduct(data: {
   currency: string;
   category: string;
   description: string;
-  image: string;
+  images: string[]; // ← CAMBIO: array en vez de string
 }) {
   const user = await currentUser();
   
@@ -132,15 +132,11 @@ export async function createProduct(data: {
       avatar: user.imageUrl,
       phoneNumber: "", 
       isVerified: false,
-      // IMPORTANTE: Para que getMyProducts funcione directo con userId, 
-      // idealmente el ID del seller debería ser el ID de Clerk.
-      // Si usas cuid() por defecto en Prisma, la función getMyProducts de arriba
-      // debería buscar por email primero (como hace deleteProduct).
-      id: user.id // Forzamos que el ID del Seller sea el ID de Clerk (Si Prisma lo permite)
+      id: user.id
     },
   });
 
-  // B. CREACIÓN DEL PRODUCTO
+  // B. CREACIÓN DEL PRODUCTO CON MÚLTIPLES IMÁGENES
   await prisma.product.create({
     data: {
       title: data.title,
@@ -149,9 +145,7 @@ export async function createProduct(data: {
       category: data.category,
       sellerId: seller.id,
       images: {
-        create: {
-          url: data.image,
-        },
+        create: data.images.map((url) => ({ url })), // ← CAMBIO: map para crear múltiples
       },
     },
   });
