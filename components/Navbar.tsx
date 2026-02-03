@@ -7,7 +7,9 @@ import {
   Search,
   Heart,
   Store,
-  Plus
+  Plus,
+  User,
+  Settings
 } from "lucide-react";
 import {
   SignedIn,
@@ -83,7 +85,7 @@ function NavbarContent() {
             <Plus className="h-6 w-6" />
           </Link>
 
-          {/* 2. Mis Publicaciones (Solo si logueado) */}
+          {/* 2. Mis Publicaciones */}
           <SignedIn>
             <Link 
               href="/mis-publicaciones" 
@@ -99,10 +101,24 @@ function NavbarContent() {
             <Heart className={`h-6 w-6 ${favorites.length > 0 ? "fill-red-500 text-red-500" : ""}`} />
           </Link>
 
-          {/* 4. Usuario / Login */}
+          {/* 4. Usuario / Login (CON MENÚ PERSONALIZADO) */}
           <div className="ml-1">
             <SignedIn>
-              <UserButton afterSignOutUrl="/" />
+              <UserButton afterSignOutUrl="/">
+                {/* 👇 ESTO AÑADE TU PERFIL AL MENÚ DESPLEGABLE */}
+                <UserButton.MenuItems>
+                  <UserButton.Action 
+                    label="Mi Perfil de Vendedor" 
+                    labelIcon={<User className="w-4 h-4" />}
+                    onClick={() => router.push('/perfil')} 
+                  />
+                  <UserButton.Action 
+                    label="Configurar Cuenta" 
+                    labelIcon={<Settings className="w-4 h-4" />}
+                    onClick={() => router.push('/perfil')} 
+                  />
+                </UserButton.MenuItems>
+              </UserButton>
             </SignedIn>
           </div>
 
