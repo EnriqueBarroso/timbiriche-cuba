@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, MessageCircle, BadgeCheck, Star, Clock, Calendar, Edit, Trash2 } from 'lucide-react'
 import ProductImageGallery from '@/components/ProductImageGallery'
-import AddToCartButton from '@/components/AddToCartButton'
 import FavoriteButton from "@/components/FavoriteButton"
 import { Metadata } from "next"
 import { currentUser } from "@clerk/nextjs/server"
@@ -221,10 +220,6 @@ export default async function ProductPage({ params }: Props) {
             </>
           ) : (
             <>
-              <div className="w-12 md:w-16 flex-shrink-0 h-12 md:h-14">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                <AddToCartButton product={product as any} compact={true} />
-              </div>
 
               {hasPhone ? (
                 // 🔥 AQUÍ ESTABA EL ERROR: Faltaba la etiqueta <a> de apertura
@@ -235,7 +230,7 @@ export default async function ProductPage({ params }: Props) {
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg h-12 md:h-14 text-sm md:text-base"
                 >
                   <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
-                  <span className="truncate">Contactar</span>
+                  <span className="truncate">Contactar Vendedor</span>
                 </a>
               ) : (
                 <button

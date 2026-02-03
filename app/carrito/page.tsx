@@ -2,23 +2,21 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Trash2, ArrowLeft, MessageCircle, ShoppingBag, Plus, Minus } from "lucide-react"; // Añadí Plus y Minus
+import { Trash2, ArrowLeft, MessageCircle, ShoppingBag, Plus, Minus } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 
 export default function CartPage() {
-  // 1. Añadimos updateQuantity al destructuring
   const { items, removeItem, updateQuantity, cartTotal, clearCart } = useCart();
 
   const safeTotal = cartTotal || 0;
 
-  // --- GENERADOR DE PEDIDO WHATSAPP ---
+  // Generador de pedido WhatsApp
   const generateWhatsAppOrder = () => {
     if (items.length === 0) return "";
 
     let message = "Hola! 👋 Quiero realizar el siguiente pedido en Timbiriche:\n\n";
     
     items.forEach((item) => {
-      // Intentamos obtener el nombre del vendedor si existe
       const sellerInfo = item.sellerName ? ` (Tienda: ${item.sellerName})` : "";
       message += `▪️ ${item.quantity}x *${item.title}* ${sellerInfo} - $${(item.price * item.quantity).toFixed(2)}\n`;
     });
@@ -26,12 +24,11 @@ export default function CartPage() {
     message += `\n💰 *TOTAL ESTIMADO: $${safeTotal.toFixed(2)}*`;
     message += `\n\nQuedo a la espera para coordinar la entrega. Gracias!`;
 
-    // ⚠️ RECUERDA CAMBIAR ESTE NÚMERO POR EL TUYO REAL
     const adminPhone = "5300000000"; 
     return `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
   };
 
-  // --- ESTADO VACÍO ---
+  // Estado vacío
   if (items.length === 0) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-4 bg-gray-50">
@@ -52,7 +49,7 @@ export default function CartPage() {
     );
   }
 
-  // --- CARRITO CON PRODUCTOS ---
+  // Carrito con productos
   return (
     <div className="min-h-screen bg-gray-50 py-8 md:py-12">
       <div className="max-w-4xl mx-auto px-4">
@@ -66,15 +63,15 @@ export default function CartPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* LISTA DE ITEMS (Izquierda) */}
+          {/* Lista de items */}
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
               <div 
                 key={item.id} 
                 className="flex gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100 transition-transform hover:shadow-md"
               >
-                {/* Imagen */}
-                <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100 border border-gray-200">
+                {/* Imagen - Ligeramente más grande en móvil */}
+                <div className="relative h-28 w-28 md:h-24 md:w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100 border border-gray-200">
                   <Image
                     src={item.image || "https://placehold.co/600x400"}
                     alt={item.title}
@@ -94,36 +91,36 @@ export default function CartPage() {
                   
                   <div className="flex items-center justify-between mt-3">
                     
-                    {/* 2. CONTROLES DE CANTIDAD (NUEVO) */}
+                    {/* Controles de cantidad - Botones más grandes para móvil */}
                     <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200">
-                        <button 
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="p-1.5 hover:bg-gray-200 rounded-l-lg text-gray-600 transition-colors"
-                            disabled={item.quantity <= 1}
-                        >
-                            <Minus size={14} />
-                        </button>
-                        <span className="w-8 text-center text-sm font-medium text-gray-900">{item.quantity}</span>
-                        <button 
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="p-1.5 hover:bg-gray-200 rounded-r-lg text-gray-600 transition-colors"
-                        >
-                            <Plus size={14} />
-                        </button>
+                      <button 
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        className="p-2 md:p-1.5 hover:bg-gray-200 rounded-l-lg text-gray-600 transition-colors"
+                        disabled={item.quantity <= 1}
+                      >
+                        <Minus size={16} className="md:w-3.5 md:h-3.5" />
+                      </button>
+                      <span className="w-10 md:w-8 text-center text-sm font-medium text-gray-900">{item.quantity}</span>
+                      <button 
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        className="p-2 md:p-1.5 hover:bg-gray-200 rounded-r-lg text-gray-600 transition-colors"
+                      >
+                        <Plus size={16} className="md:w-3.5 md:h-3.5" />
+                      </button>
                     </div>
                     
                     <div className="flex items-center gap-4">
-                        <span className="font-bold text-gray-900">
+                      <span className="font-bold text-gray-900">
                         ${(item.price * item.quantity).toFixed(2)}
-                        </span>
-                        
-                        <button 
+                      </span>
+                      
+                      <button 
                         onClick={() => removeItem(item.id)}
                         className="text-gray-400 hover:text-red-500 transition-colors"
                         title="Eliminar producto"
-                        >
+                      >
                         <Trash2 size={18} />
-                        </button>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -131,16 +128,16 @@ export default function CartPage() {
             ))}
 
             <div className="flex justify-end pt-2">
-                <button 
+              <button 
                 onClick={clearCart}
                 className="text-sm text-red-500 hover:text-red-700 hover:underline flex items-center gap-1 transition-colors"
-                >
+              >
                 <Trash2 size={14} /> Vaciar todo el carrito
-                </button>
+              </button>
             </div>
           </div>
 
-          {/* RESUMEN DE ORDEN (Derecha / Sticky) */}
+          {/* Resumen de orden */}
           <div className="lg:col-span-1">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Resumen</h3>
@@ -163,7 +160,7 @@ export default function CartPage() {
                 </div>
               </div>
 
-              {/* BOTÓN WHATSAPP */}
+              {/* Botón WhatsApp */}
               <a 
                 href={generateWhatsAppOrder()}
                 target="_blank"

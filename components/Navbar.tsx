@@ -11,7 +11,6 @@ import {
   Menu,
   X,
   ShoppingBag,
-  ShoppingCart,
   Package
 } from "lucide-react";
 import {
@@ -20,7 +19,6 @@ import {
   SignedOut,
   UserButton
 } from "@clerk/nextjs";
-import { useCart } from "@/contexts/CartContext";
 import { useUser } from "@clerk/nextjs";
 import { isAdmin } from '@/lib/utils';
 import { useFavorites } from "@/contexts/FavoritesContext";
@@ -31,18 +29,11 @@ function NavbarContent() {
   const [query, setQuery] = useState(searchParams.get("search") || "");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const { cartCount } = useCart();
-  const [mounted, setMounted] = useState(false);
-
   const { user } = useUser();
   const userIsAdmin = isAdmin(user?.primaryEmailAddress?.emailAddress);
 
   const { favorites } = useFavorites();
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    setMounted(true);
-  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,17 +112,6 @@ function NavbarContent() {
               </button>
             </Link>
           </SignedIn>
-
-          <Link href="/carrito">
-            <button className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 transition-colors relative group">
-              <ShoppingCart className="h-5 w-5 group-hover:text-blue-600 transition-colors" />
-              {mounted && cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-sm ring-2 ring-white animate-in zoom-in">
-                  {cartCount}
-                </span>
-              )}
-            </button>
-          </Link>
 
           <Link href="/favoritos">
             <button className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 transition-colors relative group">

@@ -1,9 +1,8 @@
 "use client";
 
-import { MessageCircle, ShoppingCart } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "@/contexts/CartContext";
 import FavoriteButton from "@/components/FavoriteButton";
 import { toast } from "sonner";
 
@@ -13,9 +12,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addItem } = useCart();
-  
-  // ✅ CORREGIDO: Obtener imagen sin función auxiliar
   const mainImage = product.images?.[0]?.url || "/placeholder.png";
   
   const title = product.title || "Producto sin nombre";
@@ -39,22 +35,11 @@ export function ProductCard({ product }: ProductCardProps) {
     ? `https://wa.me/${sellerPhone.replace(/\D/g,'')}?text=${encodeURIComponent(whatsappMessage)}` 
     : "#";
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    addItem({ 
-      id: product.id, 
-      title, 
-      price, 
-      image: mainImage, 
-      quantity: 1, 
-      currency 
-    });
-
-    toast.success("¡Producto añadido!", {
-      duration: 2000,
-    });
+  const handleContactClick = (e: React.MouseEvent) => {
+    if (!sellerPhone) {
+      e.preventDefault();
+      toast.error("Este vendedor no tiene WhatsApp configurado");
+    }
   };
 
   return (
@@ -82,14 +67,14 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Contenido de la Card */}
       <div className="flex flex-1 flex-col p-3 md:p-4">
         
-        {/* Título - Más grande en móvil */}
+        {/* Título */}
         <Link href={`/product/${product.id}`}>
           <h3 className="mb-2 line-clamp-2 text-[13px] md:text-sm font-semibold leading-snug text-gray-800 min-h-[2.6em] hover:text-blue-600 transition-colors">
             {title}
           </h3>
         </Link>
 
-        {/* Precio - Más prominente */}
+        {/* Precio */}
         <div className="mb-3 flex items-baseline gap-1">
           <span className="text-xl md:text-2xl font-bold text-gray-900">
             ${displayPrice.toFixed(2)}
@@ -97,7 +82,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <span className="text-xs font-medium text-gray-500">{currency}</span>
         </div>
 
-        {/* Vendedor - Más compacto en móvil */}
+        {/* Vendedor */}
         <div className="mb-3 md:mb-4 flex items-center gap-2">
           <div className="relative h-6 w-6 overflow-hidden rounded-full bg-gray-100 shrink-0">
             <div className="flex h-full w-full items-center justify-center bg-blue-100 text-[10px] font-bold text-blue-600">
@@ -107,34 +92,26 @@ export function ProductCard({ product }: ProductCardProps) {
           <span className="truncate text-xs text-gray-500">{sellerName}</span>
         </div>
 
-        {/* Botones de Acción - Optimizados para móvil */}
-        <div className="mt-auto flex gap-2">
+        {/* Botón de Contacto - Ahora ocupa todo el ancho */}
+        <div className="mt-auto">
           {sellerPhone ? (
             <a 
               href={whatsappLink} 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="flex flex-1 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-[#25D366] py-3 md:py-2.5 text-[13px] md:text-sm font-semibold text-white transition-all hover:bg-[#20bd5a] active:scale-95 shadow-sm"
+              className="flex w-full items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-[#25D366] py-3 md:py-2.5 text-[13px] md:text-sm font-semibold text-white transition-all hover:bg-[#20bd5a] active:scale-95 shadow-sm"
             >
               <MessageCircle size={16} className="md:w-[18px] md:h-[18px] shrink-0" />
-              <span className="truncate">Chat</span>
+              <span>Contactar</span>
             </a>
           ) : (
             <button 
-              disabled 
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gray-100 text-gray-400 text-[13px] md:text-sm font-semibold cursor-not-allowed py-3 md:py-2.5"
+              onClick={handleContactClick}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-100 text-gray-400 text-[13px] md:text-sm font-semibold cursor-not-allowed py-3 md:py-2.5"
             >
               Sin WhatsApp
             </button>
           )}
-
-          <button 
-            onClick={handleAddToCart} 
-            className="flex h-11 w-11 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-all hover:bg-blue-100 active:scale-95 border border-blue-100" 
-            title="Añadir al carrito"
-          >
-            <ShoppingCart size={18} />
-          </button>
         </div>
       </div>
     </article>
