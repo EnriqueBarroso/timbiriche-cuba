@@ -25,6 +25,7 @@ model Product {
   title       String
   description String
   price       Int
+  currency    String   @default("USD")
   category    String
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())

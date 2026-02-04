@@ -30,7 +30,7 @@ export async function getProducts({
   }
 
   if (category && category !== "all") {
-    where.category = category; 
+    where.category = category;
   }
 
   try {
@@ -62,7 +62,7 @@ export async function getMyProducts() {
   // OJO: Asumimos que tu lógica guarda el sellerId igual al userId de Clerk
   // Si no te salen productos, avísame y cambiamos esto para buscar por email
   return await prisma.product.findMany({
-    where: { sellerId: userId }, 
+    where: { sellerId: userId },
     orderBy: { createdAt: "desc" },
     include: {
       images: true,
@@ -73,7 +73,7 @@ export async function getMyProducts() {
 
 // 3. Borrar un producto (Solo si es mío)
 export async function deleteProduct(productId: string) {
-  const user = await currentUser(); 
+  const user = await currentUser();
   if (!user) return { error: "No autorizado" };
 
   const email = user.emailAddresses[0].emailAddress;
@@ -114,7 +114,7 @@ export async function createProduct(data: {
   images: string[]; // ← CAMBIO: array en vez de string
 }) {
   const user = await currentUser();
-  
+
   if (!user || !user.emailAddresses[0]) {
     throw new Error("Debes iniciar sesión para vender");
   }
@@ -125,12 +125,12 @@ export async function createProduct(data: {
   // A. AUTO-GENERACIÓN DE PERFIL DE VENDEDOR
   const seller = await prisma.seller.upsert({
     where: { email: email },
-    update: {}, 
+    update: {},
     create: {
       email: email,
       storeName: userName,
       avatar: user.imageUrl,
-      phoneNumber: "", 
+      phoneNumber: "",
       isVerified: false,
       id: user.id
     },
@@ -141,11 +141,12 @@ export async function createProduct(data: {
     data: {
       title: data.title,
       price: Math.round(data.price),
-      description: `[${data.currency}] ${data.description}`, 
+      currency: data.currency,  // 👈 AGREGAR esta línea
+      description: data.description,  // 👈 SIN el hack de [USD]
       category: data.category,
       sellerId: seller.id,
       images: {
-        create: data.images.map((url) => ({ url })), // ← CAMBIO: map para crear múltiples
+        create: data.images.map((url) => ({ url })),
       },
     },
   });
@@ -158,9 +159,10 @@ export async function createProduct(data: {
 export async function updateProduct(productId: string, data: {
   title: string;
   price: number;
+  currency: string;  // 👈 Agregar currency
   description: string;
   category: string;
-  imageUrl: string;
+  images: string[];  // 👈 Array de imágenes
   isActive: boolean;
 }) {
   const user = await currentUser();
@@ -183,34 +185,18 @@ export async function updateProduct(productId: string, data: {
     where: { id: productId },
     data: {
       title: data.title,
-      price: Math.round(data.price), // Convertir a centavos si tu DB lo requiere
+      price: Math.round(data.price),
+      currency: data.currency,  // 👈 Actualizar currency
       description: data.description,
       category: data.category,
-      isActive: data.isActive, // Asegúrate de tener este campo en tu schema.prisma, si no, bórralo
+      isActive: data.isActive,
+      // 3. Reemplazamos TODAS las imágenes
+      images: {
+        deleteMany: {},  // Borra las viejas
+        create: data.images.map((url) => ({ url })),  // Crea las nuevas
+      },
     },
   });
-
-  // 3. Actualizamos la imagen (Si cambió)
-  // Nota: Esto asume que actualizamos la primera imagen encontrada.
-  // Si tu lógica de imágenes es más compleja, avísame.
-  const firstImage = await prisma.productImage.findFirst({
-    where: { productId: productId }
-  });
-
-  if (firstImage) {
-    await prisma.productImage.update({
-      where: { id: firstImage.id },
-      data: { url: data.imageUrl }
-    });
-  } else if (data.imageUrl) {
-    // Si no tenía imagen y ahora sí, la creamos
-    await prisma.productImage.create({
-      data: {
-        url: data.imageUrl,
-        productId: productId
-      }
-    });
-  }
 
   // 4. Refrescamos caché
   revalidatePath("/");
@@ -240,7 +226,7 @@ export async function updateProfile(data: { storeName: string; phoneNumber: stri
       phoneNumber: data.phoneNumber,
       avatar: data.avatar || user.imageUrl,
       isVerified: false,
-      id: user.id, 
+      id: user.id,
     },
   });
 
