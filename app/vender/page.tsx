@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { MultiImageUpload } from "@/components/MultiImageUpload";
 import { createProduct } from "@/lib/actions";
-import { Loader2, DollarSign, Store, TrendingUp } from "lucide-react";
+import { Loader2, DollarSign, Store } from "lucide-react";
 import { toast } from "sonner";
 
 export default function VenderPage() {
@@ -29,21 +29,43 @@ export default function VenderPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.images.length === 0) return toast.error("¡Sube al menos 1 foto!");
+
+    if (formData.images.length === 0) {
+      return toast.error("¡Sube al menos 1 foto!");
+    }
 
     try {
       setIsLoading(true);
-      const profileRes = await fetch('/api/profile');
+
+      // Validación de perfil sin caché
+      const profileRes = await fetch('/perfil/check', {
+        cache: 'no-store',
+      });
+
+      if (!profileRes.ok) {
+        toast.error("Error al verificar perfil");
+        return;
+      }
+
       const profile = await profileRes.json();
 
-      if (!profile?.phoneNumber || profile.phoneNumber.trim().length < 8) {
+      // Debug: Ver qué devuelve la API
+      console.log("Profile response:", profile);
+
+      // Validar teléfono
+      const cleanPhone = profile.phoneNumber?.replace(/\D/g, '') || '';
+      console.log("Clean phone:", cleanPhone);
+
+      if (cleanPhone.length < 8) {
         toast.error("WhatsApp requerido", {
           description: "Configura tu número en el perfil para poder vender.",
+          duration: 5000,
         });
         router.push("/perfil?returnTo=/vender");
         return;
       }
 
+      // Crear producto
       await createProduct({
         title: formData.title,
         price: Number(formData.price),
@@ -55,8 +77,10 @@ export default function VenderPage() {
 
       toast.success("¡Producto publicado!");
       router.push("/");
+
     } catch (error) {
-      toast.error("Error al publicar");
+      console.error("Error al publicar:", error);
+      toast.error("Error al publicar producto");
     } finally {
       setIsLoading(false);
     }

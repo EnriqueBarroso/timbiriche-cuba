@@ -1,18 +1,44 @@
-// app/api/profile/check/route.ts
+// app/perfil/check/route.ts
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   const { userId } = await auth();
-  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+  const user = await currentUser();
+  
+  if (!userId || !user) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
 
-  const seller = await prisma.seller.findUnique({
-    where: { email: (await currentUser())?.emailAddresses[0].emailAddress },
-    select: { phoneNumber: true }
-  });
+  const email = user.emailAddresses[0].emailAddress;
 
-  return NextResponse.json({ 
-    hasPhone: !!(seller?.phoneNumber && seller.phoneNumber.length >= 8) 
-  });
+  try {
+    const seller = await prisma.seller.upsert({
+      where: { email: email },
+      update: {},
+      create: {
+        id: userId,
+        email: email,
+        storeName: user.firstName || "Mi Tienda",
+        avatar: user.imageUrl,
+        phoneNumber: "",
+        isVerified: false,
+      },
+      select: {
+        id: true,
+        email: true,
+        storeName: true,
+        phoneNumber: true,  // 👈 Devolver el número
+        avatar: true,
+        isVerified: true,
+      }
+    });
+
+    return NextResponse.json(seller);  // 👈 Devolver el objeto completo
+
+  } catch (error) {
+    console.error("Error en profile check:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 }

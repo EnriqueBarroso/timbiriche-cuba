@@ -9,8 +9,8 @@
     "lint": "next lint"
   },
   "prisma": {
-    "seed": "node prisma/seed.ts"
-  },
+  "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+},
   "dependencies": {
     "@clerk/localizations": "^3.35.2",
     "@clerk/nextjs": "^6.37.1",
@@ -76,3 +76,4 @@
     "typescript": "^5"
   }
 }
+

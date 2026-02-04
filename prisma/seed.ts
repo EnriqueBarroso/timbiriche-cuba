@@ -1,84 +1,78 @@
-// prisma/seed.ts
-const { PrismaClient } = require('@prisma/client')
+import { PrismaClient } from '@prisma/client'
+
 const prisma = new PrismaClient()
 
 async function main() {
   console.log('🌱 Empezando la siembra de datos...')
 
-  // 1. Crear un Usuario Vendedor
-  const vendedor = await prisma.user.upsert({
-    where: { email: 'vendedor@cuba.test' },
-    update: {},
-    create: {
-      email: 'vendedor@cuba.test',
-      fullName: 'Yusnaby Pérez',
-      role: 'SELLER',
-      sellerProfile: {
-        create: {
-          storeName: 'Dulces Caseros La Habana',
-          description: 'Los mejores cakes y dulces finos de Marianao.',
-          phoneNumber: '+5355555555',
-          isVerified: true,
-          walletBalance: 0,
-        }
-      }
-    },
+  // 1. Limpiar datos existentes (opcional pero recomendado)
+  await prisma.productImage.deleteMany()
+  await prisma.favorite.deleteMany()
+  await prisma.product.deleteMany()
+  await prisma.seller.deleteMany()
+
+  // 2. Crear un Vendedor de prueba
+  const seller = await prisma.seller.create({
+    data: {
+      storeName: "Timbiriche de Prueba",
+      email: "admin@timbiriche.com", // Pon aquí tu email de Clerk si quieres que te pertenezcan
+      phoneNumber: "52345678",
+      isVerified: true,
+      avatar: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg"
+    }
   })
-
-  console.log(`👤 Vendedor creado: ${vendedor.fullName}`)
-
-  // 2. Buscar el perfil del vendedor para asignarle productos
-  const perfilVendedor = await prisma.sellerProfile.findUnique({
-    where: { userId: vendedor.id }
-  })
-
-  if (!perfilVendedor) throw new Error("No se encontró perfil de vendedor")
 
   // 3. Crear Productos de prueba
-  const producto1 = await prisma.product.create({
-    data: {
-      sellerId: perfilVendedor.id,
-      title: 'Cake de Chocolate (10 personas)',
-      description: 'Delicioso cake con cobertura de chocolate fundido. Entrega en 24h.',
-      price: 1500, // $15.00 USD (Recuerda: guardamos centavos)
-      category: 'Comida',
-      stock: 5,
+  const products = [
+    {
+      title: "Combo de Alimentos Familiar",
+      description: "Incluye aceite, arroz, frijoles y carne de cerdo. Entrega a domicilio.",
+      price: 4500, // En centavos si usas esa lógica, o valor real
+      currency: "USD",
+      category: "food",
       images: {
-        create: {
-          url: 'https://placehold.co/600x400/3e2723/FFF?text=Cake+Chocolate',
-          isMain: true
-        }
+        create: [{ url: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=500" }]
+      }
+    },
+    {
+      title: "iPhone 13 Pro Max 256GB",
+      description: "Como nuevo, batería al 95%. Con cargador original.",
+      price: 750,
+      currency: "USD",
+      category: "tech",
+      images: {
+        create: [{ url: "https://images.unsplash.com/photo-1639491115802-9242b936af5a?q=80&w=500" }]
+      }
+    },
+    {
+      title: "Piezas de Lada 2107",
+      description: "Kit de embrague y pastillas de freno nuevas.",
+      price: 120,
+      currency: "USD",
+      category: "parts",
+      images: {
+        create: [{ url: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?q=80&w=500" }]
       }
     }
-  })
+  ]
 
-  const producto2 = await prisma.product.create({
-    data: {
-      sellerId: perfilVendedor.id,
-      title: 'Split de Aire Acondicionado (Instalación)',
-      description: 'Mano de obra para instalar split 1T. Incluye materiales básicos.',
-      price: 4000, // $40.00 USD
-      category: 'Servicios',
-      stock: 10,
-      images: {
-        create: {
-          url: 'https://placehold.co/600x400/0288d1/FFF?text=Aire+Acondicionado',
-          isMain: true
-        }
+  for (const p of products) {
+    await prisma.product.create({
+      data: {
+        ...p,
+        sellerId: seller.id
       }
-    }
-  })
+    })
+  }
 
-  console.log(`📦 Productos creados: ${producto1.title}, ${producto2.title}`)
-  console.log('✅ Siembra completada.')
+  console.log('✅ Semilla completada con éxito.')
 }
 
 main()
-  .then(async () => {
-    await prisma.$disconnect()
-  })
-  .catch(async (e) => {
+  .catch((e) => {
     console.error(e)
-    await prisma.$disconnect()
     process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
   })

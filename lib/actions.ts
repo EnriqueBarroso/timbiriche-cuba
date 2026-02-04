@@ -6,8 +6,9 @@ import { revalidatePath } from "next/cache";
 
 const ITEMS_PER_PAGE = 12;
 
-// 1. Obtener Productos (Público)
-// Limpiamos la lógica de favoritos porque ahora se maneja en el cliente (LocalStorage)
+/**
+ * 1. OBTENER PRODUCTOS (PÚBLICO)
+ */
 export async function getProducts({
   query,
   category,
@@ -18,8 +19,6 @@ export async function getProducts({
   page?: number;
 }) {
   const skip = (page - 1) * ITEMS_PER_PAGE;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = {};
 
   if (query) {
@@ -42,76 +41,75 @@ export async function getProducts({
       include: {
         images: true,
         seller: true,
-        // Eliminamos la relación 'favorites' porque el backend ya no necesita saberlo
       },
     });
-
     return products;
-
   } catch (error) {
     console.error("Error cargando productos:", error);
     return [];
   }
 }
 
-// 2. Obtener mis productos en venta
+/**
+ * 2. OBTENER MIS PRODUCTOS (PANEL VENDEDOR)
+ */
 export async function getMyProducts() {
-  const { userId } = await auth();
-  if (!userId) return [];
+  const user = await currentUser();
+  if (!user) return [];
 
-  // OJO: Asumimos que tu lógica guarda el sellerId igual al userId de Clerk
-  // Si no te salen productos, avísame y cambiamos esto para buscar por email
+  const email = user.emailAddresses[0].emailAddress;
+
   return await prisma.product.findMany({
-    where: { sellerId: userId },
-    orderBy: { createdAt: "desc" },
-    include: {
-      images: true,
-      // favorites: true, // Opcional: Si quieres mostrar contador de likes en tu panel
+    where: { 
+      seller: { email: email } 
     },
+    orderBy: { createdAt: "desc" },
+    include: { images: true },
   });
 }
 
-// 3. Borrar un producto (Solo si es mío)
+/**
+ * 3. BORRAR UN PRODUCTO
+ */
 export async function deleteProduct(productId: string) {
   const user = await currentUser();
   if (!user) return { error: "No autorizado" };
 
   const email = user.emailAddresses[0].emailAddress;
 
-  // A. Buscamos quién es el VENDEDOR asociado a este email
   const seller = await prisma.seller.findUnique({
     where: { email },
   });
 
   if (!seller) return { error: "No se encontró perfil de vendedor" };
 
-  // B. Buscamos el producto
   const product = await prisma.product.findUnique({
     where: { id: productId },
   });
 
-  // C. Verificamos: ¿El dueño del producto es este Vendedor?
   if (!product || product.sellerId !== seller.id) {
-    return { error: "No puedes borrar esto, no es tuyo" };
+    return { error: "No tienes permiso para borrar este producto" };
   }
 
-  // D. Borramos
   await prisma.product.delete({
     where: { id: productId },
   });
 
   revalidatePath("/");
   revalidatePath("/mis-publicaciones");
+  return { success: true };
 }
 
-// 4. Crear Producto
+/**
+ * 4. CREAR PRODUCTO
+ */
 export async function createProduct(data: {
   title: string;
   price: number;
   currency: string;
   category: string;
   description: string;
-  images: string[]; // ← CAMBIO: array en vez de string
+  images: string[];
 }) {
   const user = await currentUser();
 
@@ -122,27 +120,25 @@ export async function createProduct(data: {
   const email = user.emailAddresses[0].emailAddress;
   const userName = user.firstName ? `${user.firstName} ${user.lastName || ""}` : "Vendedor Timbiriche";
 
-  // A. AUTO-GENERACIÓN DE PERFIL DE VENDEDOR
   const seller = await prisma.seller.upsert({
     where: { email: email },
     update: {},
     create: {
+      id: user.id, 
       email: email,
       storeName: userName,
       avatar: user.imageUrl,
       phoneNumber: "",
       isVerified: false,
-      id: user.id
     },
   });
 
-  // B. CREACIÓN DEL PRODUCTO CON MÚLTIPLES IMÁGENES
   await prisma.product.create({
     data: {
       title: data.title,
       price: Math.round(data.price),
-      currency: data.currency,  // 👈 AGREGAR esta línea
-      description: data.description,  // 👈 SIN el hack de [USD]
+      currency: data.currency, 
+      description: data.description,
       category: data.category,
       sellerId: seller.id,
       images: {
@@ -151,18 +147,20 @@ export async function createProduct(data: {
     },
   });
 
-  // C. ACTUALIZAR CACHÉ
   revalidatePath("/");
+  return { success: true };
 }
 
-// 5. ACTUALIZAR PRODUCTO
+/**
+ * 5. ACTUALIZAR PRODUCTO
+ */
 export async function updateProduct(productId: string, data: {
   title: string;
   price: number;
-  currency: string;  // 👈 Agregar currency
+  currency: string;
   description: string;
   category: string;
-  images: string[];  // 👈 Array de imágenes
+  images: string[];  // 👈 Debe ser array
   isActive: boolean;
 }) {
   const user = await currentUser();
@@ -170,7 +168,6 @@ export async function updateProduct(productId: string, data: {
 
   const email = user.emailAddresses[0].emailAddress;
 
-  // 1. Verificamos que el producto sea del usuario
   const product = await prisma.product.findUnique({
     where: { id: productId },
     include: { seller: true }
@@ -180,59 +177,85 @@ export async function updateProduct(productId: string, data: {
     throw new Error("No tienes permiso para editar este producto");
   }
 
-  // 2. Actualizamos el producto
   await prisma.product.update({
     where: { id: productId },
     data: {
       title: data.title,
       price: Math.round(data.price),
-      currency: data.currency,  // 👈 Actualizar currency
+      currency: data.currency,
       description: data.description,
       category: data.category,
       isActive: data.isActive,
-      // 3. Reemplazamos TODAS las imágenes
-      images: {
-        deleteMany: {},  // Borra las viejas
-        create: data.images.map((url) => ({ url })),  // Crea las nuevas
-      },
+      // 👇 VALIDACIÓN: Solo actualizar imágenes si existen
+      ...(data.images && data.images.length > 0 && {
+        images: {
+          deleteMany: {},
+          create: data.images.map((url) => ({ url })),
+        },
+      }),
     },
   });
 
-  // 4. Refrescamos caché
   revalidatePath("/");
   revalidatePath(`/product/${productId}`);
   revalidatePath("/mis-publicaciones");
+  return { success: true };
 }
 
-// 6. ACTUALIZAR PERFIL DE VENDEDOR
+/**
+ * 6. ACTUALIZAR PERFIL DE VENDEDOR
+ */
 export async function updateProfile(data: { storeName: string; phoneNumber: string; avatar?: string }) {
   const user = await currentUser();
   if (!user) throw new Error("No autorizado");
 
   const email = user.emailAddresses[0].emailAddress;
 
-  // Actualizamos o creamos el vendedor
   await prisma.seller.upsert({
     where: { email },
     update: {
       storeName: data.storeName,
       phoneNumber: data.phoneNumber,
-      // Solo actualizamos avatar si viene uno nuevo
       ...(data.avatar && { avatar: data.avatar }),
     },
     create: {
+      id: user.id, 
       email,
       storeName: data.storeName,
       phoneNumber: data.phoneNumber,
       avatar: data.avatar || user.imageUrl,
       isVerified: false,
-      id: user.id,
     },
   });
 
-  // Revalidamos rutas clave
   revalidatePath("/perfil");
   revalidatePath("/vender");
   revalidatePath("/mis-publicaciones");
-  // Si tienes una página de perfil pública, revalídala también si es necesario
+  return { success: true };
+}
+
+/**
+ * 7. ACCIÓN DE SINCRONIZACIÓN (NUEVA)
+ * Esta es la que usaremos en el layout para asegurar que el usuario existe en Supabase.
+ */
+export async function syncUserAction() {
+  const user = await currentUser();
+  if (!user) return;
+
+  const email = user.emailAddresses[0].emailAddress;
+
+  await prisma.seller.upsert({
+    where: { email },
+    update: {
+      avatar: user.imageUrl, // Mantenemos el avatar fresco
+    },
+    create: {
+      id: user.id,
+      email: email,
+      storeName: user.firstName || "Mi Tienda",
+      avatar: user.imageUrl,
+      phoneNumber: "",
+      isVerified: false,
+    },
+  });
 }

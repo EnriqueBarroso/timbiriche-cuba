@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { Save, ImageIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { CldUploadWidget } from 'next-cloudinary';
-import { updateProduct } from "@/lib/actions"; 
-import { CATEGORIES } from "@/lib/categories"; // 👈 IMPORTAMOS LA FUENTE DE LA VERDAD
+import { updateProduct } from "@/lib/actions";
+import { CATEGORIES } from "@/lib/categories";
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -16,14 +16,16 @@ interface Props {
 export default function EditForm({ product }: Props) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
+  const inputStyles = "w-full p-3 border rounded-lg bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 outline-none";
+
   const [formData, setFormData] = useState({
     title: product.title || "",
     price: product.price ? (product.price / 100).toString() : "0",
     description: product.description || "",
     category: product.category || "others",
     imageUrl: product.images?.[0]?.url || "",
-    isActive: product.isActive ?? true 
+    isActive: product.isActive ?? true
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -41,15 +43,16 @@ export default function EditForm({ product }: Props) {
       await updateProduct(product.id, {
         title: formData.title,
         price: parseFloat(formData.price) * 100,
+        currency: product.currency || "USD",  
         description: formData.description,
         category: formData.category,
-        imageUrl: formData.imageUrl,
+        images: [formData.imageUrl],  
         isActive: Boolean(formData.isActive)
       });
 
       toast.success("Producto actualizado correctamente");
       router.push("/mis-publicaciones"); // O router.back()
-      router.refresh(); 
+      router.refresh();
 
     } catch (error) {
       console.error(error);
@@ -60,13 +63,13 @@ export default function EditForm({ product }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-6">
-      
+
       {/* Switch Activo/Pausado */}
       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
         <span className="font-medium text-gray-700">Producto Visible</span>
         <label className="relative inline-flex items-center cursor-pointer">
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             name="isActive"
             checked={Boolean(formData.isActive)}
             onChange={handleChange}
@@ -84,7 +87,7 @@ export default function EditForm({ product }: Props) {
           value={formData.title}
           onChange={handleChange}
           required
-          className="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"
+          className={inputStyles}
         />
       </div>
 
@@ -99,7 +102,7 @@ export default function EditForm({ product }: Props) {
             onChange={handleChange}
             required
             step="0.01"
-            className="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"
+            className={inputStyles}
           />
         </div>
         <div>
@@ -108,7 +111,7 @@ export default function EditForm({ product }: Props) {
             name="category"
             value={formData.category}
             onChange={handleChange}
-            className="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"
+            className={inputStyles}
           >
             <option value="" disabled>Selecciona una opción</option>
             {/* 👇 Generamos las opciones dinámicamente, excluyendo 'all' */}
@@ -125,26 +128,26 @@ export default function EditForm({ product }: Props) {
       <div>
         <label className="block text-sm font-bold mb-2">Imagen Principal</label>
         <div className="relative h-48 bg-gray-100 rounded-lg overflow-hidden group border border-gray-200 flex items-center justify-center">
-           {formData.imageUrl ? (
-             // eslint-disable-next-line @next/next/no-img-element
-             <img src={formData.imageUrl} className="w-full h-full object-cover" alt="Preview" />
-           ) : (
-             <span className="text-gray-400">Sin imagen</span>
-           )}
-           
-           <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <CldUploadWidget 
-                uploadPreset="timbiriche_preset" 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                onSuccess={(result: any) => setFormData({ ...formData, imageUrl: result.info.secure_url })}
-              >
-                {({ open }) => (
-                  <button type="button" onClick={() => open()} className="bg-white px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 hover:bg-gray-100 cursor-pointer z-10">
-                    <ImageIcon className="w-4 h-4" /> Cambiar Foto
-                  </button>
-                )}
-              </CldUploadWidget>
-           </div>
+          {formData.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={formData.imageUrl} className="w-full h-full object-cover" alt="Preview" />
+          ) : (
+            <span className="text-gray-400">Sin imagen</span>
+          )}
+
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <CldUploadWidget
+              uploadPreset="timbiriche_preset"
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onSuccess={(result: any) => setFormData({ ...formData, imageUrl: result.info.secure_url })}
+            >
+              {({ open }) => (
+                <button type="button" onClick={() => open()} className="bg-white px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 hover:bg-gray-100 cursor-pointer z-10">
+                  <ImageIcon className="w-4 h-4" /> Cambiar Foto
+                </button>
+              )}
+            </CldUploadWidget>
+          </div>
         </div>
       </div>
 
@@ -157,7 +160,7 @@ export default function EditForm({ product }: Props) {
           value={formData.description}
           onChange={handleChange}
           required
-          className="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"
+          className={inputStyles}
         />
       </div>
 

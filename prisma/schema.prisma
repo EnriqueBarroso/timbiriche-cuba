@@ -1,5 +1,3 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,37 +7,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 1. MODELO USER (Usuarios / Compradores)
-// Este modelo es necesario para guardar los favoritos
 model User {
-  id        String     @id // Aquí guardaremos el ID de Clerk (user_2b...)
+  id        String     @id
   email     String     @unique
   createdAt DateTime   @default(now())
-  
-  favorites Favorite[] // Relación con los favoritos
+  favorites Favorite[]
 }
 
-// 2. MODELO PRODUCT (Tus productos)
 model Product {
-  id          String   @id @default(uuid())
+  id          String         @id @default(uuid())
   title       String
   description String
   price       Int
-  currency    String   @default("USD")
   category    String
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  images      ProductImage[]
-  
-  seller      Seller?   @relation(fields: [sellerId], references: [id])
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   sellerId    String?
-
-  favorites   Favorite[] // 👈 Relación añadida correctamente aquí
+  currency    String         @default("USD")
+  favorites   Favorite[]
+  seller      Seller?        @relation(fields: [sellerId], references: [id])
+  images      ProductImage[]
 }
 
-// 3. MODELO PRODUCTIMAGE (Fotos)
 model ProductImage {
   id        String  @id @default(uuid())
   url       String
@@ -47,7 +37,6 @@ model ProductImage {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
-// 4. MODELO SELLER (Vendedores)
 model Seller {
   id          String    @id @default(uuid())
   storeName   String
@@ -58,19 +47,16 @@ model Seller {
   reviews     Int       @default(0)
   avatar      String?
   createdAt   DateTime  @default(now())
-  
   products    Product[]
 }
 
-// 5. MODELO FAVORITE (La tabla intermedia para los Likes)
 model Favorite {
   id        String   @id @default(cuid())
   userId    String
   productId String
   createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, productId]) // Evita duplicados (no puedes dar like 2 veces al mismo)
+  @@unique([userId, productId])
 }
