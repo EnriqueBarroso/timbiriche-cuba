@@ -4,7 +4,7 @@ import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Heart, Store, Plus, User, Settings } from "lucide-react";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import MobileMenu from "./MobileMenu";
 
@@ -121,12 +121,12 @@ function NavbarContent() {
 
             {/* 👇 ESTA ES LA PIEZA QUE FALTA PARA PODER LOGUEARSE */}
             <SignedOut>
-              <Link
-                href="/sign-in"
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm"
-              >
-                <User className="h-4 w-4" /> Entrar
-              </Link>
+             {/* CAMBIO: Ahora redirigimos a /mis-publicaciones (o la ruta donde tengas tu panel) */}
+              <SignInButton mode="modal" forceRedirectUrl="/mis-publicaciones">
+                <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm cursor-pointer">
+                  <User className="h-4 w-4" /> Entrar
+                </button>
+              </SignInButton>
             </SignedOut>
           </div>
         </div>

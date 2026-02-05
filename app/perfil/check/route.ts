@@ -14,31 +14,44 @@ export async function GET() {
   const email = user.emailAddresses[0].emailAddress;
 
   try {
-    const seller = await prisma.seller.upsert({
-      where: { email: email },
-      update: {},
+    // 1. USUARIO BASE (Requisito técnico para evitar error 500)
+    await prisma.user.upsert({
+      where: { id: userId },
+      update: { email: email },
       create: {
         id: userId,
         email: email,
-        storeName: user.firstName || "Mi Tienda",
+      }
+    });
+
+    // 2. VENDEDOR (Datos reales)
+    const seller = await prisma.seller.upsert({
+      where: { email: email },
+      update: {}, 
+      create: {
+        id: userId,
+        email: email,
+        storeName: user.firstName ? `Tienda de ${user.firstName}` : "Nueva Tienda",
         avatar: user.imageUrl,
-        phoneNumber: "",
+        phoneNumber: "", 
         isVerified: false,
       },
+      // 3. IMPORTANTE: Devolvemos los campos que el frontend necesita leer
       select: {
         id: true,
         email: true,
         storeName: true,
-        phoneNumber: true,  // 👈 Devolver el número
+        phoneNumber: true, // 👈 Esto es lo que busca tu página /vender
         avatar: true,
         isVerified: true,
       }
     });
 
-    return NextResponse.json(seller);  // 👈 Devolver el objeto completo
+    // 4. RETORNO: Devolvemos el objeto completo (NO solo hasPhone)
+    return NextResponse.json(seller);
 
   } catch (error) {
     console.error("Error en profile check:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    return new NextResponse("Error interno", { status: 500 });
   }
 }

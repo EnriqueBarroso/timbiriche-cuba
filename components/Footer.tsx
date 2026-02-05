@@ -1,9 +1,33 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Facebook, Instagram, Twitter, Mail, Phone, ShoppingBag, ShoppingCart } from "lucide-react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const pathname = usePathname();
 
+  // 1. Definimos las zonas donde queremos el Footer Pequeño (Minimalista)
+  const isWorkspace = 
+    pathname === "/mis-publicaciones" || 
+    pathname === "/vender" || 
+    pathname === "/favoritos" || 
+    pathname === "/carrito" || 
+    pathname?.startsWith("/perfil") ||
+    pathname?.startsWith("/product/") || 
+    pathname?.startsWith("/editar/"); 
+
+  // 2. Si estamos en zona de trabajo, mostramos el diseño "que mola" (Pequeño)
+  if (isWorkspace) {
+    return (
+      <footer className="bg-gray-50 py-6 text-center text-xs text-gray-400 border-t border-gray-100 mt-auto">
+        <p>© {currentYear} Timbiriche. Tu espacio.</p>
+      </footer>
+    );
+  }
+
+  // 3. Si no, mostramos el Footer Completo
   return (
     <footer className="bg-white border-t border-gray-200 mt-auto">
       <div className="max-w-7xl mx-auto px-4 py-12">
@@ -82,7 +106,7 @@ export default function Footer() {
                 </a>
               </li>
               <li className="pt-2">
-                <p className="text-xs text-gray-400">Hecho con ❤️ en La Habana</p>
+                <p className="text-xs text-gray-400">Hecho con ❤️ en La Barcelona</p>
               </li>
             </ul>
           </div>
@@ -97,7 +121,6 @@ export default function Footer() {
             <Link href="/ayuda" className="hover:text-gray-900 transition-colors">Ayuda</Link>
           </div>
         </div>
-
       </div>
     </footer>
   );

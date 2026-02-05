@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -6,7 +6,6 @@ import { Save, ImageIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { CldUploadWidget } from 'next-cloudinary';
 import { updateProduct } from "@/lib/actions";
-import { CATEGORIES } from "@/lib/categories";
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,170 +16,173 @@ export default function EditForm({ product }: Props) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const inputStyles = "w-full p-3 border rounded-lg bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 outline-none";
+  const inputStyles = "w-full p-3 border rounded-lg bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all";
 
   const [formData, setFormData] = useState({
     title: product.title || "",
-    price: product.price ? (product.price / 100).toString() : "0",
+    // Convertimos de Centavos (DB) a Unidad (Vista) al cargar
+    price: product.price ? (product.price / 100).toString() : "0", 
+    currency: product.currency || "USD",
     description: product.description || "",
     category: product.category || "others",
     imageUrl: product.images?.[0]?.url || "",
-    isActive: product.isActive ?? true
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const newValue = type === 'checkbox' ? (e.target as any).checked : value;
-    setFormData({ ...formData, [name]: newValue });
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
+    // 🛑 1. ESTO ES LO MÁS IMPORTANTE: Detiene el envío HTML y evita el error 404
     e.preventDefault();
-    setIsSubmitting(true);
 
     try {
-      await updateProduct(product.id, {
-        title: formData.title,
-        price: parseFloat(formData.price) * 100,
-        currency: product.currency || "USD",  
-        description: formData.description,
-        category: formData.category,
-        images: [formData.imageUrl],  
-        isActive: Boolean(formData.isActive)
-      });
+      setIsSubmitting(true);
 
-      toast.success("Producto actualizado correctamente");
-      router.push("/mis-publicaciones"); // O router.back()
-      router.refresh();
+      // 2. Preparamos los datos para la DB
+      // Convertimos el precio visible (ej: 10) a centavos (ej: 1000)
+      const payload = {
+        ...formData,
+        price: Math.round(parseFloat(formData.price) * 100), // x100 para centavos
+        images: formData.imageUrl ? [formData.imageUrl] : [] // Formato array para la acción
+      };
+
+      // 3. Llamamos a la Server Action
+      await updateProduct(product.id, payload);
+
+      toast.success("Producto actualizado");
+      router.push("/mis-publicaciones");
+      router.refresh(); // Actualiza la vista de fondo
 
     } catch (error) {
       console.error(error);
-      toast.error("Error al guardar cambios");
+      toast.error("Error al guardar los cambios");
+    } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-6">
-
-      {/* Switch Activo/Pausado */}
-      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <span className="font-medium text-gray-700">Producto Visible</span>
-        <label className="relative inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            name="isActive"
-            checked={Boolean(formData.isActive)}
-            onChange={handleChange}
-            className="sr-only peer"
-          />
-          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-        </label>
-      </div>
-
-      {/* Título */}
-      <div>
-        <label className="block text-sm font-bold mb-1">Título</label>
-        <input
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          required
-          className={inputStyles}
-        />
-      </div>
-
-      {/* Precio y Categoría */}
-      <div className="grid grid-cols-2 gap-4">
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+      
+      {/* 👇 IMPORTANTE: El onSubmit va AQUÍ, en la etiqueta form */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        
+        {/* Foto */}
         <div>
-          <label className="block text-sm font-bold mb-1">Precio</label>
-          <input
-            type="number"
-            name="price"
-            value={formData.price}
-            onChange={handleChange}
-            required
-            step="0.01"
-            className={inputStyles}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-bold mb-1">Categoría</label>
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            className={inputStyles}
-          >
-            <option value="" disabled>Selecciona una opción</option>
-            {/* 👇 Generamos las opciones dinámicamente, excluyendo 'all' */}
-            {CATEGORIES.filter(cat => cat.id !== 'all').map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Imagen */}
-      <div>
-        <label className="block text-sm font-bold mb-2">Imagen Principal</label>
-        <div className="relative h-48 bg-gray-100 rounded-lg overflow-hidden group border border-gray-200 flex items-center justify-center">
-          {formData.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={formData.imageUrl} className="w-full h-full object-cover" alt="Preview" />
-          ) : (
-            <span className="text-gray-400">Sin imagen</span>
-          )}
-
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <CldUploadWidget
+          <label className="block text-sm font-bold mb-2">Imagen Principal</label>
+          <div className="flex items-center gap-4">
+            {formData.imageUrl ? (
+              <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs">
+                Sin foto
+              </div>
+            )}
+            
+            <CldUploadWidget 
               uploadPreset="timbiriche_preset"
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onSuccess={(result: any) => setFormData({ ...formData, imageUrl: result.info.secure_url })}
             >
               {({ open }) => (
-                <button type="button" onClick={() => open()} className="bg-white px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 hover:bg-gray-100 cursor-pointer z-10">
+                <button type="button" onClick={() => open()} className="bg-gray-100 px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-gray-200 transition-colors text-gray-700">
                   <ImageIcon className="w-4 h-4" /> Cambiar Foto
                 </button>
               )}
             </CldUploadWidget>
           </div>
         </div>
-      </div>
 
-      {/* Descripción */}
-      <div>
-        <label className="block text-sm font-bold mb-1">Descripción</label>
-        <textarea
-          name="description"
-          rows={4}
-          value={formData.description}
-          onChange={handleChange}
-          required
-          className={inputStyles}
-        />
-      </div>
+        {/* Título */}
+        <div>
+          <label className="block text-sm font-bold mb-1">Título</label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            required
+            className={inputStyles}
+          />
+        </div>
 
-      <div className="flex gap-3 pt-2">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="flex-1 py-3 text-gray-700 bg-gray-100 rounded-xl font-bold hover:bg-gray-200 transition-colors"
-        >
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="flex-1 py-3 text-white bg-blue-600 rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-        >
-          {isSubmitting ? <Loader2 className="animate-spin" /> : <Save className="w-5 h-5" />}
-          Guardar Cambios
-        </button>
-      </div>
-    </form>
+        {/* Precio y Moneda */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-bold mb-1">Precio</label>
+            <input
+              type="number"
+              step="0.01"
+              value={formData.price}
+              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              required
+              className={inputStyles}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold mb-1">Moneda</label>
+            <select
+              value={formData.currency}
+              onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+              className={inputStyles}
+            >
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="CUP">CUP</option>
+              <option value="MLC">MLC</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Categoría */}
+        <div>
+          <label className="block text-sm font-bold mb-1">Categoría</label>
+          <select
+            value={formData.category}
+            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            className={inputStyles}
+          >
+             <option value="food">🍗 Combos y Alimentos</option>
+             <option value="parts">🔧 Piezas y Accesorios</option>
+             <option value="home">🛋️ Hogar y Decoración</option>
+             <option value="tech">📱 Tecnología</option>
+             <option value="fashion">👗 Ropa y Moda</option>
+             <option value="others">📦 Otros</option>
+          </select>
+        </div>
+
+        {/* Descripción */}
+        <div>
+          <label className="block text-sm font-bold mb-1">Descripción</label>
+          <textarea
+            rows={4}
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            required
+            className={inputStyles}
+          />
+        </div>
+
+        {/* Botones de Acción */}
+        <div className="flex gap-3 pt-4 border-t border-gray-100">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="flex-1 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl font-bold hover:bg-gray-50 transition-colors"
+          >
+            Cancelar
+          </button>
+          
+          <button
+            type="button" 
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="flex-1 py-3 text-white bg-blue-600 rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-70"
+          >
+            {isSubmitting ? <Loader2 className="animate-spin" /> : <Save size={18} />}
+            {isSubmitting ? "Guardando..." : "Guardar Cambios"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }

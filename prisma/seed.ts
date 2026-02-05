@@ -8,7 +8,7 @@ async function main() {
   // 1. Limpiar datos existentes (opcional pero recomendado)
   await prisma.productImage.deleteMany()
   await prisma.favorite.deleteMany()
-  await prisma.product.deleteMany()
+  // await prisma.product.deleteMany()
   await prisma.seller.deleteMany()
 
   // 2. Crear un Vendedor de prueba
@@ -41,7 +41,7 @@ async function main() {
       currency: "USD",
       category: "tech",
       images: {
-        create: [{ url: "https://images.unsplash.com/photo-1639491115802-9242b936af5a?q=80&w=500" }]
+        create: [{ url: "https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8aXBob25lfGVufDB8fDB8fHww" }]
       }
     },
     {

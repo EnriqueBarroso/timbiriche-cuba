@@ -77,14 +77,12 @@ export default function ProfileForm({ initialData }: Props) {
         phoneNumber: formData.phoneNumber,
         avatar: formData.avatar,
       });
-
-      toast.success("¡Perfil actualizado!");
-      
-      // Si viene de /vender, devuelve allá
+      toast.success("¡Perfil actualizado!");      
+      router.refresh(); 
       if (returnTo) {
         router.push(returnTo);
       } else {
-        router.refresh(); 
+        router.push("/vender"); 
       }
 
     } catch (error) {

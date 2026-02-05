@@ -136,7 +136,7 @@ export async function createProduct(data: {
   await prisma.product.create({
     data: {
       title: data.title,
-      price: Math.round(data.price),
+      price: Math.round(data.price * 100),
       currency: data.currency, 
       description: data.description,
       category: data.category,
@@ -154,52 +154,43 @@ export async function createProduct(data: {
 /**
  * 5. ACTUALIZAR PRODUCTO
  */
-export async function updateProduct(productId: string, data: {
-  title: string;
-  price: number;
-  currency: string;
-  description: string;
-  category: string;
-  images: string[];  // 👈 Debe ser array
-  isActive: boolean;
-}) {
+export async function updateProduct(productId: string, data: any) {
   const user = await currentUser();
   if (!user) throw new Error("No autorizado");
 
   const email = user.emailAddresses[0].emailAddress;
 
+  // 1. Verificamos que el producto sea realmente de este usuario
   const product = await prisma.product.findUnique({
     where: { id: productId },
     include: { seller: true }
   });
 
-  if (!product || product.seller?.email !== email) {
+ // Agregamos la verificación "!product.seller" en el medio
+  if (!product || !product.seller || product.seller.email !== email) {
     throw new Error("No tienes permiso para editar este producto");
   }
-
+  // 2. Actualizamos
   await prisma.product.update({
     where: { id: productId },
     data: {
       title: data.title,
-      price: Math.round(data.price),
+      price: data.price,
       currency: data.currency,
-      description: data.description,
       category: data.category,
-      isActive: data.isActive,
-      // 👇 VALIDACIÓN: Solo actualizar imágenes si existen
-      ...(data.images && data.images.length > 0 && {
-        images: {
-          deleteMany: {},
-          create: data.images.map((url) => ({ url })),
-        },
-      }),
-    },
+      description: data.description,
+      // Manejo simple de imágenes: reemplazamos todas
+      images: {
+        deleteMany: {}, // Borramos las viejas relaciones
+        create: data.images.map((url: string) => ({ url })) // Creamos las nuevas
+      }
+    }
   });
 
-  revalidatePath("/");
-  revalidatePath(`/product/${productId}`);
+  // 3. Limpiamos caché para que se vea el cambio
   revalidatePath("/mis-publicaciones");
-  return { success: true };
+  revalidatePath(`/product/${productId}`);
+  revalidatePath("/");
 }
 
 /**
@@ -258,4 +249,36 @@ export async function syncUserAction() {
       isVerified: false,
     },
   });
+}
+/**
+ * 9. MARCAR COMO VENDIDO / DISPONIBLE
+ */
+export async function toggleProductStatus(productId: string) {
+  const user = await currentUser();
+  if (!user) throw new Error("No autorizado");
+
+  const email = user.emailAddresses[0].emailAddress;
+
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: { seller: true }
+  });
+
+  if (!product || !product.seller || product.seller.email !== email) {
+    throw new Error("No tienes permiso");
+  }
+
+  // Interruptor: Lo contrario de lo que tenga ahora
+  const newStatus = !product.isSold;
+
+  await prisma.product.update({
+    where: { id: productId },
+    data: { isSold: newStatus }
+  });
+
+  revalidatePath("/mis-publicaciones");
+  revalidatePath("/");
+  revalidatePath(`/product/${productId}`);
+  
+  return { success: true, isSold: newStatus };
 }

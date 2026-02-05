@@ -1,201 +1,42 @@
-"use client";
+import { currentUser } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+import VenderForm from "./VenderForm";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
-import { MultiImageUpload } from "@/components/MultiImageUpload";
-import { createProduct } from "@/lib/actions";
-import { Loader2, DollarSign, Store } from "lucide-react";
-import { toast } from "sonner";
+export default async function VenderPage({
+  searchParams,
+}: {
+  searchParams: { edit?: string };
+}) {
+  const user = await currentUser();
+  if (!user) return redirect("/");
 
-export default function VenderPage() {
-  const router = useRouter();
-  const { isLoaded, isSignedIn } = useUser();
-  const [isLoading, setIsLoading] = useState(false);
+  const email = user.emailAddresses[0].emailAddress;
 
-  const [formData, setFormData] = useState({
-    title: "",
-    price: "",
-    currency: "USD",
-    category: "food",
-    description: "",
-    images: [] as string[],
+  // 1. Verificamos Vendedor
+  const seller = await prisma.seller.findUnique({
+    where: { email },
+    select: { phoneNumber: true },
   });
 
-  if (isLoaded && !isSignedIn) {
-    router.push("/");
-    return null;
+  if (!seller || !seller.phoneNumber) {
+    redirect("/perfil");
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // 2. LÓGICA DE EDICIÓN
+  // Si en la URL viene ?edit=123, buscamos ese producto
+  let productToEdit = null;
 
-    if (formData.images.length === 0) {
-      return toast.error("¡Sube al menos 1 foto!");
-    }
+  if (searchParams.edit) {
+    productToEdit = await prisma.product.findUnique({
+      where: {
+        id: searchParams.edit,
+        seller: { email: email } // ¡Seguridad! Solo sus productos
+      },
+      include: { images: true }
+    });
+  }
 
-    try {
-      setIsLoading(true);
-
-      // Validación de perfil sin caché
-      const profileRes = await fetch('/perfil/check', {
-        cache: 'no-store',
-      });
-
-      if (!profileRes.ok) {
-        toast.error("Error al verificar perfil");
-        return;
-      }
-
-      const profile = await profileRes.json();
-
-      // Debug: Ver qué devuelve la API
-      console.log("Profile response:", profile);
-
-      // Validar teléfono
-      const cleanPhone = profile.phoneNumber?.replace(/\D/g, '') || '';
-      console.log("Clean phone:", cleanPhone);
-
-      if (cleanPhone.length < 8) {
-        toast.error("WhatsApp requerido", {
-          description: "Configura tu número en el perfil para poder vender.",
-          duration: 5000,
-        });
-        router.push("/perfil?returnTo=/vender");
-        return;
-      }
-
-      // Crear producto
-      await createProduct({
-        title: formData.title,
-        price: Number(formData.price),
-        currency: formData.currency,
-        category: formData.category,
-        description: formData.description,
-        images: formData.images,
-      });
-
-      toast.success("¡Producto publicado!");
-      router.push("/");
-
-    } catch (error) {
-      console.error("Error al publicar:", error);
-      toast.error("Error al publicar producto");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Clase reutilizable para inputs con texto NEGRO visible
-  const inputStyles = "w-full rounded-xl border border-gray-300 bg-white p-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all";
-
-  return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 pb-32">
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Store className="w-6 h-6 text-blue-600" />
-            </div>
-            <span className="text-sm font-bold text-blue-600 uppercase">Panel de Vendedor</span>
-          </div>
-          <h1 className="text-3xl font-extrabold text-gray-900">Impulsa tu <span className="text-blue-600">Negocio</span></h1>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-3xl shadow-sm border border-gray-200">
-          {/* 1. Fotos */}
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-3">Fotos del Producto *</label>
-            <MultiImageUpload
-              values={formData.images}
-              onUpload={(urls) => setFormData({ ...formData, images: urls })}
-              maxImages={5}
-            />
-          </div>
-
-          {/* 2. Título */}
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Título</label>
-            <input
-              required
-              type="text"
-              placeholder="Ej: iPhone 14 Pro Max"
-              className={inputStyles}
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            />
-          </div>
-
-          {/* 3. Precio y Moneda */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Precio</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 pointer-events-none">
-                  <DollarSign size={16} />
-                </div>
-                <input
-                  required
-                  type="number"
-                  className={`${inputStyles} pl-9`}
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Moneda</label>
-              <select
-                className={inputStyles}
-                value={formData.currency}
-                onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-              >
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="CUP">CUP</option>
-                <option value="MLC">MLC</option>
-              </select>
-            </div>
-          </div>
-
-          {/* 4. Categoría */}
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Categoría</label>
-            <select
-              required
-              className={inputStyles}
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-            >
-              <option value="food">🍗 Combos y Alimentos</option>
-              <option value="parts">🔧 Piezas y Accesorios</option>
-              <option value="home">🛋️ Hogar y Decoración</option>
-              <option value="tech">📱 Tecnología</option>
-              <option value="fashion">👗 Ropa y Moda</option>
-            </select>
-          </div>
-
-          {/* 5. Descripción */}
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Descripción</label>
-            <textarea
-              rows={4}
-              className={inputStyles}
-              placeholder="Estado del producto, lugar de entrega..."
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            />
-          </div>
-
-          <button
-            disabled={isLoading}
-            type="submit"
-            className="w-full rounded-xl bg-blue-600 py-4 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50 flex justify-center items-center gap-2 shadow-lg"
-          >
-            {isLoading ? <><Loader2 className="animate-spin" size={20} /> Publicando...</> : "Publicar Ahora"}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
+  // 3. Renderizamos el formulario (con o sin datos)
+  return <VenderForm initialProduct={productToEdit} />;
 }

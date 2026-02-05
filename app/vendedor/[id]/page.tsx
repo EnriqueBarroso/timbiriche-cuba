@@ -18,7 +18,10 @@ export default async function SellerPage({ params }: Props) {
     include: {
       products: {
         where: { isActive: true }, // Solo productos visibles
-        include: { images: true },
+        include: {
+          images: true,
+          seller: true // 👈 ¡ESTA LÍNEA ES LA MAGIA! Ahora cada producto sabe quién es su dueño.
+        },
         orderBy: { createdAt: 'desc' }
       }
     }
@@ -27,23 +30,29 @@ export default async function SellerPage({ params }: Props) {
   if (!seller) return notFound();
 
   // Datos visuales
-  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(seller.storeName || 'Vendedor')}&background=random&size=200`;
+  const avatarUrl = seller.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(seller.storeName || 'Vendedor')}&background=random&size=200`;
   const cleanPhone = seller.phoneNumber?.replace(/\D/g, '') || '';
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hola ${seller.storeName}, vi tu tienda en Timbiriche y quisiera consultar algo.`)}`;
 
+  // 1. NUEVO: Calculamos el año real de registro del vendedor para mostrarlo en el perfil
+  const joinedYear = seller.createdAt
+    ? new Date(seller.createdAt).getFullYear()
+    : new Date().getFullYear();
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      
+
       {/* --- PORTADA Y PERFIL --- */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
-          
+
           <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
             {/* Avatar */}
             <div className="relative">
-              <img 
-                src={avatarUrl} 
-                alt={seller.storeName || "Tienda"} 
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={avatarUrl}
+                alt={seller.storeName || "Tienda"}
                 className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow-lg"
               />
               {seller.isVerified && (
@@ -58,24 +67,26 @@ export default async function SellerPage({ params }: Props) {
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                 {seller.storeName || "Usuario de Timbiriche"}
               </h1>
-              
+
               <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-600 mb-4">
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                  <span className="font-bold text-gray-900">4.9</span> 
+                  <span className="font-bold text-gray-900">4.9</span>
                   <span>(15 ventas)</span>
                 </div>
                 <div className="flex items-center gap-1">
-                   <MapPin className="w-4 h-4" /> La Habana
+                  <MapPin className="w-4 h-4" /> La Habana
                 </div>
                 <div className="flex items-center gap-1">
-                   <Calendar className="w-4 h-4" /> En Timbiriche desde 2024
+                  <Calendar className="w-4 h-4" />
+                  {/* 2. CAMBIO: Usamos la variable dinámica */}
+                  En Timbiriche desde {joinedYear}
                 </div>
               </div>
 
               {/* Botón de Contacto General */}
               {seller.phoneNumber && (
-                <a 
+                <a
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -101,7 +112,6 @@ export default async function SellerPage({ params }: Props) {
         {seller.products.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {seller.products.map((product) => (
-              // Usamos el 'Double Casting' para evitar errores de tipos
               <ProductCard key={product.id} product={product as unknown as Product} />
             ))}
           </div>
