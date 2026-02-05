@@ -19,7 +19,12 @@ export async function getProducts({
   page?: number;
 }) {
   const skip = (page - 1) * ITEMS_PER_PAGE;
-  const where: any = {};
+  
+  // 👇 CAMBIO 1: Filtramos para que NO traiga los vendidos
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: any = {
+    isSold: false, // Solo mostramos lo disponible
+  };
 
   if (query) {
     where.OR = [
@@ -34,7 +39,7 @@ export async function getProducts({
 
   try {
     const products = await prisma.product.findMany({
-      where,
+      where, // Usamos el filtro con isSold: false
       take: ITEMS_PER_PAGE,
       skip: skip,
       orderBy: { createdAt: "desc" },

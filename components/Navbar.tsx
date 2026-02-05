@@ -11,14 +11,16 @@ import MobileMenu from "./MobileMenu";
 function NavbarContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [query, setQuery] = useState(searchParams.get("search") || "");
+  // 👇 CAMBIO: Leemos 'query' (que es lo que espera el backend)
+  const [query, setQuery] = useState(searchParams.get("query") || "");
 
   const { favorites } = useFavorites();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      router.push(`/?search=${encodeURIComponent(query)}`);
+      // 👇 CAMBIO: Enviamos 'query' en la URL
+      router.push(`/?query=${encodeURIComponent(query)}`);
     } else {
       router.push("/");
     }
@@ -53,7 +55,8 @@ function NavbarContent() {
             placeholder="¿Qué buscas hoy?"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full pl-4 pr-10 py-2 rounded-full border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
+            // 👇 CAMBIO IMPORTANTE: Añadido 'text-gray-900' y 'placeholder:text-gray-500'
+            className="w-full pl-4 pr-10 py-2 rounded-full border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm text-gray-900 placeholder:text-gray-500"
           />
           <button
             type="submit"
@@ -100,7 +103,7 @@ function NavbarContent() {
             />
           </Link>
 
-          {/* 4. Usuario / Login (CON MENÚ PERSONALIZADO) */}
+          {/* 4. Usuario / Login */}
           <div className="ml-1">
             <SignedIn>
               <UserButton afterSignOutUrl="/">
@@ -119,9 +122,7 @@ function NavbarContent() {
               </UserButton>
             </SignedIn>
 
-            {/* 👇 ESTA ES LA PIEZA QUE FALTA PARA PODER LOGUEARSE */}
             <SignedOut>
-             {/* CAMBIO: Ahora redirigimos a /mis-publicaciones (o la ruta donde tengas tu panel) */}
               <SignInButton mode="modal" forceRedirectUrl="/mis-publicaciones">
                 <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm cursor-pointer">
                   <User className="h-4 w-4" /> Entrar
