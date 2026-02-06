@@ -16,23 +16,27 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const title = product.title || "Producto sin nombre";
   const price = product.price || 0;
-  
+
   // Si llega 65000 -> Muestra 650
-  const displayPrice = price / 100;  
+  const displayPrice = price / 100;
 
   const currency = product.currency || "USD";
   const sellerName = product.seller?.storeName || product.seller?.name || "Vendedor";
   const sellerPhone = product.seller?.phoneNumber || "";
-  const cleanPhone = sellerPhone.replace(/\D/g, ''); 
-  const hasValidPhone = cleanPhone.length >= 8; 
+  let cleanPhone = sellerPhone.replace(/\D/g, '');
 
-  // 👇 NUEVO: Sacamos el estado de vendido
+  // Corrección automática para números de Cuba
+  if (cleanPhone.length === 8) {
+    cleanPhone = `53${cleanPhone}`;
+  }
+  // Validamos si parece un número real (código país + número)
+  const hasValidPhone = cleanPhone.length >= 8;
   const isSold = product.isSold || false;
 
   const favoriteData = {
     id: product.id,
     title: title,
-    price: price, 
+    price: price,
     image: mainImage,
     currency: currency,
     seller: product.seller
@@ -95,7 +99,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="mb-3 flex items-baseline gap-1">
           {/* 👇 NUEVO: Si está vendido, tachamos el precio */}
           <span className={`text-xl md:text-2xl font-bold ${isSold ? "text-gray-400 line-through decoration-gray-400" : "text-gray-900"}`}>
-            ${displayPrice} 
+            ${displayPrice}
           </span>
           <span className="text-xs font-medium text-gray-500">{currency}</span>
         </div>
