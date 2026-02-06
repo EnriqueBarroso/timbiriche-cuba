@@ -2,16 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Heart, Plus, Store, User } from "lucide-react";
+import { Home, Heart, Plus, Zap, User } from "lucide-react"; // 👇 Importamos Zap (Rayo)
 
 export default function BottomNav() {
   const pathname = usePathname();
 
-  // Función para saber si el enlace está activo
   const isActive = (path: string) => pathname === path;
 
-  // Si estamos en una ruta de "edición" o proceso de venta, ocultamos la barra para dar espacio al teclado
-  // (Opcional, pero recomendado para móviles)
+  // Ocultamos barra en pantallas de edición
   if (pathname?.startsWith("/editar")) return null;
 
   return (
@@ -40,7 +38,7 @@ export default function BottomNav() {
           <span className="text-[10px] font-medium">Favoritos</span>
         </Link>
 
-        {/* 3. VENDER (Destacado Central) */}
+        {/* 3. VENDER (Botón Flotante Central) */}
         <div className="flex items-center justify-center relative">
             <Link
             href="/vender"
@@ -50,15 +48,17 @@ export default function BottomNav() {
             </Link>
         </div>
 
-        {/* 4. MI TIENDA (Gestión) */}
+        {/* 4. OFERTAS FLASH (Nuevo) */}
+        {/* Asumo que la ruta será /ofertas, si es otra cámbiala aquí */}
         <Link
-          href="/mis-publicaciones"
+          href="/ofertas" 
           className={`inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 group ${
-            isActive("/mis-publicaciones") ? "text-blue-600" : "text-gray-500"
+            isActive("/ofertas") ? "text-yellow-500" : "text-gray-500"
           }`}
         >
-          <Store className={`w-6 h-6 mb-1 ${isActive("/mis-publicaciones") ? "fill-current" : ""}`} />
-          <span className="text-[10px] font-medium">Mi Tienda</span>
+          {/* Usamos el icono Zap (Rayo) y si está activo se rellena de amarillo */}
+          <Zap className={`w-6 h-6 mb-1 ${isActive("/ofertas") ? "fill-yellow-500 text-yellow-500" : ""}`} />
+          <span className="text-[10px] font-medium">Ofertas</span>
         </Link>
 
         {/* 5. PERFIL */}

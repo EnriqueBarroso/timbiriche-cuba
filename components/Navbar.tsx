@@ -6,8 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Heart, Store, Plus, User, Settings } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { useFavorites } from "@/contexts/FavoritesContext";
-// Ya no necesitamos MobileMenu porque tenemos la barra de abajo
-// import MobileMenu from "./MobileMenu"; 
 
 function NavbarContent() {
   const router = useRouter();
@@ -30,8 +28,6 @@ function NavbarContent() {
         
         {/* IZQUIERDA: Logo */}
         <div className="flex items-center gap-3">
-          {/* Eliminado MobileMenu aquí */}
-
           <Link href="/" className="flex items-center gap-2 group">
             <div className="bg-blue-600 text-white p-1.5 rounded-lg transform group-hover:rotate-3 transition-transform">
               <Store className="h-5 w-5" />
@@ -42,7 +38,7 @@ function NavbarContent() {
           </Link>
         </div>
 
-        {/* CENTRO: Barra de Búsqueda (SOLO PC - md:flex) */}
+        {/* CENTRO: Barra de Búsqueda (SOLO PC) */}
         <form
           onSubmit={handleSearch}
           className="hidden md:flex relative flex-1 max-w-md mx-4"
@@ -62,10 +58,10 @@ function NavbarContent() {
           </button>
         </form>
 
-        {/* DERECHA: Iconos (SOLO PC - md:flex) */}
+        {/* DERECHA: Iconos */}
         <div className="flex items-center gap-2 md:gap-3">
           
-          {/* Bloque de iconos que SOLO se ve en PC */}
+          {/* Elementos SOLO PC (Botón Vender Texto + Favoritos) */}
           <div className="hidden md:flex items-center gap-3">
             <Link
               href="/vender"
@@ -73,17 +69,7 @@ function NavbarContent() {
             >
               <Plus className="h-4 w-4" /> Vender
             </Link>
-
-            <SignedIn>
-              <Link
-                href="/mis-publicaciones"
-                className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors relative"
-                title="Mis Publicaciones"
-              >
-                <Store className="h-6 w-6" />
-              </Link>
-            </SignedIn>
-
+            
             <Link
               href="/favoritos"
               className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors relative"
@@ -92,7 +78,19 @@ function NavbarContent() {
             </Link>
           </div>
 
-          {/* Usuario / Login (VISIBLE SIEMPRE) */}
+          {/* 👇 NUEVO: MI TIENDA (Visible en Móvil y PC) */}
+          <SignedIn>
+            <Link
+              href="/mis-publicaciones"
+              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors relative group"
+              title="Mi Tienda (Mis Publicaciones)"
+            >
+              {/* En móvil un poco más pequeño (w-5), en PC normal (w-6) */}
+              <Store className="h-5 w-5 md:h-6 md:w-6" />
+            </Link>
+          </SignedIn>
+
+          {/* Usuario / Login (Visible siempre) */}
           <div className="ml-1">
             <SignedIn>
               <UserButton afterSignOutUrl="/">
