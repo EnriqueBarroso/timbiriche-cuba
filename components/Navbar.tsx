@@ -6,20 +6,18 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Heart, Store, Plus, User, Settings } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { useFavorites } from "@/contexts/FavoritesContext";
-import MobileMenu from "./MobileMenu";
+// Ya no necesitamos MobileMenu porque tenemos la barra de abajo
+// import MobileMenu from "./MobileMenu"; 
 
 function NavbarContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  // 👇 CAMBIO: Leemos 'query' (que es lo que espera el backend)
   const [query, setQuery] = useState(searchParams.get("query") || "");
-
   const { favorites } = useFavorites();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      // 👇 CAMBIO: Enviamos 'query' en la URL
       router.push(`/?query=${encodeURIComponent(query)}`);
     } else {
       router.push("/");
@@ -27,13 +25,12 @@ function NavbarContent() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-        {/* IZQUIERDA: Menú Móvil + Logo */}
+    <header className="sticky top-0 z-40 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">
+      <div className="mx-auto flex h-14 md:h-16 max-w-7xl items-center justify-between px-4">
+        
+        {/* IZQUIERDA: Logo */}
         <div className="flex items-center gap-3">
-          <div className="lg:hidden">
-            <MobileMenu />
-          </div>
+          {/* Eliminado MobileMenu aquí */}
 
           <Link href="/" className="flex items-center gap-2 group">
             <div className="bg-blue-600 text-white p-1.5 rounded-lg transform group-hover:rotate-3 transition-transform">
@@ -45,7 +42,7 @@ function NavbarContent() {
           </Link>
         </div>
 
-        {/* CENTRO: Barra de Búsqueda (Desktop) */}
+        {/* CENTRO: Barra de Búsqueda (SOLO PC - md:flex) */}
         <form
           onSubmit={handleSearch}
           className="hidden md:flex relative flex-1 max-w-md mx-4"
@@ -55,7 +52,6 @@ function NavbarContent() {
             placeholder="¿Qué buscas hoy?"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            // 👇 CAMBIO IMPORTANTE: Añadido 'text-gray-900' y 'placeholder:text-gray-500'
             className="w-full pl-4 pr-10 py-2 rounded-full border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm text-gray-900 placeholder:text-gray-500"
           />
           <button
@@ -66,58 +62,43 @@ function NavbarContent() {
           </button>
         </form>
 
-        {/* DERECHA: Iconos de Acción */}
+        {/* DERECHA: Iconos (SOLO PC - md:flex) */}
         <div className="flex items-center gap-2 md:gap-3">
-          {/* 1. Botón Vender */}
-          <Link
-            href="/vender"
-            className="hidden md:flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-blue-600 transition-colors shadow-sm active:scale-95"
-          >
-            <Plus className="h-4 w-4" /> Vender
-          </Link>
-          <Link
-            href="/vender"
-            className="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-full"
-          >
-            <Plus className="h-6 w-6" />
-          </Link>
-
-          {/* 2. Mis Publicaciones */}
-          <SignedIn>
+          
+          {/* Bloque de iconos que SOLO se ve en PC */}
+          <div className="hidden md:flex items-center gap-3">
             <Link
-              href="/mis-publicaciones"
-              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors relative group"
-              title="Mis Publicaciones"
+              href="/vender"
+              className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-blue-600 transition-colors shadow-sm active:scale-95"
             >
-              <Store className="h-6 w-6" />
+              <Plus className="h-4 w-4" /> Vender
             </Link>
-          </SignedIn>
 
-          {/* 3. Favoritos */}
-          <Link
-            href="/favoritos"
-            className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors relative"
-          >
-            <Heart
-              className={`h-6 w-6 ${favorites.length > 0 ? "fill-red-500 text-red-500" : ""}`}
-            />
-          </Link>
+            <SignedIn>
+              <Link
+                href="/mis-publicaciones"
+                className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors relative"
+                title="Mis Publicaciones"
+              >
+                <Store className="h-6 w-6" />
+              </Link>
+            </SignedIn>
 
-          {/* 4. Usuario / Login */}
+            <Link
+              href="/favoritos"
+              className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors relative"
+            >
+              <Heart className={`h-6 w-6 ${favorites.length > 0 ? "fill-red-500 text-red-500" : ""}`} />
+            </Link>
+          </div>
+
+          {/* Usuario / Login (VISIBLE SIEMPRE) */}
           <div className="ml-1">
             <SignedIn>
               <UserButton afterSignOutUrl="/">
                 <UserButton.MenuItems>
-                  <UserButton.Action
-                    label="Mi Perfil de Vendedor"
-                    labelIcon={<User className="w-4 h-4" />}
-                    onClick={() => router.push("/perfil")}
-                  />
-                  <UserButton.Action
-                    label="Configurar Cuenta"
-                    labelIcon={<Settings className="w-4 h-4" />}
-                    onClick={() => router.push("/perfil")}
-                  />
+                  <UserButton.Action label="Mi Perfil" labelIcon={<User className="w-4 h-4" />} onClick={() => router.push("/perfil")} />
+                  <UserButton.Action label="Configurar Cuenta" labelIcon={<Settings className="w-4 h-4" />} onClick={() => router.push("/perfil")} />
                 </UserButton.MenuItems>
               </UserButton>
             </SignedIn>
@@ -125,11 +106,12 @@ function NavbarContent() {
             <SignedOut>
               <SignInButton mode="modal" forceRedirectUrl="/mis-publicaciones">
                 <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm cursor-pointer">
-                  <User className="h-4 w-4" /> Entrar
+                  <User className="h-4 w-4" /> <span className="hidden md:inline">Entrar</span>
                 </button>
               </SignInButton>
             </SignedOut>
           </div>
+
         </div>
       </div>
     </header>
@@ -138,7 +120,7 @@ function NavbarContent() {
 
 export default function Navbar() {
   return (
-    <Suspense fallback={<div className="h-16 bg-white border-b" />}>
+    <Suspense fallback={<div className="h-14 bg-white border-b" />}>
       <NavbarContent />
     </Suspense>
   );
