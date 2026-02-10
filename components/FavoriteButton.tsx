@@ -2,24 +2,41 @@
 
 import { Heart } from "lucide-react";
 import { useFavorites, FavoriteItem } from "@/contexts/FavoritesContext";
+import { toast } from "sonner"; // 👇 Importamos Sonner
 
 interface Props {
-  product: FavoriteItem; // Recibimos el objeto completo
+  product: FavoriteItem;
 }
 
 export default function FavoriteButton({ product }: Props) {
-  // Usamos el hook del contexto en lugar de Server Actions
   const { isFavorite, toggleFavorite } = useFavorites();
   
   // Comprobamos si YA está en favoritos
+  // (Nota: isFavorite es una función en tu contexto, así que la llamamos)
+  // Si en tu contexto isFavorite fuera un array, avísame, pero asumo que es función por tu código anterior.
   const isLiked = isFavorite(product.id);
 
   const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Evita entrar al producto
+    e.preventDefault(); 
     e.stopPropagation();
     
-    // Guardamos/Quitamos del LocalStorage
+    // 1. Ejecutamos la lógica de guardar/borrar
     toggleFavorite(product);
+
+    // 2. Mostramos el mensaje CORTO (1 seg) según el estado ANTERIOR al click
+    if (isLiked) {
+      // Si ya gustaba y le damos click -> Lo estamos borrando
+      toast.info("Eliminado de favoritos", {
+        duration: 1000, // ⚡ Rápido
+        icon: "🗑️"
+      });
+    } else {
+      // Si no gustaba -> Lo estamos guardando
+      toast.success("Guardado en favoritos", {
+        duration: 1000, // ⚡ Rápido
+        icon: "❤️"
+      });
+    }
   };
 
   return (

@@ -287,3 +287,25 @@ export async function toggleProductStatus(productId: string) {
   
   return { success: true, isSold: newStatus };
 }
+
+export async function getPromotedProducts() {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        isPromoted: true, // 👇 Solo los que tú marcaste
+        isSold: false,    // Y que no estén vendidos
+      },
+      include: {
+        images: true,
+        seller: true,
+      },
+      orderBy: {
+        createdAt: "desc", // Los más nuevos primero
+      },
+    });
+    return products;
+  } catch (error) {
+    console.error("Error cargando ofertas:", error);
+    return [];
+  }
+}

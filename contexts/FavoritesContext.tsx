@@ -1,11 +1,9 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { toast } from "sonner";
-import { Product } from "@/types"; // Asegúrate de que esta ruta sea correcta
+// Eliminamos la importación de toast aquí para evitar duplicados
+import { Product } from "@/types"; 
 
-// Definimos la estructura de un ítem favorito
-// (Usualmente es igual al producto, o una versión simplificada)
 export type FavoriteItem = {
   id: string;
   title: string;
@@ -44,8 +42,6 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Error al cargar favoritos:", error);
     } finally {
-      // Marcamos que ya se cargó para mostrar la UI real
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoaded(true);
     }
   }, []);
@@ -64,12 +60,12 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addToFavorites = (product: FavoriteItem | Product) => {
-    // Normalizamos el objeto para guardar solo lo necesario
+    // Normalizamos el objeto
     const newItem: FavoriteItem = {
       id: product.id,
       title: product.title,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      price: (product as any).price, // Casting por seguridad si los tipos difieren
+      price: (product as any).price, 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       image: (product as any).images?.[0]?.url || (product as any).image || "/placeholder.jpg",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,13 +76,13 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 
     if (!isFavorite(newItem.id)) {
       setFavorites((prev) => [...prev, newItem]);
-      toast.success("Añadido a favoritos ❤️");
+      // 🔇 QUITADO: toast.success("Añadido a favoritos ❤️"); -> Lo maneja el botón
     }
   };
 
   const removeFromFavorites = (productId: string) => {
     setFavorites((prev) => prev.filter((item) => item.id !== productId));
-    toast.info("Eliminado de favoritos");
+    // 🔇 QUITADO: toast.info("Eliminado de favoritos"); -> Lo maneja el botón
   };
 
   const toggleFavorite = (product: FavoriteItem | Product) => {

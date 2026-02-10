@@ -22,6 +22,10 @@ model Product {
   category    String
   isActive    Boolean        @default(true)
   isSold      Boolean        @default(false)
+
+  // 👇 NUEVO CAMPO: Para las Ofertas Flash (Solo tú lo cambias)
+  isPromoted  Boolean  @default(false)
+  
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   sellerId    String?
