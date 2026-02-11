@@ -135,7 +135,6 @@ html {
   }
 
   body {
-    @apply bg-red-500 text-white;
-    /* ← Si esto NO se ve, hay otro problema */
+    @apply bg-gray-50 text-gray-900 antialiased;
   }
 }

@@ -20,8 +20,8 @@ export default function EditForm({ product }: Props) {
 
   const [formData, setFormData] = useState({
     title: product.title || "",
-    // Convertimos de Centavos (DB) a Unidad (Vista) al cargar
-    price: product.price ? (product.price / 100).toString() : "0", 
+    // ✅ CORREGIDO: Sin dividir por 100
+    price: product.price ? product.price.toString() : "0", 
     currency: product.currency || "USD",
     description: product.description || "",
     category: product.category || "others",
@@ -36,10 +36,10 @@ export default function EditForm({ product }: Props) {
       setIsSubmitting(true);
 
       // 2. Preparamos los datos para la DB
-      // Convertimos el precio visible (ej: 10) a centavos (ej: 1000)
+      // ✅ CORREGIDO: Sin multiplicar por 100
       const payload = {
         ...formData,
-        price: Math.round(parseFloat(formData.price) * 100), // x100 para centavos
+        price: Math.round(parseFloat(formData.price)),
         images: formData.imageUrl ? [formData.imageUrl] : [] // Formato array para la acción
       };
 
@@ -173,8 +173,7 @@ export default function EditForm({ product }: Props) {
           </button>
           
           <button
-            type="button" 
-            onClick={handleSubmit}
+            type="submit"
             disabled={isSubmitting}
             className="flex-1 py-3 text-white bg-blue-600 rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-70"
           >

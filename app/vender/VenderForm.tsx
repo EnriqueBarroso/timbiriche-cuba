@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { MultiImageUpload } from "@/components/MultiImageUpload";
-// 👇 IMPORTANTE: Asegúrate de importar updateProduct aquí
 import { createProduct, updateProduct } from "@/lib/actions"; 
 import { Loader2, DollarSign, Store, Save } from "lucide-react";
 import { toast } from "sonner";
@@ -24,7 +23,8 @@ export default function VenderForm({ initialProduct }: Props) {
 
   const [formData, setFormData] = useState({
     title: initialProduct?.title || "",
-    price: initialProduct?.price ? (initialProduct.price / 100).toString() : "", // Convertimos centavos a unidad si es necesario
+    // ✅ CORREGIDO: Sin divisiones complejas
+    price: initialProduct?.price ? initialProduct.price.toString() : "",
     currency: initialProduct?.currency || "USD",
     category: initialProduct?.category || "food",
     description: initialProduct?.description || "",
@@ -50,16 +50,16 @@ export default function VenderForm({ initialProduct }: Props) {
 
       if (isEditing) {
         // --- MODO EDICIÓN ---
-        // Pasamos el ID y los datos (multiplicamos precio x100 si tu createProduct lo espera en centavos, o lo mandamos directo según tu lógica)
+        // ✅ CORREGIDO: Sin multiplicar por 100
         await updateProduct(initialProduct.id, {
           ...formData,
-          price: Number(formData.price) // Asegúrate que tu backend maneje la conversión a centavos si es necesario
+          price: Number(formData.price)
         });
         toast.success("Producto actualizado correctamente");
         router.push("/mis-publicaciones");
         
       } else {
-        // --- MODO CREACIÓN (Tu lógica original) ---
+        // --- MODO CREACIÓN ---
         // Validación de perfil
         const profileRes = await fetch('/perfil/check', { cache: 'no-store' });
         if (!profileRes.ok) throw new Error("Error perfil");
@@ -72,6 +72,7 @@ export default function VenderForm({ initialProduct }: Props) {
           return;
         }
 
+        // ✅ CORREGIDO: Sin multiplicar por 100
         await createProduct({
           title: formData.title,
           price: Number(formData.price),

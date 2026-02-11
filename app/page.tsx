@@ -5,14 +5,12 @@ import {
   Smartphone, 
   Shirt, 
   Home as HomeIcon, 
-  Wrench, // 👇 Nuevo icono para "Piezas"
+  Wrench, 
   Pizza, 
   LayoutGrid,
   Search
 } from "lucide-react";
 
-// 👇 AQUÍ ESTÁ LA CLAVE: 
-// El "slug" debe ser IGUAL al "value" de tu VenderForm.tsx
 const CATEGORIES = [
   { 
     name: "Todo", 
@@ -22,31 +20,31 @@ const CATEGORIES = [
   },
   { 
     name: "Tecnología", 
-    slug: "tech", // value="tech"
+    slug: "tech", 
     icon: Smartphone, 
     color: "bg-blue-100 text-blue-600" 
   },
   { 
     name: "Combos", 
-    slug: "food", // value="food"
+    slug: "food", 
     icon: Pizza, 
     color: "bg-yellow-100 text-yellow-600" 
   },
   { 
     name: "Ropa", 
-    slug: "fashion", // value="fashion"
+    slug: "fashion", 
     icon: Shirt, 
     color: "bg-pink-100 text-pink-600" 
   },
   { 
     name: "Hogar", 
-    slug: "home", // value="home"
+    slug: "home", 
     icon: HomeIcon, 
     color: "bg-orange-100 text-orange-600" 
   },
   { 
     name: "Piezas", 
-    slug: "parts", // value="parts"
+    slug: "parts", 
     icon: Wrench, 
     color: "bg-purple-100 text-purple-600" 
   },
@@ -55,35 +53,35 @@ const CATEGORIES = [
 export const dynamic = "force-dynamic";
 
 interface Props {
-  searchParams: Promise<{ search?: string; category?: string }>;
+  // 👇 ACEPTAMOS 'query' (del Navbar) Y 'search' (por si acaso)
+  searchParams: Promise<{ search?: string; query?: string; category?: string }>;
 }
 
 export default async function Home({ searchParams }: Props) {
-  const { search, category } = await searchParams;
+  const { search, query, category } = await searchParams;
   
-  // Si hay categoría, buscamos por ese slug exacto ("tech", "food", etc.)
-  const searchQuery = category || search || "";
+  // Unificamos el término de búsqueda (priorizamos lo que venga)
+  const searchTerm = search || query || "";
   
   const products = await getProducts({ 
-    query: searchQuery,
-    // Pasamos el category explícitamente si existe para que el filtro sea preciso
-    category: category 
+    query: searchTerm, // Pasamos el texto del buscador
+    category: category // Pasamos la categoría seleccionada
   });
 
-  // Título bonito (Mapeamos el slug "food" a "Alimentos" para el título)
+  // Título bonito
   const categoryName = CATEGORIES.find(c => c.slug === category)?.name || category;
 
   const pageTitle = category 
     ? `Explorando: ${categoryName}`
-    : search 
-      ? `Resultados para "${search}"`
+    : searchTerm 
+      ? `Resultados para "${searchTerm}"`
       : "Novedades Recientes";
 
   return (
     <div className="min-h-screen pb-24 bg-gray-50/50">
       
-      {/* HERO SECTION (Solo en portada) */}
-      {!search && !category && (
+      {/* HERO SECTION (Se oculta si buscas o filtras) */}
+      {!searchTerm && !category && (
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 py-10 md:rounded-b-[2.5rem] shadow-xl mb-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl pointer-events-none"></div>
           <div className="max-w-7xl mx-auto relative z-10">
@@ -101,7 +99,7 @@ export default async function Home({ searchParams }: Props) {
       <div className="max-w-7xl mx-auto">
         
         {/* CARRUSEL DE CATEGORÍAS */}
-        <div className="sticky top-[64px] z-30 bg-gray-50/95 backdrop-blur-md py-4 border-b border-gray-200/50 mb-6 transition-all">
+        <div className="sticky top-[56px] md:top-[64px] z-30 bg-gray-50/95 backdrop-blur-md py-4 border-b border-gray-200/50 mb-6 transition-all">
           <div className="flex overflow-x-auto gap-4 px-4 pb-2 no-scrollbar snap-x items-start">
             {CATEGORIES.map((cat) => {
               const isActive = category === cat.slug || (!category && !cat.slug);
@@ -159,7 +157,10 @@ export default async function Home({ searchParams }: Props) {
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-1">No hay productos aquí</h3>
               <p className="text-gray-500 text-sm max-w-xs mx-auto mb-6">
-                Sé el primero en publicar en la categoría <strong>{categoryName}</strong>.
+                {searchTerm 
+                  ? `No encontramos nada con "${searchTerm}".` 
+                  : `Sé el primero en publicar en la categoría ${categoryName}.`
+                }
               </p>
               <Link href="/vender" className="bg-blue-600 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">
                 Publicar Ahora

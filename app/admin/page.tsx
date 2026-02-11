@@ -3,7 +3,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { Check, Trash2, ShieldAlert, Store } from "lucide-react";
 import { revalidatePath } from "next/cache";
-import { isAdmin } from '@/lib/utils'; // ✅ Import correcto
+import { isAdmin, formatPrice } from '@/lib/utils'; // ✅ Import correcto con formatPrice
 
 export default async function AdminPage() {
   const user = await currentUser();
@@ -11,7 +11,7 @@ export default async function AdminPage() {
   // 1. Seguridad: Si no es el admin, lo mandamos al inicio
   const userEmail = user?.emailAddresses[0]?.emailAddress;
   
-  // ✅ USAMOS la función isAdmin (eliminas la comparación directa con ADMIN_EMAIL)
+  // ✅ USAMOS la función isAdmin
   if (!isAdmin(userEmail)) {
     return redirect("/");
   }
@@ -103,7 +103,8 @@ export default async function AdminPage() {
                                 {product.title}
                             </a>
                             <p className="text-xs text-gray-400">
-                                {product.seller?.storeName || "Vendedor desconocido"} • ${product.price / 100}
+                                {/* ✅ CORREGIDO: Usamos formatPrice sin dividir */}
+                                {product.seller?.storeName || "Vendedor desconocido"} • {formatPrice(product.price, product.currency)}
                             </p>
                         </div>
                     </div>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { formatPrice } from "@/lib/utils"; // ✅ IMPORTAMOS formatPrice
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,7 +18,7 @@ export default function MyProductCard({ product }: Props) {
   const imageRaw = product.images?.[0]?.url;
   const image = (imageRaw && imageRaw.startsWith('http')) 
     ? imageRaw 
-    : "https://placehold.co/600x400/png?text=Sin+Foto"; // 👈 URL segura
+    : "https://placehold.co/600x400/png?text=Sin+Foto";
 
   const date = new Date(product.createdAt).toLocaleDateString();
 
@@ -49,8 +50,9 @@ export default function MyProductCard({ product }: Props) {
           </p>
           
           <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between">
+            {/* ✅ CORREGIDO: Usamos formatPrice sin dividir */}
             <span className="text-lg font-bold text-gray-900">
-              ${(price / 100).toFixed(2)}
+              {formatPrice(price, product.currency)}
             </span>
             <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
               Ver ficha

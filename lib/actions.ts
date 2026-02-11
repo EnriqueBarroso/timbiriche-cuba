@@ -1,14 +1,12 @@
 "use server"
 
 import { prisma } from "@/lib/prisma";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
 const ITEMS_PER_PAGE = 12;
 
-/**
- * 1. OBTENER PRODUCTOS (PÚBLICO)
- */
+// 1. OBTENER PRODUCTOS
 export async function getProducts({
   query,
   category,
@@ -21,26 +19,18 @@ export async function getProducts({
   const skip = (page - 1) * ITEMS_PER_PAGE;
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = {
-    isSold: false, 
-  };
+  const where: any = { isSold: false };
 
   if (query) {
     where.OR = [
       { title: { contains: query, mode: "insensitive" } },
       { description: { contains: query, mode: "insensitive" } },
-      // 👇 TRUCO EXTRA: Buscamos también en la categoría por si el usuario escribe "ropa" en el buscador
       { category: { contains: query, mode: "insensitive" } },
     ];
   }
 
   if (category && category !== "all") {
-    // 👇 CAMBIO CLAVE: "equals" con "mode: insensitive"
-    // Esto hace que "ropa" encuentre "Ropa", "ROPA" o "ropa"
-    where.category = {
-      equals: category,
-      mode: "insensitive", 
-    };
+    where.category = { equals: category, mode: "insensitive" };
   }
 
   try {
@@ -49,10 +39,7 @@ export async function getProducts({
       take: ITEMS_PER_PAGE,
       skip: skip,
       orderBy: { createdAt: "desc" },
-      include: {
-        images: true,
-        seller: true,
-      },
+      include: { images: true, seller: true },
     });
     return products;
   } catch (error) {
@@ -61,59 +48,39 @@ export async function getProducts({
   }
 }
 
-/**
- * 2. OBTENER MIS PRODUCTOS (PANEL VENDEDOR)
- */
+// 2. OBTENER MIS PRODUCTOS
 export async function getMyProducts() {
   const user = await currentUser();
   if (!user) return [];
-
   const email = user.emailAddresses[0].emailAddress;
-
   return await prisma.product.findMany({
-    where: { 
-      seller: { email: email } 
-    },
+    where: { seller: { email: email } },
     orderBy: { createdAt: "desc" },
     include: { images: true },
   });
 }
 
-/**
- * 3. BORRAR UN PRODUCTO
- */
+// 3. BORRAR PRODUCTO
 export async function deleteProduct(productId: string) {
   const user = await currentUser();
   if (!user) return { error: "No autorizado" };
-
   const email = user.emailAddresses[0].emailAddress;
 
-  const seller = await prisma.seller.findUnique({
-    where: { email },
-  });
-
+  const seller = await prisma.seller.findUnique({ where: { email } });
   if (!seller) return { error: "No se encontró perfil de vendedor" };
 
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-  });
-
+  const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product || product.sellerId !== seller.id) {
     return { error: "No tienes permiso para borrar este producto" };
   }
 
-  await prisma.product.delete({
-    where: { id: productId },
-  });
-
+  await prisma.product.delete({ where: { id: productId } });
   revalidatePath("/");
   revalidatePath("/mis-publicaciones");
   return { success: true };
 }
 
-/**
- * 4. CREAR PRODUCTO
- */
+// 4. CREAR PRODUCTO (SIMPLIFICADO: Guardamos el precio tal cual)
 export async function createProduct(data: {
   title: string;
   price: number;
@@ -123,10 +90,7 @@ export async function createProduct(data: {
   images: string[];
 }) {
   const user = await currentUser();
-
-  if (!user || !user.emailAddresses[0]) {
-    throw new Error("Debes iniciar sesión para vender");
-  }
+  if (!user || !user.emailAddresses[0]) throw new Error("Debes iniciar sesión");
 
   const email = user.emailAddresses[0].emailAddress;
   const userName = user.firstName ? `${user.firstName} ${user.lastName || ""}` : "Vendedor Timbiriche";
@@ -144,10 +108,11 @@ export async function createProduct(data: {
     },
   });
 
+  // 👇 AQUÍ ESTÁ EL CAMBIO: Guardamos data.price directo. Sin multiplicar.
   await prisma.product.create({
     data: {
       title: data.title,
-      price: Math.round(data.price * 100),
+      price: data.price, 
       currency: data.currency, 
       description: data.description,
       category: data.category,
@@ -162,112 +127,11 @@ export async function createProduct(data: {
   return { success: true };
 }
 
-/**
- * 5. ACTUALIZAR PRODUCTO
- */
+// 5. ACTUALIZAR PRODUCTO (SIMPLIFICADO)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function updateProduct(productId: string, data: any) {
   const user = await currentUser();
   if (!user) throw new Error("No autorizado");
-
-  const email = user.emailAddresses[0].emailAddress;
-
-  // 1. Verificamos que el producto sea realmente de este usuario
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-    include: { seller: true }
-  });
-
- // Agregamos la verificación "!product.seller" en el medio
-  if (!product || !product.seller || product.seller.email !== email) {
-    throw new Error("No tienes permiso para editar este producto");
-  }
-  // 2. Actualizamos
-  await prisma.product.update({
-    where: { id: productId },
-    data: {
-      title: data.title,
-      price: data.price,
-      currency: data.currency,
-      category: data.category,
-      description: data.description,
-      // Manejo simple de imágenes: reemplazamos todas
-      images: {
-        deleteMany: {}, // Borramos las viejas relaciones
-        create: data.images.map((url: string) => ({ url })) // Creamos las nuevas
-      }
-    }
-  });
-
-  // 3. Limpiamos caché para que se vea el cambio
-  revalidatePath("/mis-publicaciones");
-  revalidatePath(`/product/${productId}`);
-  revalidatePath("/");
-}
-
-/**
- * 6. ACTUALIZAR PERFIL DE VENDEDOR
- */
-export async function updateProfile(data: { storeName: string; phoneNumber: string; avatar?: string }) {
-  const user = await currentUser();
-  if (!user) throw new Error("No autorizado");
-
-  const email = user.emailAddresses[0].emailAddress;
-
-  await prisma.seller.upsert({
-    where: { email },
-    update: {
-      storeName: data.storeName,
-      phoneNumber: data.phoneNumber,
-      ...(data.avatar && { avatar: data.avatar }),
-    },
-    create: {
-      id: user.id, 
-      email,
-      storeName: data.storeName,
-      phoneNumber: data.phoneNumber,
-      avatar: data.avatar || user.imageUrl,
-      isVerified: false,
-    },
-  });
-
-  revalidatePath("/perfil");
-  revalidatePath("/vender");
-  revalidatePath("/mis-publicaciones");
-  return { success: true };
-}
-
-/**
- * 7. ACCIÓN DE SINCRONIZACIÓN (NUEVA)
- * Esta es la que usaremos en el layout para asegurar que el usuario existe en Supabase.
- */
-export async function syncUserAction() {
-  const user = await currentUser();
-  if (!user) return;
-
-  const email = user.emailAddresses[0].emailAddress;
-
-  await prisma.seller.upsert({
-    where: { email },
-    update: {
-      avatar: user.imageUrl, // Mantenemos el avatar fresco
-    },
-    create: {
-      id: user.id,
-      email: email,
-      storeName: user.firstName || "Mi Tienda",
-      avatar: user.imageUrl,
-      phoneNumber: "",
-      isVerified: false,
-    },
-  });
-}
-/**
- * 9. MARCAR COMO VENDIDO / DISPONIBLE
- */
-export async function toggleProductStatus(productId: string) {
-  const user = await currentUser();
-  if (!user) throw new Error("No autorizado");
-
   const email = user.emailAddresses[0].emailAddress;
 
   const product = await prisma.product.findUnique({
@@ -278,40 +142,91 @@ export async function toggleProductStatus(productId: string) {
   if (!product || !product.seller || product.seller.email !== email) {
     throw new Error("No tienes permiso");
   }
-
-  // Interruptor: Lo contrario de lo que tenga ahora
-  const newStatus = !product.isSold;
-
+  
   await prisma.product.update({
     where: { id: productId },
-    data: { isSold: newStatus }
+    data: {
+      title: data.title,
+      // 👇 AQUÍ TAMBIÉN: Guardamos directo si hay cambio de precio
+      ...(data.price && { price: data.price }),
+      currency: data.currency,
+      category: data.category,
+      description: data.description,
+      ...(data.images && data.images.length > 0 && {
+        images: {
+            deleteMany: {},
+            create: data.images.map((url: string) => ({ url }))
+        }
+      })
+    }
   });
 
   revalidatePath("/mis-publicaciones");
+  revalidatePath(`/product/${productId}`);
+  revalidatePath("/");
+}
+
+// ... Resto de funciones (updateProfile, syncUserAction, etc.) ...
+// Puedes dejar las que ya tenías, no han cambiado.
+export async function updateProfile(data: { storeName: string; phoneNumber: string; avatar?: string }) {
+  const user = await currentUser();
+  if (!user) throw new Error("No autorizado");
+  const email = user.emailAddresses[0].emailAddress;
+  await prisma.seller.upsert({
+    where: { email },
+    update: {
+      storeName: data.storeName,
+      phoneNumber: data.phoneNumber,
+      ...(data.avatar && { avatar: data.avatar }),
+    },
+    create: {
+      id: user.id, email,
+      storeName: data.storeName,
+      phoneNumber: data.phoneNumber,
+      avatar: data.avatar || user.imageUrl, isVerified: false,
+    },
+  });
+  revalidatePath("/perfil");
+  revalidatePath("/vender");
+  revalidatePath("/mis-publicaciones");
+  return { success: true };
+}
+
+export async function syncUserAction() {
+  const user = await currentUser();
+  if (!user) return;
+  const email = user.emailAddresses[0].emailAddress;
+  await prisma.seller.upsert({
+    where: { email },
+    update: { avatar: user.imageUrl },
+    create: {
+      id: user.id, email: email,
+      storeName: user.firstName || "Mi Tienda",
+      avatar: user.imageUrl, phoneNumber: "", isVerified: false,
+    },
+  });
+}
+
+export async function toggleProductStatus(productId: string) {
+  const user = await currentUser();
+  if (!user) throw new Error("No autorizado");
+  const email = user.emailAddresses[0].emailAddress;
+  const product = await prisma.product.findUnique({ where: { id: productId }, include: { seller: true } });
+  if (!product || !product.seller || product.seller.email !== email) throw new Error("No tienes permiso");
+  const newStatus = !product.isSold;
+  await prisma.product.update({ where: { id: productId }, data: { isSold: newStatus } });
+  revalidatePath("/mis-publicaciones");
   revalidatePath("/");
   revalidatePath(`/product/${productId}`);
-  
   return { success: true, isSold: newStatus };
 }
 
 export async function getPromotedProducts() {
   try {
-    const products = await prisma.product.findMany({
-      where: {
-        isPromoted: true, // 👇 Solo los que tú marcaste
-        isSold: false,    // Y que no estén vendidos
-      },
-      include: {
-        images: true,
-        seller: true,
-      },
-      orderBy: {
-        createdAt: "desc", // Los más nuevos primero
-      },
+    return await prisma.product.findMany({
+      where: { isPromoted: true, isSold: false },
+      include: { images: true, seller: true },
+      orderBy: { createdAt: "desc" },
     });
-    return products;
-  } catch (error) {
-    console.error("Error cargando ofertas:", error);
-    return [];
-  }
+  } catch (error) { return []; }
 }

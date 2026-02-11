@@ -11,6 +11,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import SyncUser from "@/components/SyncUser";
 import BottomNav from "@/components/BottomNav";
+import AdminButton from "@/components/AdminButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -79,22 +80,25 @@ export default function RootLayout({
     <ClerkProvider localization={esES}>
       <html lang="es">
         <body className={inter.className}>
-          {/* Componente que sincroniza Clerk con Prisma al entrar */}
           <SyncUser />
 
           <CartProvider>
             <FavoritesProvider>
-              {/* 👇 CAMBIO CLAVE: pb-20 en móvil para que el menú no tape el footer */}
+
+              {/* 👇 BOTÓN FLOTANTE BIEN POSICIONADO */}
+              <div className="fixed top-20 right-4 z-50 md:top-4">
+                <AdminButton />
+              </div>
+
               <div className="flex min-h-screen flex-col pb-20 md:pb-0">
                 <Navbar />
-                
                 <main className="flex-grow bg-gray-50">
                   {children}
                 </main>
-                
                 <Footer />
                 <BottomNav />
               </div>
+
             </FavoritesProvider>
           </CartProvider>
 
