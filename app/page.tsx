@@ -1,91 +1,150 @@
-// app/page.tsx
-import { ProductCard } from "@/components/ProductCard"
-import { HeroSection } from "@/components/HeroSection"
-import { CategoriesBar } from "@/components/CategoriesBar"
-import { SearchBar } from "@/components/SearchBar"
-import { Search, X } from "lucide-react"
-import Link from "next/link"
-// 👇 1. IMPORTAMOS LA FUNCIÓN BUENA (Con paginación automática)
-import { getProducts } from "@/lib/actions" 
+import { getProducts } from "@/lib/actions";
+import { ProductCard } from "@/components/ProductCard";
+import Link from "next/link";
+import { 
+  Smartphone, 
+  Shirt, 
+  Home as HomeIcon, 
+  Wrench, // 👇 Nuevo icono para "Piezas"
+  Pizza, 
+  LayoutGrid,
+  Search
+} from "lucide-react";
 
-// ❌ AQUÍ BORRAMOS LA FUNCIÓN LOCAL "async function getProducts..." QUE TENÍAS
+// 👇 AQUÍ ESTÁ LA CLAVE: 
+// El "slug" debe ser IGUAL al "value" de tu VenderForm.tsx
+const CATEGORIES = [
+  { 
+    name: "Todo", 
+    slug: "", 
+    icon: LayoutGrid, 
+    color: "bg-gray-100 text-gray-600" 
+  },
+  { 
+    name: "Tecnología", 
+    slug: "tech", // value="tech"
+    icon: Smartphone, 
+    color: "bg-blue-100 text-blue-600" 
+  },
+  { 
+    name: "Combos", 
+    slug: "food", // value="food"
+    icon: Pizza, 
+    color: "bg-yellow-100 text-yellow-600" 
+  },
+  { 
+    name: "Ropa", 
+    slug: "fashion", // value="fashion"
+    icon: Shirt, 
+    color: "bg-pink-100 text-pink-600" 
+  },
+  { 
+    name: "Hogar", 
+    slug: "home", // value="home"
+    icon: HomeIcon, 
+    color: "bg-orange-100 text-orange-600" 
+  },
+  { 
+    name: "Piezas", 
+    slug: "parts", // value="parts"
+    icon: Wrench, 
+    color: "bg-purple-100 text-purple-600" 
+  },
+];
 
-export default async function Home({
-  searchParams,
-}: {
+export const dynamic = "force-dynamic";
+
+interface Props {
   searchParams: Promise<{ search?: string; category?: string }>;
-}) {
-  const params = await searchParams;
+}
+
+export default async function Home({ searchParams }: Props) {
+  const { search, category } = await searchParams;
   
-  // 👇 2. USAMOS LA FUNCIÓN IMPORTADA
-  // Esta limita a 12 productos automáticamente y es más segura
-  const products = await getProducts({
-    query: params.search,
-    category: params.category
+  // Si hay categoría, buscamos por ese slug exacto ("tech", "food", etc.)
+  const searchQuery = category || search || "";
+  
+  const products = await getProducts({ 
+    query: searchQuery,
+    // Pasamos el category explícitamente si existe para que el filtro sea preciso
+    category: category 
   });
 
+  // Título bonito (Mapeamos el slug "food" a "Alimentos" para el título)
+  const categoryName = CATEGORIES.find(c => c.slug === category)?.name || category;
+
+  const pageTitle = category 
+    ? `Explorando: ${categoryName}`
+    : search 
+      ? `Resultados para "${search}"`
+      : "Novedades Recientes";
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="min-h-screen pb-24 bg-gray-50/50">
       
-      {/* 1. Carrusel de Categorías */}
-      <CategoriesBar />
-      
-      {/* 2. Barra de Búsqueda (Móvil) */}
-      <SearchBar />
-      
-      <main className="min-h-screen pb-20">
-        {/* 3. Hero Section (Solo si no hay filtros activos) */}
-        {!params.search && !params.category && (
-           <HeroSection />
-        )}
-
-        {/* 4. Banner de Filtros Activos */}
-        {(params.search || params.category) && (
-          <div className="bg-blue-50 border-b border-blue-100 py-3">
-            <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-sm font-medium text-blue-900">
-                  Filtrando:
-                </p>
-                {params.search && (
-                  <span className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
-                    <Search className="h-3.5 w-3.5" />
-                    &quot;{params.search}&quot;
-                  </span>
-                )}
-                {params.category && params.category !== "all" && (
-                  <span className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
-                    📂 {params.category}
-                  </span>
-                )}
-              </div>
-              <Link 
-                href="/" 
-                className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
-              >
-                <X className="h-4 w-4" />
-                Limpiar
-              </Link>
-            </div>
+      {/* HERO SECTION (Solo en portada) */}
+      {!search && !category && (
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 py-10 md:rounded-b-[2.5rem] shadow-xl mb-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl pointer-events-none"></div>
+          <div className="max-w-7xl mx-auto relative z-10">
+            <h1 className="text-3xl md:text-5xl font-black mb-3 tracking-tight leading-tight">
+              ¡Hola! 👋 <br />
+              <span className="text-blue-200">¿Qué buscas hoy?</span>
+            </h1>
+            <p className="text-blue-100 text-sm md:text-lg max-w-md opacity-90 font-medium">
+              Explora miles de productos cerca de ti en Cuba. Compra y vende fácil.
+            </p>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* 5. Grid de Productos */}
-        <div id="products" className="mx-auto max-w-7xl px-4 py-12 md:px-6">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">
-              {params.search 
-                ? `Resultados para "${params.search}"`
-                : params.category 
-                  ? "Explorando Categoría"
-                  : "Novedades"
-              }
-            </h2>
-            <span className="text-sm text-muted-foreground">
-              {products.length} productos
-            </span>
+      <div className="max-w-7xl mx-auto">
+        
+        {/* CARRUSEL DE CATEGORÍAS */}
+        <div className="sticky top-[64px] z-30 bg-gray-50/95 backdrop-blur-md py-4 border-b border-gray-200/50 mb-6 transition-all">
+          <div className="flex overflow-x-auto gap-4 px-4 pb-2 no-scrollbar snap-x items-start">
+            {CATEGORIES.map((cat) => {
+              const isActive = category === cat.slug || (!category && !cat.slug);
+
+              return (
+                <Link
+                  key={cat.name}
+                  href={cat.slug ? `/?category=${cat.slug}` : "/"}
+                  className="flex flex-col items-center gap-2 min-w-[72px] snap-center group select-none"
+                >
+                  <div className={`
+                    w-16 h-16 rounded-full flex items-center justify-center 
+                    transition-all duration-300 shadow-sm group-hover:scale-105 group-active:scale-95
+                    border-[3px] 
+                    ${isActive 
+                      ? "border-blue-600 ring-2 ring-blue-100 scale-105" 
+                      : "border-white hover:border-blue-200"
+                    }
+                    ${cat.color}
+                  `}>
+                    <cat.icon size={26} strokeWidth={2.5} />
+                  </div>
+                  
+                  <span className={`text-[11px] font-bold tracking-wide transition-colors ${isActive ? "text-blue-700" : "text-gray-500 group-hover:text-blue-600"}`}>
+                    {cat.name}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
+        </div>
 
+        {/* RESULTADOS */}
+        <div className="px-4 mb-5 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            {pageTitle}
+          </h2>
+          <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+            {products.length} productos
+          </span>
+        </div>
+
+        <div className="px-4">
           {products.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -94,24 +153,22 @@ export default async function Home({
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-20 text-center bg-muted/30 rounded-3xl border border-dashed border-muted-foreground/25">
-              <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-4">
-                <Search className="h-8 w-8 text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <div className="bg-gray-100 p-6 rounded-full mb-4">
+                <Search className="w-12 h-12 text-gray-400" />
               </div>
-              <h3 className="text-xl font-bold text-foreground">No encontramos nada</h3>
-              <p className="text-muted-foreground max-w-md mt-2">
-                Prueba con otros términos o elimina los filtros.
+              <h3 className="text-lg font-bold text-gray-900 mb-1">No hay productos aquí</h3>
+              <p className="text-gray-500 text-sm max-w-xs mx-auto mb-6">
+                Sé el primero en publicar en la categoría <strong>{categoryName}</strong>.
               </p>
-              <Link 
-                href="/" 
-                className="mt-6 px-6 py-2 bg-primary text-primary-foreground rounded-full font-medium hover:bg-primary/90 transition-colors"
-              >
-                Ver todo
+              <Link href="/vender" className="bg-blue-600 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">
+                Publicar Ahora
               </Link>
             </div>
           )}
         </div>
-      </main>
+
+      </div>
     </div>
-  )
+  );
 }

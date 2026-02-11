@@ -20,26 +20,32 @@ export async function getProducts({
 }) {
   const skip = (page - 1) * ITEMS_PER_PAGE;
   
-  // 👇 CAMBIO 1: Filtramos para que NO traiga los vendidos
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = {
-    isSold: false, // Solo mostramos lo disponible
+    isSold: false, 
   };
 
   if (query) {
     where.OR = [
       { title: { contains: query, mode: "insensitive" } },
       { description: { contains: query, mode: "insensitive" } },
+      // 👇 TRUCO EXTRA: Buscamos también en la categoría por si el usuario escribe "ropa" en el buscador
+      { category: { contains: query, mode: "insensitive" } },
     ];
   }
 
   if (category && category !== "all") {
-    where.category = category;
+    // 👇 CAMBIO CLAVE: "equals" con "mode: insensitive"
+    // Esto hace que "ropa" encuentre "Ropa", "ROPA" o "ropa"
+    where.category = {
+      equals: category,
+      mode: "insensitive", 
+    };
   }
 
   try {
     const products = await prisma.product.findMany({
-      where, // Usamos el filtro con isSold: false
+      where, 
       take: ITEMS_PER_PAGE,
       skip: skip,
       orderBy: { createdAt: "desc" },
