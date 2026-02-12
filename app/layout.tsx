@@ -45,7 +45,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Timbiriche Team" }],
   icons: {
-    icon: "/favicon.ico",
+    icon: "/logo-cuba.png", // 👈 Nombre nuevo
+    shortcut: "/logo-cuba.png",
+    apple: "/logo-cuba.png",
   },
   openGraph: {
     title: "Timbiriche Cuba 🇨🇺",

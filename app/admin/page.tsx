@@ -3,7 +3,8 @@ import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { Check, Trash2, ShieldAlert, Store } from "lucide-react";
 import { revalidatePath } from "next/cache";
-import { isAdmin, formatPrice } from '@/lib/utils'; // ✅ Import correcto con formatPrice
+import { isAdmin, formatPrice } from '@/lib/utils';
+import PromoteButton from "@/components/PromoteButton"; // ✅ NUEVO
 
 export default async function AdminPage() {
   const user = await currentUser();
@@ -11,7 +12,6 @@ export default async function AdminPage() {
   // 1. Seguridad: Si no es el admin, lo mandamos al inicio
   const userEmail = user?.emailAddresses[0]?.emailAddress;
   
-  // ✅ USAMOS la función isAdmin
   if (!isAdmin(userEmail)) {
     return redirect("/");
   }
@@ -86,7 +86,6 @@ export default async function AdminPage() {
             {allProducts.map((product) => (
                 <div key={product.id} className="flex items-center justify-between py-4">
                     <div className="flex items-center gap-4">
-                        {/* Pequeña imagen de referencia */}
                         {product.images && product.images.length > 0 ? (
                              // eslint-disable-next-line @next/next/no-img-element
                              <img 
@@ -103,24 +102,27 @@ export default async function AdminPage() {
                                 {product.title}
                             </a>
                             <p className="text-xs text-gray-400">
-                                {/* ✅ CORREGIDO: Usamos formatPrice sin dividir */}
                                 {product.seller?.storeName || "Vendedor desconocido"} • {formatPrice(product.price, product.currency)}
                             </p>
                         </div>
                     </div>
                     
-                    <form action={async () => {
-                        "use server";
-                        await prisma.product.delete({ where: { id: product.id }});
-                        revalidatePath("/admin");
-                    }}>
-                        <button 
-                            className="text-red-500 p-2 hover:bg-red-50 rounded-full transition-colors" 
-                            title="Borrar Producto Inmediatamente"
-                        >
-                            <Trash2 size={20} />
-                        </button>
-                    </form>
+                    {/* ✅ NUEVO: Botones agrupados (Promote + Delete) */}
+                    <div className="flex items-center gap-2">
+                        <PromoteButton productId={product.id} isPromoted={product.isPromoted} />
+                        <form action={async () => {
+                            "use server";
+                            await prisma.product.delete({ where: { id: product.id }});
+                            revalidatePath("/admin");
+                        }}>
+                            <button 
+                                className="text-red-500 p-2 hover:bg-red-50 rounded-full transition-colors" 
+                                title="Borrar Producto Inmediatamente"
+                            >
+                                <Trash2 size={20} />
+                            </button>
+                        </form>
+                    </div>
                 </div>
             ))}
           </div>

@@ -230,3 +230,92 @@ export async function getPromotedProducts() {
     });
   } catch (error) { return []; }
 }
+
+// TOGGLE PROMOTED STATUS (Solo Admin)
+export async function togglePromotedStatus(productId: string) {
+  const user = await currentUser();
+  if (!user) throw new Error("No autorizado");
+
+  const email = user.emailAddresses[0].emailAddress;
+  if (email !== process.env.ADMIN_EMAIL) {
+    throw new Error("Solo el administrador puede promocionar productos");
+  }
+
+  const product = await prisma.product.findUnique({ where: { id: productId } });
+  if (!product) throw new Error("Producto no encontrado");
+
+  const updated = await prisma.product.update({
+    where: { id: productId },
+    data: { isPromoted: !product.isPromoted },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+  return { success: true, isPromoted: updated.isPromoted };
+}
+
+/**
+ * 10. SEGUIR / DEJAR DE SEGUIR VENDEDOR
+ */
+export async function toggleFollowAction(sellerId: string) {
+  const user = await currentUser();
+  if (!user) throw new Error("Debes iniciar sesión");
+
+  const followerId = user.id;
+
+  // No puedes seguirte a ti mismo
+  if (followerId === sellerId) return { error: "No puedes seguirte a ti mismo" };
+
+  // Verificamos si ya lo sigue
+  const existingFollow = await prisma.follower.findUnique({
+    where: {
+      followerId_sellerId: {
+        followerId,
+        sellerId,
+      },
+    },
+  });
+
+  if (existingFollow) {
+    // Si existe -> BORRAR (Dejar de seguir)
+    await prisma.follower.delete({
+      where: {
+        followerId_sellerId: {
+          followerId,
+          sellerId,
+        },
+      },
+    });
+    revalidatePath(`/product/[id]`); // Actualizar caché
+    return { isFollowing: false };
+  } else {
+    // Si no existe -> CREAR (Seguir)
+    await prisma.follower.create({
+      data: {
+        followerId,
+        sellerId,
+      },
+    });
+    revalidatePath(`/product/[id]`);
+    return { isFollowing: true };
+  }
+}
+
+/**
+ * 11. COMPROBAR SI SIGO A UN VENDEDOR
+ */
+export async function checkIfFollowing(sellerId: string) {
+  const user = await currentUser();
+  if (!user) return false;
+
+  const follow = await prisma.follower.findUnique({
+    where: {
+      followerId_sellerId: {
+        followerId: user.id,
+        sellerId: sellerId,
+      },
+    },
+  });
+
+  return !!follow; // Retorna true si existe, false si no
+}

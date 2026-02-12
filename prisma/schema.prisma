@@ -53,6 +53,7 @@ model Seller {
   avatar      String?
   createdAt   DateTime  @default(now())
   products    Product[]
+  followers   Follower[]
 }
 
 model Favorite {
@@ -64,4 +65,17 @@ model Favorite {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
+}
+model Follower {
+  id        String   @id @default(uuid())
+  
+  followerId String  // El ID del usuario que sigue (Cliente)
+  
+  sellerId   String  // El ID del vendedor seguido
+  seller     Seller  @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime @default(now())
+
+  // Esto evita que sigas al mismo vendedor 2 veces
+  @@unique([followerId, sellerId])
 }

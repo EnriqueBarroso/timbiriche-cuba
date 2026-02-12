@@ -1,14 +1,10 @@
 import type { NextConfig } from "next";
 
-// NOTA: He quitado ": NextConfig" después de "const nextConfig"
-// para que TypeScript no bloquee la propiedad 'eslint'.
-const nextConfig = {
+const nextConfig: NextConfig = {
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // ✅ SIN coma extra aquí, sigue siendo parte del mismo objeto
   images: {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -18,7 +14,6 @@ const nextConfig = {
       { protocol: 'https', hostname: 'ui-avatars.com' },
       { protocol: 'https', hostname: 'placehold.co' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
-      { protocol: 'https', hostname: 'placehold.co' },
     ],
   },
 };

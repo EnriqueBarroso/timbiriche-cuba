@@ -1,190 +1,262 @@
-// src/app/product/[id]/page.tsx
-
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, MessageCircle, BadgeCheck, Star, Clock, Calendar, Edit, Trash2 } from 'lucide-react'
+import { ChevronLeft, MessageCircle, Edit, Trash2, MapPin } from 'lucide-react'
 import ProductImageGallery from '@/components/ProductImageGallery'
 import FavoriteButton from "@/components/FavoriteButton"
+import ShareButton from "@/components/ShareButton"
+import FollowButton from "@/components/FollowButton"
+import ProductJsonLd from "@/components/ProductJsonLd"
 import { Metadata } from "next"
 import { currentUser } from "@clerk/nextjs/server"
-import { deleteProduct } from '@/lib/actions'
-import { formatPrice } from '@/lib/utils' // 👈 IMPORTANTÍSIMO
+import { deleteProduct, checkIfFollowing } from '@/lib/actions'
+import { formatPrice } from '@/lib/utils'
 
-// 👇 ESTO ARREGLA EL PROBLEMA DE QUE "NO SE ACTUALIZA EL PRECIO" (CACHÉ)
 export const dynamic = "force-dynamic";
 
 interface Props {
-  params: Promise<{ id: string }>
+    params: Promise<{ id: string }>
 }
 
+// ✅ METADATA COMPLETA
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const product = await prisma.product.findUnique({
-    where: { id },
-    include: { images: true, seller: true },
-  });
-  if (!product) return { title: "Producto no encontrado" };
-  return { title: `${product.title} | Timbiriche 🇨🇺` };
+    const { id } = await params;
+    const product = await prisma.product.findUnique({
+        where: { id },
+        include: { images: true, seller: true },
+    });
+
+    if (!product) {
+        return { title: "Producto no encontrado" };
+    }
+
+    const title = product.title;
+    const priceText = formatPrice(product.price, product.currency);
+    const description = product.description
+        ? `${priceText} — ${product.description.slice(0, 140)}`
+        : `${priceText} — Disponible en Timbiriche Cuba`;
+    const imageUrl = product.images[0]?.url || "/opengraph-image.png";
+    const productUrl = `https://timbiriche-cuba.vercel.app/product/${product.id}`;
+
+    return {
+        title,
+        description,
+        alternates: {
+            canonical: productUrl,
+        },
+        openGraph: {
+            title: `${title} — ${priceText}`,
+            description,
+            url: productUrl,
+            siteName: "Timbiriche Cuba",
+            images: [
+                {
+                    url: imageUrl,
+                    width: 800,
+                    height: 800,
+                    alt: title,
+                },
+            ],
+            locale: "es_ES",
+            type: "website",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: `${title} — ${priceText}`,
+            description,
+            images: [imageUrl],
+        },
+    };
 }
 
 export default async function ProductPage({ params }: Props) {
-  const { id } = await params
-  const user = await currentUser();
+    const { id } = await params
+    const user = await currentUser();
 
-  const product = await prisma.product.findUnique({
-    where: { id: id },
-    include: { images: true, seller: true }
-  })
+    const product = await prisma.product.findUnique({
+        where: { id: id },
+        include: { images: true, seller: true }
+    })
 
-  if (!product) return notFound()
+    if (!product) return notFound()
 
-  const isOwner = user?.emailAddresses[0]?.emailAddress === product.seller?.email;
-  const imagesList = product.images.map(img => img.url)
-  
-  // Limpieza del teléfono
-  const rawPhone = product.seller?.phoneNumber || '';
-  const phone = rawPhone.replace(/\D/g, '');
-  const hasPhone = phone.length >= 8;
-  const whatsappUrl = hasPhone
-    ? `https://wa.me/${phone}?text=${encodeURIComponent(`Hola, vi tu anuncio *${product.title}* en Timbiriche y me interesa.`)}`
-    : '#';
+    const isOwner = user?.emailAddresses[0]?.emailAddress === product.seller?.email;
 
-  const sellerName = product.seller?.storeName || 'Vendedor';
-  const avatarUrl = product.seller?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(sellerName)}&background=random`;
+    const rawPhone = product.seller?.phoneNumber || '';
+    const phone = rawPhone.replace(/\D/g, '');
+    const hasPhone = phone.length >= 8;
+    const whatsappUrl = hasPhone
+        ? `https://wa.me/${phone}?text=${encodeURIComponent(`Hola, vi *${product.title}* en Timbiriche.`)}`
+        : '#';
 
-  const memberSince = product.seller?.createdAt
-    ? new Date(product.seller.createdAt).getFullYear()
-    : new Date().getFullYear();
+    const sellerName = product.seller?.storeName || 'Vendedor Timbiriche';
+    const avatarUrl = product.seller?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(sellerName)}&background=random`;
 
-  // Datos para favoritos
-  const favoriteData = {
-    id: product.id,
-    title: product.title,
-    price: product.price, // Pasamos el precio CRUDO, que formatPrice lo arregle
-    image: product.images[0]?.url || "/placeholder.jpg",
-    currency: product.currency,
-    seller: product.seller ? {
-      name: product.seller.storeName,
-      phone: product.seller.phoneNumber || "",
-      avatar: product.seller.avatar || undefined
-    } : undefined
-  };
+    const currency = product.currency || "USD";
 
-  return (
-    <div className="min-h-screen pb-28 md:pb-32 bg-gray-50">
-      {/* Header Sticky */}
-      <div className="bg-white sticky top-0 z-20 px-3 md:px-4 py-2.5 md:py-3 shadow-sm flex items-center gap-3 md:gap-4 border-b border-gray-100">
-        <Link href={isOwner ? "/mis-publicaciones" : "/"} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
-          <ChevronLeft className="w-6 h-6 text-gray-700" />
-        </Link>
-        <span className="font-semibold text-sm md:text-base text-gray-900 truncate flex-1">
-          {isOwner ? "Gestionar Producto" : "Detalles"}
-        </span>
-      </div>
+    const favoriteData = {
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        image: product.images[0]?.url || "/placeholder.jpg",
+        currency: currency,
+        seller: product.seller ? {
+            name: sellerName,
+            phone: rawPhone,
+            avatar: avatarUrl
+        } : undefined
+    };
 
-      <div className="max-w-4xl mx-auto md:p-4 lg:py-8">
+    const isFollowing = await checkIfFollowing(product.sellerId || "");
+    const isLoggedIn = !!user;
+    const currentUserId = user?.id;
 
-        {isOwner && (
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4 mx-4 md:mx-0 flex items-start gap-3">
-            <div className="bg-blue-100 p-2 rounded-full text-blue-600 shrink-0"><Edit className="w-5 h-5" /></div>
-            <div>
-              <h3 className="font-bold text-blue-900 text-sm">Vista de Propietario</h3>
-              <p className="text-blue-700 text-xs md:text-sm mt-1">Así ven los compradores tu publicación.</p>
+    return (
+        <div className="min-h-screen pb-32 bg-gray-50">
+
+            {/* ✅ JSON-LD STRUCTURED DATA */}
+            <ProductJsonLd
+                name={product.title}
+                description={product.description}
+                price={product.price}
+                currency={currency}
+                imageUrl={product.images[0]?.url || "/opengraph-image.png"}
+                url={`https://timbiriche-cuba.vercel.app/product/${product.id}`}
+                sellerName={sellerName}
+                isSold={product.isSold}
+            />
+
+            {/* 1. Navbar Transparente */}
+            <div className="fixed top-0 left-0 right-0 z-20 p-4 flex justify-between items-start pointer-events-none">
+                <Link href="/" className="bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-sm text-gray-700 hover:bg-white pointer-events-auto transition-all">
+                    <ChevronLeft className="w-6 h-6" />
+                </Link>
             </div>
-          </div>
-        )}
 
-        <div className="md:rounded-2xl overflow-hidden mb-4">
-          <ProductImageGallery images={imagesList} />
-        </div>
+            <div className="max-w-4xl mx-auto md:pt-6 md:px-4">
 
-        <div className="bg-white md:rounded-2xl p-4 md:p-6 shadow-sm border-t border-b md:border border-gray-100 mb-4 relative">
-          {!isOwner && (
-            <div className="absolute top-4 right-4 md:top-6 md:right-6 z-10">
-              <FavoriteButton product={favoriteData} />
-            </div>
-          )}
-
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 leading-tight pr-12">
-            {product.title}
-          </h1>
-
-          <div className="flex items-baseline gap-2">
-            {/* 👇 AQUÍ USAMOS EL FORMAT PRICE CORRECTO */}
-            <span className="text-3xl md:text-4xl font-extrabold text-blue-600">
-              {formatPrice(product.price, product.currency)}
-            </span>
-          </div>
-        </div>
-
-        {/* Vendedor */}
-        {!isOwner && (
-          <div className="bg-white md:rounded-2xl p-4 md:p-6 shadow-sm border-t border-b md:border border-gray-100 mb-4">
-            <h2 className="text-base md:text-lg font-semibold text-gray-900 mb-4">Vendedor</h2>
-            <Link href={product.seller ? `/vendedor/${product.seller.id}` : '#'} className="group block">
-              <div className="flex items-center gap-3 md:gap-4 mb-4">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={avatarUrl} alt="Seller" className="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover border-2 border-gray-100 group-hover:border-blue-500 transition-colors shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-bold text-base md:text-lg text-gray-900 group-hover:text-blue-600 truncate">{sellerName}</span>
-                    {product.seller?.isVerified && <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-bold">Verificado</span>}
-                  </div>
-                  <div className="flex items-center gap-1 text-sm text-gray-600">
-                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                    <span className="font-bold text-gray-900">4.8</span>
-                  </div>
+                {/* 2. Galería */}
+                <div className="md:rounded-3xl overflow-hidden shadow-sm bg-white">
+                    <ProductImageGallery images={product.images.map(img => img.url)} />
                 </div>
-              </div>
-            </Link>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center gap-2 bg-gray-50 rounded-xl p-3 border border-gray-100">
-                <Clock className="w-5 h-5 text-gray-400" />
-                <div><p className="text-xs text-gray-500 font-bold uppercase">Responde</p><p className="text-sm font-medium">~ 1 hora</p></div>
-              </div>
-              <div className="flex items-center gap-2 bg-gray-50 rounded-xl p-3 border border-gray-100">
-                <Calendar className="w-5 h-5 text-gray-400" />
-                <div><p className="text-xs text-gray-500 font-bold uppercase">Desde</p><p className="text-sm font-medium">{memberSince}</p></div>
-              </div>
+
+                <div className="p-4 md:p-0 mt-4">
+                    {/* Título y Precio */}
+                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-4">
+                        <div className="flex justify-between items-start gap-4">
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
+                                {product.title}
+                            </h1>
+                        </div>
+
+                        <div className="mt-4 flex items-baseline gap-2">
+                            <span className="text-3xl font-extrabold text-blue-600">
+                                {formatPrice(product.price, currency)}
+                            </span>
+                        </div>
+
+                        <div className="mt-3 flex items-center gap-2 text-sm text-gray-500">
+                            <MapPin size={16} />
+                            <span>La Habana, Cuba</span>
+                            <span className="mx-1">•</span>
+                            <span>{new Date(product.createdAt).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+
+                    {/* 3. Sección Vendedor */}
+                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-4">
+                        <div className="flex items-center gap-4">
+                            <div className="relative">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={avatarUrl} alt={sellerName} className="w-14 h-14 rounded-full object-cover border border-gray-200" />
+                                {product.seller?.isVerified && (
+                                    <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-0.5 rounded-full border-2 border-white">
+                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Link href={`/vendedor/${product.sellerId}`} className="hover:underline hover:text-blue-600 transition-colors">
+                                            <h3 className="font-bold text-gray-900 text-lg">{sellerName}</h3>
+                                        </Link>
+                                        <p className="text-xs text-gray-500">Vendedor en Timbiriche</p>
+                                    </div>
+
+                                    {!isOwner && product.sellerId && (
+                                        <FollowButton
+                                            sellerId={product.sellerId}
+                                            isFollowingInitial={isFollowing}
+                                            isMe={currentUserId === product.sellerId}
+                                            isLoggedIn={isLoggedIn}
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Descripción */}
+                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 className="font-bold text-lg mb-3">Detalles</h3>
+                        <p className="text-gray-700 whitespace-pre-line leading-relaxed text-base">
+                            {product.description}
+                        </p>
+                    </div>
+                </div>
             </div>
-          </div>
-        )}
 
-        <div className="bg-white md:rounded-2xl p-4 md:p-6 shadow-sm border-t border-b md:border border-gray-100">
-          <h2 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Descripción</h2>
-          <p className="text-gray-700 text-sm md:text-base whitespace-pre-line leading-relaxed">{product.description}</p>
-        </div>
-      </div>
+            {/* 4. Sticky Footer */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-40">
+                <div className="max-w-4xl mx-auto flex items-center gap-3">
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 md:p-4 shadow-lg z-40">
-        <div className="max-w-4xl mx-auto flex gap-2 md:gap-3">
-          {isOwner ? (
-            <>
-              <form action={async () => { "use server"; await deleteProduct(product.id); }} className="flex-1">
-                <button type="submit" className="w-full bg-red-50 text-red-600 hover:bg-red-100 font-bold rounded-xl flex items-center justify-center gap-2 h-12 border border-red-200">
-                  <Trash2 className="w-5 h-5" /> Eliminar
-                </button>
-              </form>
-              <Link href={`/editar/${product.id}`} className="flex-1">
-                <button className="w-full bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold rounded-xl flex items-center justify-center gap-2 h-12">
-                  <Edit className="w-5 h-5" /> Editar
-                </button>
-              </Link>
-            </>
-          ) : (
-             hasPhone ? (
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 h-12 shadow-lg">
-                  <MessageCircle className="w-6 h-6" /> Contactar Vendedor
-                </a>
-              ) : (
-                <button disabled className="flex-1 bg-gray-300 text-gray-500 font-bold rounded-xl flex items-center justify-center gap-2 cursor-not-allowed h-12">
-                  <MessageCircle className="w-6 h-6" /> Sin Teléfono
-                </button>
-              )
-          )}
+                    {isOwner ? (
+                        <>
+                            <form action={async () => { "use server"; await deleteProduct(product.id); }} className="flex-1">
+                                <button className="w-full bg-red-50 text-red-600 h-12 rounded-xl font-bold flex items-center justify-center gap-2 border border-red-200">
+                                    <Trash2 size={20} /> Borrar
+                                </button>
+                            </form>
+                            <Link href={`/editar/${product.id}`} className="flex-1">
+                                <button className="w-full bg-gray-100 text-gray-800 h-12 rounded-xl font-bold flex items-center justify-center gap-2">
+                                    <Edit size={20} /> Editar
+                                </button>
+                            </Link>
+                        </>
+                    ) : (
+                        <>
+                            <div className="shrink-0">
+                                <div className="h-12 w-12 flex items-center justify-center bg-gray-100 rounded-full border border-gray-200">
+                                    <FavoriteButton product={favoriteData} />
+                                </div>
+                            </div>
+
+                            <div className="shrink-0">
+                                <ShareButton title={product.title} text={`Mira esto en Timbiriche: ${product.title}`} />
+                            </div>
+
+                            {hasPhone ? (
+                                <a
+                                    href={whatsappUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-1 bg-green-600 hover:bg-green-700 text-white h-12 rounded-full font-bold flex items-center justify-center gap-2 shadow-lg shadow-green-200 active:scale-95 transition-all"
+                                >
+                                    <MessageCircle size={22} fill="white" className="text-white" />
+                                    <span>Contactar</span>
+                                </a>
+                            ) : (
+                                <button disabled className="flex-1 bg-gray-200 text-gray-500 h-12 rounded-full font-bold flex items-center justify-center gap-2 cursor-not-allowed">
+                                    <MessageCircle size={22} />
+                                    <span>Sin Teléfono</span>
+                                </button>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  )
+    )
 }

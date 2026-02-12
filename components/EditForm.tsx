@@ -143,7 +143,7 @@ export default function EditForm({ product }: Props) {
           >
              <option value="food">🍗 Combos y Alimentos</option>
              <option value="parts">🔧 Piezas y Accesorios</option>
-             <option value="home">🛋️ Hogar y Decoración</option>
+             <option value="crafts">🎨 Artesanía y Manufactura</option>
              <option value="tech">📱 Tecnología</option>
              <option value="fashion">👗 Ropa y Moda</option>
              <option value="others">📦 Otros</option>

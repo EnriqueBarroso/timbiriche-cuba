@@ -4,12 +4,41 @@ import Link from "next/link";
 import { 
   Smartphone, 
   Shirt, 
-  Home as HomeIcon, 
+  Palette, 
   Wrench, 
   Pizza, 
   LayoutGrid,
   Search
 } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    absolute: "Timbiriche Cuba | Compra y Vende Fácil en Cuba",
+  },
+  description:
+    "Marketplace P2P para Cuba. Encuentra tecnología, ropa, combos, artesanía y más. Conecta directo con vendedores por WhatsApp. Sin intermediarios.",
+  alternates: {
+    canonical: "https://timbiriche-cuba.vercel.app",
+  },
+  openGraph: {
+    title: "Timbiriche Cuba 🇨🇺 | Compra y Vende Fácil",
+    description:
+      "Descubre miles de productos cerca de ti en Cuba. Compra seguro, vende rápido.",
+    url: "https://timbiriche-cuba.vercel.app",
+    siteName: "Timbiriche Cuba",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Timbiriche Cuba - Marketplace",
+      },
+    ],
+    locale: "es_ES",
+    type: "website",
+  },
+};
 
 const CATEGORIES = [
   { 
@@ -37,9 +66,9 @@ const CATEGORIES = [
     color: "bg-pink-100 text-pink-600" 
   },
   { 
-    name: "Hogar", 
-    slug: "home", 
-    icon: HomeIcon, 
+    name: "Artesanía", 
+    slug: "crafts", 
+    icon: Palette, 
     color: "bg-orange-100 text-orange-600" 
   },
   { 
