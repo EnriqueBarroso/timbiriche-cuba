@@ -3,7 +3,7 @@
 import { useState, Suspense, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, Heart, Store, Plus, User, Settings, ArrowLeft, X } from "lucide-react";
+import { Search, Heart, ShoppingBag, Plus, User, Settings, ArrowLeft, X } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { useFavorites } from "@/contexts/FavoritesContext";
 
@@ -29,8 +29,7 @@ function NavbarContent() {
     e.preventDefault();
     if (query.trim()) {
       router.push(`/?query=${encodeURIComponent(query)}`);
-      // Opcional: cerrar el buscador móvil al buscar
-      // setIsMobileSearchOpen(false); 
+      setIsMobileSearchOpen(false); 
     } else {
       router.push("/");
     }
@@ -38,7 +37,7 @@ function NavbarContent() {
 
   const closeMobileSearch = () => {
     setIsMobileSearchOpen(false);
-    setQuery(""); // Opcional: limpiar búsqueda al cerrar
+    setQuery(""); 
   };
 
   return (
@@ -46,7 +45,7 @@ function NavbarContent() {
       <div className="mx-auto flex h-14 md:h-16 max-w-7xl items-center justify-between px-4">
         
         {/* ==============================================
-            MODO BÚSQUEDA MÓVIL (Se muestra si está activo)
+            MODO BÚSQUEDA MÓVIL
            ============================================== */}
         {isMobileSearchOpen ? (
           <form 
@@ -65,7 +64,7 @@ function NavbarContent() {
               <input
                 ref={inputRef}
                 type="text"
-                placeholder="Buscar en Timbiriche..."
+                placeholder="Buscar en LaChopin..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full pl-4 pr-10 py-2 rounded-full border border-blue-100 bg-blue-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm text-gray-900 placeholder:text-gray-500"
@@ -90,22 +89,23 @@ function NavbarContent() {
           </form>
         ) : (
           /* ==============================================
-             MODO NORMAL (Logo + Iconos)
+             MODO NORMAL
              ============================================== */
           <>
             {/* IZQUIERDA: Logo */}
             <div className="flex items-center gap-3">
               <Link href="/" className="flex items-center gap-2 group">
                 <div className="bg-blue-600 text-white p-1.5 rounded-lg transform group-hover:rotate-3 transition-transform">
-                  <Store className="h-5 w-5" />
+                  {/* Icono actualizado a Bolsa de Compras */}
+                  <ShoppingBag className="h-5 w-5" />
                 </div>
                 <span className="text-xl font-black tracking-tighter text-gray-900 md:text-2xl">
-                  Timbi<span className="text-blue-600">riche</span>
+                  La<span className="text-blue-600">Chopin</span>
                 </span>
               </Link>
             </div>
 
-            {/* CENTRO: Barra de Búsqueda (SOLO PC - md:flex) */}
+            {/* CENTRO: Barra de Búsqueda (SOLO PC) */}
             <form
               onSubmit={handleSearch}
               className="hidden md:flex relative flex-1 max-w-md mx-4"
@@ -128,7 +128,7 @@ function NavbarContent() {
             {/* DERECHA: Iconos */}
             <div className="flex items-center gap-1 md:gap-3">
               
-              {/* 🔍 BOTÓN BÚSQUEDA MÓVIL (Solo visible en móvil) */}
+              {/* Botón búsqueda móvil */}
               <button 
                 onClick={() => setIsMobileSearchOpen(true)}
                 className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
@@ -137,7 +137,7 @@ function NavbarContent() {
                 <Search className="h-5 w-5" />
               </button>
 
-              {/* Elementos SOLO PC (Botón Vender Texto + Favoritos) */}
+              {/* Elementos SOLO PC */}
               <div className="hidden md:flex items-center gap-3">
                 <Link
                   href="/vender"
@@ -154,18 +154,18 @@ function NavbarContent() {
                 </Link>
               </div>
 
-              {/* MI TIENDA (Visible en Móvil y PC) */}
+              {/* MI TIENDA */}
               <SignedIn>
                 <Link
                   href="/mis-publicaciones"
                   className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors relative group"
                   title="Mi Tienda"
                 >
-                  <Store className="h-5 w-5 md:h-6 md:w-6" />
+                  <ShoppingBag className="h-5 w-5 md:h-6 md:w-6" />
                 </Link>
               </SignedIn>
 
-              {/* Usuario / Login */}
+              {/* Usuario */}
               <div className="ml-1">
                 <SignedIn>
                   <UserButton afterSignOutUrl="/">

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Store, Facebook, Instagram, Twitter } from "lucide-react";
+import { ShoppingBag, Facebook, Instagram, Twitter } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -10,10 +10,10 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="bg-blue-600 text-white p-1.5 rounded-lg transform group-hover:rotate-3 transition-transform">
-              <Store className="h-5 w-5" />
+              <ShoppingBag className="h-5 w-5" />
             </div>
             <span className="text-xl font-black tracking-tighter text-gray-900">
-              Timbi<span className="text-blue-600">riche</span>
+              La<span className="text-blue-600">Chopin</span>
             </span>
           </Link>
           
@@ -30,7 +30,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* PARTE CENTRAL: Grid de Enlaces (2 Columnas en Móvil / 4 en PC) */}
+        {/* PARTE CENTRAL: Grid de Enlaces */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8 mb-8 text-center md:text-left">
           
           {/* Columna 1 */}
@@ -81,7 +81,7 @@ export default function Footer() {
         {/* PARTE INFERIOR: Copyright */}
         <div className="pt-8 border-t border-gray-100 text-center">
           <p className="text-xs text-gray-400">
-            © {new Date().getFullYear()} Timbiriche Cuba. Hecho con ❤️ para la isla.
+            © {new Date().getFullYear()} LaChopin. Hecho con ❤️ para la isla.
           </p>
         </div>
 
