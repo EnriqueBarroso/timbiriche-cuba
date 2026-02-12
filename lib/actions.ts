@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 
 const ITEMS_PER_PAGE = 12;
 
-// 1. OBTENER PRODUCTOS
+// 1. OBTENER PRODUCTOS (CON PAGINACIÓN)
 export async function getProducts({
   query,
   category,
@@ -17,7 +17,7 @@ export async function getProducts({
   page?: number;
 }) {
   const skip = (page - 1) * ITEMS_PER_PAGE;
-  
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = { isSold: false };
 
@@ -34,17 +34,26 @@ export async function getProducts({
   }
 
   try {
-    const products = await prisma.product.findMany({
-      where, 
-      take: ITEMS_PER_PAGE,
-      skip: skip,
-      orderBy: { createdAt: "desc" },
-      include: { images: true, seller: true },
-    });
-    return products;
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        take: ITEMS_PER_PAGE,
+        skip: skip,
+        orderBy: { createdAt: "desc" },
+        include: { images: true, seller: true },
+      }),
+      prisma.product.count({ where }),
+    ]);
+
+    return {
+      products,
+      total,
+      totalPages: Math.ceil(total / ITEMS_PER_PAGE),
+      currentPage: page,
+    };
   } catch (error) {
     console.error("Error cargando productos:", error);
-    return [];
+    return { products: [], total: 0, totalPages: 0, currentPage: page };
   }
 }
 

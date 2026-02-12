@@ -1,6 +1,8 @@
 import { getProducts } from "@/lib/actions";
 import { ProductCard } from "@/components/ProductCard";
+import Pagination from "@/components/Pagination";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { 
   Smartphone, 
   Shirt, 
@@ -10,35 +12,6 @@ import {
   LayoutGrid,
   Search
 } from "lucide-react";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: {
-    absolute: "Timbiriche Cuba | Compra y Vende Fácil en Cuba",
-  },
-  description:
-    "Marketplace P2P para Cuba. Encuentra tecnología, ropa, combos, artesanía y más. Conecta directo con vendedores por WhatsApp. Sin intermediarios.",
-  alternates: {
-    canonical: "https://timbiriche-cuba.vercel.app",
-  },
-  openGraph: {
-    title: "Timbiriche Cuba 🇨🇺 | Compra y Vende Fácil",
-    description:
-      "Descubre miles de productos cerca de ti en Cuba. Compra seguro, vende rápido.",
-    url: "https://timbiriche-cuba.vercel.app",
-    siteName: "Timbiriche Cuba",
-    images: [
-      {
-        url: "/opengraph-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Timbiriche Cuba - Marketplace",
-      },
-    ],
-    locale: "es_ES",
-    type: "website",
-  },
-};
 
 const CATEGORIES = [
   { 
@@ -79,25 +52,52 @@ const CATEGORIES = [
   },
 ];
 
+export const metadata: Metadata = {
+  title: {
+    absolute: "Timbiriche Cuba | Compra y Vende Fácil en Cuba",
+  },
+  description:
+    "Marketplace P2P para Cuba. Encuentra tecnología, ropa, combos, artesanía y más. Conecta directo con vendedores por WhatsApp. Sin intermediarios.",
+  alternates: {
+    canonical: "https://timbiriche-cuba.vercel.app",
+  },
+  openGraph: {
+    title: "Timbiriche Cuba 🇨🇺 | Compra y Vende Fácil",
+    description:
+      "Descubre miles de productos cerca de ti en Cuba. Compra seguro, vende rápido.",
+    url: "https://timbiriche-cuba.vercel.app",
+    siteName: "Timbiriche Cuba",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Timbiriche Cuba - Marketplace",
+      },
+    ],
+    locale: "es_ES",
+    type: "website",
+  },
+};
+
 export const dynamic = "force-dynamic";
 
 interface Props {
-  // 👇 ACEPTAMOS 'query' (del Navbar) Y 'search' (por si acaso)
-  searchParams: Promise<{ search?: string; query?: string; category?: string }>;
+  searchParams: Promise<{ search?: string; query?: string; category?: string; page?: string }>;
 }
 
 export default async function Home({ searchParams }: Props) {
-  const { search, query, category } = await searchParams;
+  const { search, query, category, page } = await searchParams;
   
-  // Unificamos el término de búsqueda (priorizamos lo que venga)
   const searchTerm = search || query || "";
+  const currentPage = Number(page) || 1;
   
-  const products = await getProducts({ 
-    query: searchTerm, // Pasamos el texto del buscador
-    category: category // Pasamos la categoría seleccionada
+  const { products, total, totalPages } = await getProducts({ 
+    query: searchTerm,
+    category: category,
+    page: currentPage,
   });
 
-  // Título bonito
   const categoryName = CATEGORIES.find(c => c.slug === category)?.name || category;
 
   const pageTitle = category 
@@ -106,11 +106,17 @@ export default async function Home({ searchParams }: Props) {
       ? `Resultados para "${searchTerm}"`
       : "Novedades Recientes";
 
+  // Preservar params actuales para la paginación
+  const currentSearchParams: Record<string, string | undefined> = {
+    ...(searchTerm && { query: searchTerm }),
+    ...(category && { category }),
+  };
+
   return (
     <div className="min-h-screen pb-24 bg-gray-50/50">
       
       {/* HERO SECTION (Se oculta si buscas o filtras) */}
-      {!searchTerm && !category && (
+      {!searchTerm && !category && currentPage === 1 && (
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 py-10 md:rounded-b-[2.5rem] shadow-xl mb-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl pointer-events-none"></div>
           <div className="max-w-7xl mx-auto relative z-10">
@@ -167,18 +173,27 @@ export default async function Home({ searchParams }: Props) {
             {pageTitle}
           </h2>
           <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-            {products.length} productos
+            {total} productos
           </span>
         </div>
 
         <div className="px-4">
           {products.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {products.map((product: any) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {products.map((product: any) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+
+              {/* PAGINACIÓN */}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                searchParams={currentSearchParams}
+              />
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <div className="bg-gray-100 p-6 rounded-full mb-4">
