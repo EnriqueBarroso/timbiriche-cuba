@@ -30,3 +30,6 @@ export function formatPrice(amount: number, currency: string = "USD") {
   
   return `$${number} ${currency}`;
 }
+// Placeholder blur genérico (gris neutro, ~100 bytes)
+export const BLUR_PLACEHOLDER =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIklEQVQYV2N88ODBfwYGBgZGRkYGJgYKABMDhYCRYhMA/70EBf4CmOkAAAAASUVORK5CYII=";

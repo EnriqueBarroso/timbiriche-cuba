@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Zap } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, BLUR_PLACEHOLDER } from "@/lib/utils";
 
 interface FlashProduct {
   id: string;
@@ -30,6 +30,8 @@ export default function FlashProductCard({ product }: { product: FlashProduct })
           height={300}
           className="w-full h-[100px] lg:h-[140px] object-cover"
           loading="lazy"
+          placeholder="blur"
+          blurDataURL={BLUR_PLACEHOLDER}
         />
         {/* Badge de Oferta Flash */}
         <span className="absolute top-2 left-2 bg-red-600 text-white text-[10px] lg:text-xs font-bold px-2 py-0.5 rounded flex items-center gap-1">

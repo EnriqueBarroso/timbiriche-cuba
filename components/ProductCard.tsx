@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import FavoriteButton from "@/components/FavoriteButton";
 import { toast } from "sonner";
-import { formatPrice } from "@/lib/utils"; // ✅ IMPORTAMOS formatPrice
+import { formatPrice, BLUR_PLACEHOLDER } from "@/lib/utils";
 
 interface ProductCardProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,7 +18,6 @@ export function ProductCard({ product }: ProductCardProps) {
   const title = product.title || "Producto sin nombre";
   const price = product.price || 0;
 
-  // ✅ CORREGIDO: Usamos formatPrice directamente, SIN dividir
   const displayPrice = formatPrice(price, product.currency);
 
   const currency = product.currency || "USD";
@@ -26,11 +25,9 @@ export function ProductCard({ product }: ProductCardProps) {
   const sellerPhone = product.seller?.phoneNumber || "";
   let cleanPhone = sellerPhone.replace(/\D/g, '');
 
-  // Corrección automática para números de Cuba
   if (cleanPhone.length === 8) {
     cleanPhone = `53${cleanPhone}`;
   }
-  // Validamos si parece un número real (código país + número)
   const hasValidPhone = cleanPhone.length >= 8;
   const isSold = product.isSold || false;
 
@@ -68,6 +65,8 @@ export function ProductCard({ product }: ProductCardProps) {
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             priority={false}
+            placeholder="blur"
+            blurDataURL={BLUR_PLACEHOLDER}
           />
         </Link>
 
@@ -94,7 +93,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </h3>
         </Link>
 
-        {/* Precio - ✅ CORREGIDO: Ya no muestra solo el número, sino el formato completo */}
+        {/* Precio */}
         <div className="mb-3">
           <span className={`text-xl md:text-2xl font-bold ${isSold ? "text-gray-400 line-through decoration-gray-400" : "text-gray-900"}`}>
             {displayPrice}
