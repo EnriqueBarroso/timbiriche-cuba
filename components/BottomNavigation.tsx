@@ -5,7 +5,7 @@ import { Home, Compass, Grid3X3, ShoppingCart, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import CategoriesDrawer from "./CategoriesDrawer";
+import { CategoriesDrawer } from "./CategoriesDrawer";
 
 // Mock del carrito
 const useCart = () => ({ totalItems: 3 });
