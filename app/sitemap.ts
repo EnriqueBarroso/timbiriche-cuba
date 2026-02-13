@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://timbiriche-cuba.vercel.app";
+  const baseUrl = "https://www.lachopin.com";
 
   // Páginas estáticas
   const staticPages: MetadataRoute.Sitemap = [
@@ -55,4 +55,3 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [...staticPages, ...productPages];
 }
-

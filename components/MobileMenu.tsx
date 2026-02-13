@@ -51,7 +51,7 @@ export default function MobileMenu() {
                  </>
                ) : (
                  <SignedOut>
-                    <p className="text-blue-100 text-xs font-medium mb-1">Bienvenido a Timbiriche</p>
+                    <p className="text-blue-100 text-xs font-medium mb-1">Bienvenido a LaChopin</p>
                     <SignInButton mode="modal">
                       <button onClick={() => setOpen(false)} className="flex items-center gap-2 bg-white text-blue-700 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-blue-50 transition-colors shadow-sm">
                         <LogIn size={14} /> Iniciar Sesión
@@ -161,7 +161,7 @@ export default function MobileMenu() {
             </div>
             
             <p className="text-center text-[10px] text-gray-400 mt-6">
-              © 2024 Timbiriche Cuba v1.0
+              © 2025 LaChopin v1.0
             </p>
           </div>
 

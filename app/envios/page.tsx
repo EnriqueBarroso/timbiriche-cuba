@@ -23,7 +23,7 @@ export default function ShippingPage() {
         </div>
 
         <p className="text-gray-500 mb-8 leading-relaxed relative z-10">
-          Estamos trabajando para conectar a las agencias de envío más rápidas contigo. Muy pronto podrás gestionar tus envíos directamente desde Timbiriche.
+          Estamos trabajando para conectar a las agencias de envío más rápidas contigo. Muy pronto podrás gestionar tus envíos directamente desde LaChopin.
         </p>
 
         <Link 

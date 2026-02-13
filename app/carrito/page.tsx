@@ -14,7 +14,7 @@ export default function CartPage() {
   const generateWhatsAppOrder = () => {
     if (items.length === 0) return "";
 
-    let message = "Hola! 👋 Quiero realizar el siguiente pedido en Timbiriche:\n\n";
+    let message = "Hola! 👋 Quiero realizar el siguiente pedido en LaChopin:\n\n";
     
     items.forEach((item) => {
       const sellerInfo = item.sellerName ? ` (Tienda: ${item.sellerName})` : "";

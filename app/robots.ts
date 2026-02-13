@@ -2,7 +2,7 @@
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = "https://timbiriche-cuba.vercel.app";
+  const baseUrl = "https://www.lachopin.com";
 
   return {
     rules: [

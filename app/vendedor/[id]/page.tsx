@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const seller = await prisma.seller.findUnique({ where: { id } });
   return {
-    title: seller?.storeName ? `${seller.storeName} | Timbiriche` : "Perfil de Vendedor",
+    title: seller?.storeName ? `${seller.storeName} | LaChopin` : "Perfil de Vendedor",
   };
 }
 
@@ -47,7 +47,7 @@ export default async function SellerProfilePage({ params }: Props) {
   // 3. Preparación de datos (Rescatado y mejorado)
   const cleanPhone = seller.phoneNumber?.replace(/\D/g, '') || '';
   const whatsappUrl = cleanPhone
-    ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hola ${seller.storeName}, vi tu tienda en Timbiriche.`)}`
+    ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hola ${seller.storeName}, vi tu tienda en LaChopin.`)}`
     : '#';
   
   const avatarUrl = seller.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(seller.storeName || 'V')}&background=random&size=200`;
@@ -88,7 +88,7 @@ export default async function SellerProfilePage({ params }: Props) {
                     
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                            {seller.storeName || "Usuario de Timbiriche"}
+                            {seller.storeName || "Usuario de LaChopin"}
                         </h1>
                         
                         <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 text-sm text-gray-600">

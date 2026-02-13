@@ -54,25 +54,25 @@ const CATEGORIES = [
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Timbiriche Cuba | Compra y Vende Fácil en Cuba",
+    absolute: "LaChopin | Tu Mercado Online en Cuba",
   },
   description:
-    "Marketplace P2P para Cuba. Encuentra tecnología, ropa, combos, artesanía y más. Conecta directo con vendedores por WhatsApp. Sin intermediarios.",
+    "La forma más fácil de comprar y vender en Cuba. Ropa, celulares, electrodomésticos y más. Conecta directamente con vendedores verificados.",
   alternates: {
-    canonical: "https://timbiriche-cuba.vercel.app",
+    canonical: "https://www.lachopin.com",
   },
   openGraph: {
-    title: "Timbiriche Cuba 🇨🇺 | Compra y Vende Fácil",
+    title: "LaChopin | Tu Mercado Online en Cuba",
     description:
       "Descubre miles de productos cerca de ti en Cuba. Compra seguro, vende rápido.",
-    url: "https://timbiriche-cuba.vercel.app",
-    siteName: "Timbiriche Cuba",
+    url: "https://www.lachopin.com",
+    siteName: "LaChopin",
     images: [
       {
         url: "/opengraph-image.png",
         width: 1200,
         height: 630,
-        alt: "Timbiriche Cuba - Marketplace",
+        alt: "LaChopin - Tu Mercado Online en Cuba",
       },
     ],
     locale: "es_ES",
@@ -106,7 +106,6 @@ export default async function Home({ searchParams }: Props) {
       ? `Resultados para "${searchTerm}"`
       : "Novedades Recientes";
 
-  // Preservar params actuales para la paginación
   const currentSearchParams: Record<string, string | undefined> = {
     ...(searchTerm && { query: searchTerm }),
     ...(category && { category }),
@@ -115,7 +114,7 @@ export default async function Home({ searchParams }: Props) {
   return (
     <div className="min-h-screen pb-24 bg-gray-50/50">
       
-      {/* HERO SECTION (Se oculta si buscas o filtras) */}
+      {/* HERO SECTION */}
       {!searchTerm && !category && currentPage === 1 && (
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 py-10 md:rounded-b-[2.5rem] shadow-xl mb-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl pointer-events-none"></div>
@@ -187,7 +186,6 @@ export default async function Home({ searchParams }: Props) {
                 ))}
               </div>
 
-              {/* PAGINACIÓN */}
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

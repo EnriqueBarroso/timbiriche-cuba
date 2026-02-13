@@ -38,7 +38,7 @@ export default function FavoritesClient({ following }: { following: SellerFollow
                     href="/"
                     className="bg-blue-600 text-white px-8 py-3 rounded-full font-medium hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
                 >
-                    Explorar Timbiriche
+                    Explorar LaChopin
                 </Link>
             </div>
         );

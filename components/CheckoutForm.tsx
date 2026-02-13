@@ -91,7 +91,7 @@ export default function CheckoutForm() {
     });
 
     message += `\n💰 *TOTAL A PAGAR: $${cartTotal}*`;
-    message += `\n\n_Enviado desde la web de Timbiriche_`;
+    message += `\n\n_Enviado desde la web de LaChopin_`;
 
     // 4. Redirigir a WhatsApp
     const whatsappUrl = `https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(message)}`;

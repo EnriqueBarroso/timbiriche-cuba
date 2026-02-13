@@ -8,10 +8,8 @@ export default function CookieNotice() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Mostrar solo si no ha aceptado antes
     const consent = localStorage.getItem("cookie-consent");
     if (!consent) {
-      // Pequeño delay para no molestar inmediatamente
       const timer = setTimeout(() => setVisible(true), 1500);
       return () => clearTimeout(timer);
     }
@@ -38,7 +36,7 @@ export default function CookieNotice() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm text-gray-700 leading-relaxed">
-              Usamos cookies esenciales para que Timbiriche funcione correctamente.
+              Usamos cookies esenciales para que LaChopin funcione correctamente.
               Sin publicidad, sin rastreo.{" "}
               <Link
                 href="/privacidad"

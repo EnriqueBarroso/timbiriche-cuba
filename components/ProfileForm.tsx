@@ -141,7 +141,7 @@ export default function ProfileForm({ initialData }: Props) {
             type="text"
             value={formData.storeName}
             onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
-            placeholder="Ej: El Timbiriche de Pepe"
+            placeholder="Ej: Mi Tienda en LaChopin"
             className={inputStyles}
             required
           />

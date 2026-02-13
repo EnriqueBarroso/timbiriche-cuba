@@ -31,6 +31,10 @@ export default function ProductJsonLd({
     description: description.slice(0, 500),
     image: imageUrl,
     url,
+    brand: {
+      "@type": "Organization",
+      name: "LaChopin",
+    },
     offers: {
       "@type": "Offer",
       price,

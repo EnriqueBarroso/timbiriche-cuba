@@ -42,7 +42,7 @@ function AgeVerificationContent() {
         
         {/* Descripción */}
         <p className="text-gray-600 mb-8">
-          Para acceder a <span className="font-semibold text-orange-600">Timbiriche</span>, 
+          Para acceder a <span className="font-semibold text-orange-600">LaChopin</span>, 
           debes confirmar que eres mayor de 18 años.
         </p>
 

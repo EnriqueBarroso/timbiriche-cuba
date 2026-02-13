@@ -40,7 +40,7 @@ export function ProductCard({ product }: ProductCardProps) {
     seller: product.seller
   };
 
-  const whatsappMessage = `Hola, vi tu anuncio en Timbiriche: *${title}*. ¿Sigue disponible?`;
+  const whatsappMessage = `Hola, vi tu anuncio en LaChopin: *${title}*. ¿Sigue disponible?`;
   const whatsappLink = hasValidPhone
     ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`
     : "#";

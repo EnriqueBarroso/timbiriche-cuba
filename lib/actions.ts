@@ -102,7 +102,7 @@ export async function createProduct(data: {
   if (!user || !user.emailAddresses[0]) throw new Error("Debes iniciar sesión");
 
   const email = user.emailAddresses[0].emailAddress;
-  const userName = user.firstName ? `${user.firstName} ${user.lastName || ""}` : "Vendedor Timbiriche";
+  const userName = user.firstName ? `${user.firstName} ${user.lastName || ""}` : "Vendedor LaChopin";
 
   const seller = await prisma.seller.upsert({
     where: { email: email },

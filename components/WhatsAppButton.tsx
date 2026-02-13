@@ -23,7 +23,7 @@ export default function WhatsAppButton({ phoneNumber, productTitle }: Props) {
   const cleanPhone = phoneNumber.replace(/\D/g, ''); 
   
   // 3. Preparamos el mensaje
-  const message = `Hola! 👋 Vi tu anuncio *${productTitle}* en Timbiriche y me interesa. ¿Sigue disponible?`;
+  const message = `Hola! 👋 Vi tu anuncio *${productTitle}* en LaChopin y me interesa. ¿Sigue disponible?`;
   
   // 4. Creamos el link oficial de WhatsApp
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;

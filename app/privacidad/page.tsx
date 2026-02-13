@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Política de Privacidad",
   description:
-    "Cómo Timbiriche Cuba recopila, usa y protege tus datos personales.",
+    "Cómo LaChopin recopila, usa y protege tus datos personales.",
 };
 
 export default function PrivacidadPage() {
@@ -35,7 +35,7 @@ export default function PrivacidadPage() {
             <div>
               <h3 className="font-bold text-blue-900 mb-2">Tu privacidad importa</h3>
               <p className="text-blue-800 text-sm leading-relaxed">
-                En Timbiriche nos tomamos en serio la protección de tus datos personales.
+                En LaChopin nos tomamos en serio la protección de tus datos personales.
                 Esta política explica qué información recopilamos, cómo la usamos y cuáles son tus derechos.
               </p>
             </div>
@@ -51,7 +51,7 @@ export default function PrivacidadPage() {
               <h2 className="text-2xl font-bold text-gray-900 m-0">1. Datos que Recopilamos</h2>
             </div>
             <div className="space-y-4 text-gray-700">
-              <p>Cuando usas Timbiriche, podemos recopilar la siguiente información:</p>
+              <p>Cuando usas LaChopin, podemos recopilar la siguiente información:</p>
 
               <div className="bg-gray-50 rounded-lg p-5 border border-gray-200">
                 <p className="font-bold text-gray-900 mb-3">Datos de cuenta (al registrarte):</p>
@@ -133,7 +133,7 @@ export default function PrivacidadPage() {
               </div>
 
               <p className="text-sm text-gray-500 pt-2">
-                Estos servicios están alojados en servidores fuera de Cuba. Al usar Timbiriche,
+                Estos servicios están alojados en servidores fuera de Cuba. Al usar LaChopin,
                 aceptas que tus datos puedan ser procesados en estos servidores internacionales.
               </p>
             </div>
@@ -146,7 +146,7 @@ export default function PrivacidadPage() {
               <h2 className="text-2xl font-bold text-gray-900 m-0">4. Cookies</h2>
             </div>
             <div className="space-y-4 text-gray-700">
-              <p>Timbiriche utiliza cookies para:</p>
+              <p>LaChopin utiliza cookies para:</p>
 
               <div className="bg-gray-50 rounded-lg p-5 border border-gray-200">
                 <p className="font-bold text-gray-900 mb-3">Cookies esenciales:</p>
@@ -176,7 +176,7 @@ export default function PrivacidadPage() {
               <h2 className="text-2xl font-bold text-gray-900 m-0">5. Tus Derechos</h2>
             </div>
             <div className="space-y-4 text-gray-700">
-              <p>Como usuario de Timbiriche, tienes derecho a:</p>
+              <p>Como usuario de LaChopin, tienes derecho a:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong>Acceso:</strong> Solicitar una copia de los datos que tenemos sobre ti</li>
                 <li><strong>Rectificación:</strong> Corregir datos incorrectos desde tu perfil o contactándonos</li>
@@ -236,7 +236,7 @@ export default function PrivacidadPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Menores de Edad</h2>
             <div className="space-y-3 text-gray-700">
               <p>
-                Timbiriche no está dirigido a menores de 16 años. No recopilamos
+                LaChopin no está dirigido a menores de 16 años. No recopilamos
                 intencionalmente datos de menores. Si descubrimos que un menor ha
                 creado una cuenta, la eliminaremos junto con sus datos.
               </p>
@@ -268,8 +268,8 @@ export default function PrivacidadPage() {
               </p>
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <p className="font-bold mb-2">Email:</p>
-                <a href="mailto:privacidad@timbiriche.cu" className="text-blue-600 hover:underline">
-                  privacidad@timbiriche.cu
+                <a href="mailto:privacidad@lachopin.com" className="text-blue-600 hover:underline">
+                  privacidad@lachopin.com
                 </a>
                 <p className="font-bold mt-4 mb-2">WhatsApp:</p>
                 <a href="https://wa.me/1234567890" className="text-blue-600 hover:underline">

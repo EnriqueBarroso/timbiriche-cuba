@@ -8,16 +8,16 @@ export default function AyudaPage() {
       answer: "Navega por el catálogo, selecciona el producto que te interesa y haz clic en 'Contactar Vendedor'. Te redirigirá a WhatsApp para coordinar la compra directamente con el vendedor."
     },
     {
-      question: "¿Puedo vender en Timbiriche?",
+      question: "¿Puedo vender en LaChopin?",
       answer: "¡Claro! Haz clic en 'Vender' en el menú principal, completa el formulario con los datos de tu producto y publícalo. Es gratis y toma menos de 2 minutos."
     },
     {
       question: "¿Cómo funciona el pago?",
-      answer: "Timbiriche conecta compradores y vendedores. El pago y entrega se coordinan directamente entre ambas partes a través de WhatsApp. Puedes pagar en efectivo, transferencia bancaria o la modalidad que acuerden."
+      answer: "LaChopin conecta compradores y vendedores. El pago y entrega se coordinan directamente entre ambas partes a través de WhatsApp. Puedes pagar en efectivo, transferencia bancaria o la modalidad que acuerden."
     },
     {
-      question: "¿Timbiriche cobra comisión?",
-      answer: "No. Timbiriche es completamente gratuito tanto para compradores como vendedores. Nuestro objetivo es facilitar el comercio en Cuba."
+      question: "¿LaChopin cobra comisión?",
+      answer: "No. LaChopin es completamente gratuito tanto para compradores como vendedores. Nuestro objetivo es facilitar el comercio en Cuba."
     },
     {
       question: "¿Qué hago si hay un problema con mi compra?",
@@ -41,9 +41,9 @@ export default function AyudaPage() {
     {
       icon: <Mail className="w-6 h-6" />,
       title: "Email",
-      description: "soporte@timbiriche.cu",
+      description: "soporte@lachopin.com",
       action: "Enviar email",
-      href: "mailto:soporte@timbiriche.cu",
+      href: "mailto:soporte@lachopin.com",
       color: "blue"
     }
   ];

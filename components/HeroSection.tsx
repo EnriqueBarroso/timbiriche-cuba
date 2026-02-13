@@ -13,7 +13,7 @@ export function HeroSection() {
           <div className="flex flex-col items-start text-center lg:text-left animate-in fade-in slide-in-from-bottom-4 duration-1000">
             <span className="mb-4 md:mb-6 inline-flex items-center rounded-full bg-red-50 px-3 py-1 md:px-4 md:py-1.5 text-xs md:text-sm font-medium text-red-700 ring-1 ring-inset ring-red-700/10 mx-auto lg:mx-0">
               <Sparkles className="mr-1 md:mr-1.5 h-3 w-3 md:h-3.5 md:w-3.5 text-red-600" />
-              Nuevo en Timbiriche
+              Nuevo en LaChopin
             </span>
 
             <h1 className="mb-3 md:mb-6 text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight text-gray-900 leading-tight">

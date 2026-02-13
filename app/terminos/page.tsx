@@ -1,5 +1,12 @@
 import { Scale, Shield, AlertCircle, FileText } from "lucide-react";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Términos y Condiciones",
+  description:
+    "Términos y condiciones de uso de LaChopin, tu mercado online en Cuba.",
+};
 
 export default function TerminosPage() {
   return (
@@ -28,7 +35,7 @@ export default function TerminosPage() {
             <div>
               <h3 className="font-bold text-blue-900 mb-2">Importante</h3>
               <p className="text-blue-800 text-sm leading-relaxed">
-                Al usar Timbiriche, aceptas estos términos. Lee con atención antes de publicar o comprar.
+                Al usar LaChopin, aceptas estos términos. Lee con atención antes de publicar o comprar.
               </p>
             </div>
           </div>
@@ -44,7 +51,7 @@ export default function TerminosPage() {
             </div>
             <div className="space-y-4 text-gray-700">
               <p>
-                <strong>Timbiriche</strong> es una plataforma de anuncios clasificados que facilita el contacto 
+                <strong>LaChopin</strong> es una plataforma de anuncios clasificados que facilita el contacto 
                 entre vendedores y compradores en Cuba. <strong>No procesamos pagos, no almacenamos mercancía 
                 ni actuamos como intermediarios en las transacciones.</strong>
               </p>
@@ -103,7 +110,7 @@ export default function TerminosPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Limitación de Responsabilidad</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                <strong>Timbiriche NO se hace responsable por:</strong>
+                <strong>LaChopin NO se hace responsable por:</strong>
               </p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>La veracidad de la información publicada por los usuarios</li>
@@ -127,15 +134,13 @@ export default function TerminosPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">5. Privacidad y Datos Personales</h2>
             <div className="space-y-3 text-gray-700">
               <p>
-                Respetamos tu privacidad. Los datos que recopilamos (nombre, email, teléfono) 
-                se usan únicamente para:
+                Respetamos tu privacidad. Para más detalles sobre cómo recopilamos y usamos
+                tus datos, consulta nuestra{" "}
+                <Link href="/privacidad" className="text-blue-600 font-bold hover:underline">
+                  Política de Privacidad
+                </Link>.
               </p>
-              <ul className="list-disc pl-6 space-y-2">
-                <li>Facilitar la comunicación entre compradores y vendedores</li>
-                <li>Mejorar nuestros servicios</li>
-                <li>Enviar notificaciones importantes (si aceptas)</li>
-              </ul>
-              <p className="pt-3">
+              <p>
                 <strong>No vendemos ni compartimos</strong> tus datos con terceros sin tu consentimiento.
               </p>
             </div>
@@ -165,8 +170,8 @@ export default function TerminosPage() {
               </p>
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <p className="font-bold mb-2">Email:</p>
-                <a href="mailto:legal@timbiriche.cu" className="text-blue-600 hover:underline">
-                  legal@timbiriche.cu
+                <a href="mailto:legal@lachopin.com" className="text-blue-600 hover:underline">
+                  legal@lachopin.com
                 </a>
                 <p className="font-bold mt-4 mb-2">WhatsApp:</p>
                 <a href="https://wa.me/1234567890" className="text-blue-600 hover:underline">
@@ -181,7 +186,7 @@ export default function TerminosPage() {
         {/* Footer de la página */}
         <div className="mt-12 pt-8 border-t border-gray-200 text-center">
           <p className="text-gray-600 text-sm mb-4">
-            Al usar Timbiriche, confirmas que has leído y aceptado estos términos.
+            Al usar LaChopin, confirmas que has leído y aceptado estos términos.
           </p>
           <Link 
             href="/ayuda" 
