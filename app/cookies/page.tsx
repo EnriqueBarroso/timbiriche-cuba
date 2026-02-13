@@ -1,5 +1,12 @@
 import Link from "next/link";
 import { Cookie } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Política de Cookies",
+  description:
+    "Conoce qué cookies usa LaChopin y cómo puedes gestionarlas en tu navegador.",
+};
 
 export default function CookiesPage() {
   return (
@@ -23,7 +30,7 @@ export default function CookiesPage() {
         <ul className="list-disc pl-5 space-y-2 mb-6">
           <li><strong>Cookies Técnicas:</strong> Son necesarias para que puedas iniciar sesión, añadir productos a favoritos o completar una compra. Sin ellas, la web no funcionaría bien.</li>
           <li><strong>Cookies de Análisis:</strong> Nos ayudan a entender qué productos son los más visitados o desde qué provincias nos visitan más, para mejorar nuestro servicio.</li>
-          <li><strong>Cookies de Preferencias:</strong> Recuerdan si prefieres ver la web en modo claro u oscuro, o tus búsquedas recientes.</li>
+          <li><strong>Cookies de Preferencias:</strong> Recuerdan tus búsquedas recientes y ajustes de navegación.</li>
         </ul>
 
         <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">¿Cómo desactivarlas?</h3>

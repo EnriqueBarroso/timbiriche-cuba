@@ -1,5 +1,12 @@
 import Link from "next/link";
 import { Camera, Tag, MessageCircle, ShieldCheck, ArrowRight } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Consejos para Vender",
+  description:
+    "Aprende a tomar mejores fotos, poner precios competitivos y vender más rápido en LaChopin.",
+};
 
 export default function SellingTipsPage() {
   return (
@@ -34,7 +41,7 @@ export default function SellingTipsPage() {
           <div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">2. El precio justo</h3>
             <p className="text-gray-600 leading-relaxed">
-              Investiga cuánto cuesta tu producto nuevo y usado. Un precio competitivo atrae más compradores. Evita poner "Precio al privado", eso aleja a los clientes.
+              Investiga cuánto cuesta tu producto nuevo y usado. Un precio competitivo atrae más compradores. Evita poner Precio al privado, eso aleja a los clientes.
             </p>
           </div>
         </div>

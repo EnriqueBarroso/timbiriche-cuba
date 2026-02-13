@@ -1,5 +1,12 @@
 import Link from "next/link";
 import { Check, Star, Zap } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Premium",
+  description:
+    "Destaca tus productos y vende más rápido con LaChopin Premium. Mayor visibilidad, insignia verificada y soporte prioritario.",
+};
 
 export default function PremiumPage() {
   return (
