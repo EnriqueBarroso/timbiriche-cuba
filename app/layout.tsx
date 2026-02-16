@@ -21,11 +21,11 @@ const inter = Inter({ subsets: ["latin"] });
 
 // Configuración de la URL base para SEO
 // Prioriza tu dominio real en producción
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL 
-  ? process.env.NEXT_PUBLIC_APP_URL 
-  : (process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : "http://localhost:3000");
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+  ? process.env.NEXT_PUBLIC_APP_URL
+  : (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000");
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -60,8 +60,8 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "32x32" },
-      { url: "/icon.png", sizes: "192x192", type: "image/png" }, // Asegúrate de actualizar estos archivos
-      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
     ],
     apple: "/apple-touch-icon.png",
   },
@@ -109,10 +109,10 @@ export default function RootLayout({
           {/* Estado Global (Carrito y Favoritos) */}
           <CartProvider>
             <FavoritesProvider>
-              
+
               {/* Layout Principal */}
               <div className="flex min-h-screen flex-col pb-20 md:pb-0">
-                
+
                 {/* Navbar Superior */}
                 <Navbar />
 
@@ -128,7 +128,7 @@ export default function RootLayout({
 
                 {/* Footer */}
                 <Footer />
-                
+
                 {/* Navegación Móvil Inferior */}
                 <BottomNav />
               </div>
@@ -139,7 +139,7 @@ export default function RootLayout({
           {/* Utilidades Globales */}
           <Toaster position="bottom-center" richColors closeButton />
           <CookieNotice />
-          
+
         </body>
       </html>
     </ClerkProvider>
