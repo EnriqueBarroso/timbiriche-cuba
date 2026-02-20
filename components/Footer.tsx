@@ -1,90 +1,118 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { ShoppingBag, Facebook, Instagram, Twitter } from "lucide-react";
+import { Facebook, Instagram, Twitter, ShoppingBag, ShieldCheck, Mail, MapPin } from "lucide-react";
 
 export default function Footer() {
-  return (
-    <footer className="bg-white border-t border-gray-100 mt-auto pb-24 md:pb-8">
-      <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
-        
-        {/* PARTE SUPERIOR: Logo y Redes */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="bg-blue-600 text-white p-1.5 rounded-lg transform group-hover:rotate-3 transition-transform">
-              <ShoppingBag className="h-5 w-5" />
+  const pathname = usePathname();
+
+  // 1. Detectamos si estamos en una página que necesita el footer resumido
+  const isProductPage = pathname?.startsWith("/product/");
+
+  // ------------------------------------------------------------------
+  // 2. VERSIÓN MINIMALISTA (Solo para la página de producto)
+  // ------------------------------------------------------------------
+  if (isProductPage) {
+    return (
+      <footer className="bg-gray-50 border-t border-gray-200 pt-6 pb-28 md:pb-6 mt-10">
+        <div className="max-w-4xl mx-auto flex flex-col items-center gap-4 px-4">
+          <div className="flex items-center gap-4 text-gray-400">
+            <a href="#" className="hover:text-blue-600 transition-colors"><Facebook size={20} /></a>
+            <a href="#" className="hover:text-pink-600 transition-colors"><Instagram size={20} /></a>
+            <a href="#" className="hover:text-blue-400 transition-colors"><Twitter size={20} /></a>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-gray-500 mb-2">
+              © {new Date().getFullYear()} LaChopin. Todos los derechos reservados.
+            </p>
+            <div className="flex justify-center gap-3 text-xs text-gray-400">
+              <Link href="/seguridad" className="hover:text-gray-600">Seguridad</Link>
+              <span>•</span>
+              <Link href="/contacto" className="hover:text-gray-600">Contacto</Link>
             </div>
-            <span className="text-xl font-black tracking-tighter text-gray-900">
-              La<span className="text-blue-600">Chopin</span>
-            </span>
-          </Link>
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
+  // ------------------------------------------------------------------
+  // 3. VERSIÓN COMPLETA (Para el inicio, categorías, perfil, etc.)
+  // ------------------------------------------------------------------
+  return (
+    <footer className="bg-white border-t border-gray-200 pt-16 pb-8 mt-10">
+      <div className="max-w-6xl mx-auto px-4">
+        
+        {/* 👇 AQUÍ ESTÁ LA MAGIA DEL GRID (2 columnas móvil, 4 PC) 👇 */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           
-          <div className="flex gap-4">
-            <a href="#" className="p-2 bg-gray-50 rounded-full text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors">
-              <Facebook className="w-5 h-5" />
-            </a>
-            <a href="#" className="p-2 bg-gray-50 rounded-full text-gray-500 hover:text-pink-600 hover:bg-pink-50 transition-colors">
-              <Instagram className="w-5 h-5" />
-            </a>
-            <a href="#" className="p-2 bg-gray-50 rounded-full text-gray-500 hover:text-sky-500 hover:bg-sky-50 transition-colors">
-              <Twitter className="w-5 h-5" />
-            </a>
+          {/* Columna 1: Marca y Redes (Ocupa 2 columnas en móvil para que el texto respire) */}
+          <div className="col-span-2 md:col-span-1">
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <ShoppingBag className="w-8 h-8 text-blue-600" />
+              <span className="text-xl font-bold text-gray-900">LaChopin</span>
+            </Link>
+            <p className="text-gray-500 text-sm mb-6 pr-4">
+              Tu mercado online en Cuba. Compra y vende de forma segura, rápida y sin comisiones ocultas.
+            </p>
+            <div className="flex items-center gap-4 text-gray-400">
+              <a href="#" className="hover:text-blue-600 transition-colors"><Facebook size={20} /></a>
+              <a href="#" className="hover:text-pink-600 transition-colors"><Instagram size={20} /></a>
+            </div>
+          </div>
+
+          {/* Columna 2: Categorías (Ocupa 1 columna) */}
+          <div className="col-span-1">
+            <h3 className="font-bold text-gray-900 mb-4">Categorías</h3>
+            <ul className="space-y-3 text-sm text-gray-500">
+              <li><Link href="/" className="hover:text-blue-600 transition-colors">Celulares</Link></li>
+              <li><Link href="/" className="hover:text-blue-600 transition-colors">Ropa y Calzado</Link></li>
+              <li><Link href="/" className="hover:text-blue-600 transition-colors">Electrodomésticos</Link></li>
+              <li><Link href="/" className="hover:text-blue-600 transition-colors">Hogar</Link></li>
+            </ul>
+          </div>
+
+          {/* Columna 3: Legal y Soporte (Ocupa 1 columna) */}
+          <div className="col-span-1">
+            <h3 className="font-bold text-gray-900 mb-4">La Empresa</h3>
+            <ul className="space-y-3 text-sm text-gray-500">
+              <li><Link href="/contacto" className="hover:text-blue-600 transition-colors">Ayuda</Link></li>
+              <li><Link href="/seguridad" className="hover:text-blue-600 transition-colors">Seguridad</Link></li>
+              <li><Link href="/terminos" className="hover:text-blue-600 transition-colors">Términos</Link></li>
+              <li><Link href="/cookies" className="hover:text-blue-600 transition-colors">Cookies</Link></li>
+            </ul>
+          </div>
+
+          {/* Columna 4: Contacto directo (Ocupa 2 columnas en móvil, 1 en PC) */}
+          <div className="col-span-2 md:col-span-1">
+            <h3 className="font-bold text-gray-900 mb-4">Contáctanos</h3>
+            <ul className="space-y-3 text-sm text-gray-500">
+              <li className="flex items-center gap-2">
+                <Mail size={16} className="text-blue-600 shrink-0" />
+                <span className="truncate">hola@lachopin.com</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <ShieldCheck size={16} className="text-green-600 shrink-0" />
+                <span>Plataforma Segura</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <MapPin size={16} className="text-red-500 shrink-0" />
+                <span>Cuba</span>
+              </li>
+            </ul>
           </div>
         </div>
 
-        {/* PARTE CENTRAL: Grid de Enlaces */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8 mb-8 text-center md:text-left">
-          
-          {/* Columna 1 */}
-          <div>
-            <h3 className="font-bold text-gray-900 mb-3 text-sm md:text-base">Comprar</h3>
-            <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link href="/" className="hover:text-blue-600">Inicio</Link></li>
-              <li><Link href="/ofertas" className="hover:text-blue-600">Ofertas Flash</Link></li>
-              <li><Link href="/categorias" className="hover:text-blue-600">Categorías</Link></li>
-              <li><Link href="/favoritos" className="hover:text-blue-600">Favoritos</Link></li>
-            </ul>
-          </div>
-
-          {/* Columna 2 */}
-          <div>
-            <h3 className="font-bold text-gray-900 mb-3 text-sm md:text-base">Vender</h3>
-            <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link href="/vender" className="hover:text-blue-600">Publicar Anuncio</Link></li>
-              <li><Link href="/mis-publicaciones" className="hover:text-blue-600">Mi Tienda</Link></li>
-              <li><Link href="/consejos" className="hover:text-blue-600">Consejos de Venta</Link></li>
-              <li><Link href="/premium" className="hover:text-blue-600">Vendedor Premium</Link></li>
-            </ul>
-          </div>
-
-          {/* Columna 3 */}
-          <div>
-            <h3 className="font-bold text-gray-900 mb-3 text-sm md:text-base">Soporte</h3>
-            <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link href="/ayuda" className="hover:text-blue-600">Centro de Ayuda</Link></li>
-              <li><Link href="/reglas" className="hover:text-blue-600">Reglas</Link></li>
-              <li><Link href="/seguridad" className="hover:text-blue-600">Seguridad</Link></li>
-              <li><Link href="/contacto" className="hover:text-blue-600">Contáctanos</Link></li>
-            </ul>
-          </div>
-
-          {/* Columna 4 */}
-          <div>
-            <h3 className="font-bold text-gray-900 mb-3 text-sm md:text-base">Legal</h3>
-            <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link href="/privacidad" className="hover:text-blue-600">Privacidad</Link></li>
-              <li><Link href="/terminos" className="hover:text-blue-600">Términos</Link></li>
-              <li><Link href="/cookies" className="hover:text-blue-600">Cookies</Link></li>
-            </ul>
-          </div>
-
-        </div>
-
-        {/* PARTE INFERIOR: Copyright */}
-        <div className="pt-8 border-t border-gray-100 text-center">
-          <p className="text-xs text-gray-400">
-            © {new Date().getFullYear()} LaChopin. Hecho con ❤️ para la isla.
+        {/* Línea final (Copyright) */}
+        <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-gray-400 text-center md:text-left">
+            © {new Date().getFullYear()} LaChopin. Todos los derechos reservados.
           </p>
+          <div className="text-sm text-gray-400 flex gap-4">
+            <span>Hecho con ❤️ para Cuba</span>
+          </div>
         </div>
-
       </div>
     </footer>
   );

@@ -100,15 +100,26 @@ export function ProductCard({ product }: ProductCardProps) {
           </span>
         </div>
 
-        {/* Vendedor */}
-        <div className="mb-3 md:mb-4 flex items-center gap-2">
-          <div className="relative h-6 w-6 overflow-hidden rounded-full bg-gray-100 shrink-0">
-            <div className="flex h-full w-full items-center justify-center bg-blue-100 text-[10px] font-bold text-blue-600">
-              {sellerName.charAt(0).toUpperCase()}
+       {/* Vendedor (AHORA CLIQUEABLE) */}
+        {product.sellerId ? (
+          <Link href={`/vendedor/${product.sellerId}`} className="flex items-center gap-2 mb-3 transition-colors md:mb-4 hover:text-blue-600 group">
+            <div className="relative overflow-hidden bg-gray-100 rounded-full shrink-0 h-6 w-6">
+              <div className="flex items-center justify-center w-full h-full text-[10px] font-bold text-blue-600 bg-blue-100 group-hover:bg-blue-200">
+                {sellerName.charAt(0).toUpperCase()}
+              </div>
             </div>
+            <span className="text-xs text-gray-500 truncate group-hover:text-blue-600">{sellerName}</span>
+          </Link>
+        ) : (
+          <div className="flex items-center gap-2 mb-3 md:mb-4">
+            <div className="relative overflow-hidden bg-gray-100 rounded-full shrink-0 h-6 w-6">
+              <div className="flex items-center justify-center w-full h-full text-[10px] font-bold text-gray-400 bg-gray-100">
+                {sellerName.charAt(0).toUpperCase()}
+              </div>
+            </div>
+            <span className="text-xs text-gray-400 truncate">{sellerName}</span>
           </div>
-          <span className="truncate text-xs text-gray-500">{sellerName}</span>
-        </div>
+        )}
 
         {/* Botón de Contacto */}
         <div className="mt-auto">

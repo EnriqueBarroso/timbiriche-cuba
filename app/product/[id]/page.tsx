@@ -163,36 +163,38 @@ export default async function ProductPage({ params }: Props) {
                 </div>
             </div>
 
-            {/* 3. Sección Vendedor */}
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-4">
+           {/* 3. Sección Vendedor (AHORA CLIQUEABLE) */}
+            <div className="p-5 mb-4 bg-white border border-gray-100 shadow-sm rounded-2xl">
                 <div className="flex items-center gap-4">
-                    <div className="relative">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={avatarUrl} alt={sellerName} className="w-14 h-14 rounded-full object-cover border border-gray-200" />
-                        {product.seller?.isVerified && (
-                            <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-0.5 rounded-full border-2 border-white">
-                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h3 className="font-bold text-gray-900 text-lg">{sellerName}</h3>
-                                <p className="text-xs text-gray-500">Vendedor en LaChopin</p>
-                            </div>
-                            
-                            {!isOwner && product.sellerId && (
-                                <FollowButton 
-                                    sellerId={product.sellerId} 
-                                    isFollowingInitial={isFollowing} 
-                                    isMe={currentUserId === product.sellerId} 
-                                    isLoggedIn={isLoggedIn}
-                                />
+                    {/* Envolvemos la imagen y el nombre en un Link para ir al perfil */}
+                    <Link href={`/vendedor/${product.sellerId}`} className="flex items-center flex-1 gap-4 group">
+                        <div className="relative shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={avatarUrl} alt={sellerName} className="object-cover border border-gray-200 rounded-full w-14 h-14 group-hover:ring-2 group-hover:ring-blue-100 transition-all" />
+                            {product.seller?.isVerified && (
+                                <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-0.5 rounded-full border-2 border-white">
+                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                </div>
                             )}
                         </div>
-                    </div>
+
+                        <div className="flex-1">
+                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{sellerName}</h3>
+                            <p className="text-xs text-gray-500">Ver perfil de la tienda</p>
+                        </div>
+                    </Link>
+                    
+                    {/* El botón de seguir se queda a la derecha, fuera del Link para no dar problemas */}
+                    {!isOwner && product.sellerId && (
+                        <div className="shrink-0">
+                            <FollowButton 
+                                sellerId={product.sellerId} 
+                                isFollowingInitial={isFollowing} 
+                                isMe={currentUserId === product.sellerId} 
+                                isLoggedIn={isLoggedIn}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -206,49 +208,55 @@ export default async function ProductPage({ params }: Props) {
         </div>
       </div>
 
-      {/* 4. Sticky Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-40">
-        <div className="max-w-4xl mx-auto flex items-center gap-3">
+      {/* 4. Sticky Footer (Botonera Flotante) - CORREGIDO PARA MÓVILES */}
+      <div 
+        className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-10px_20px_rgba(0,0,0,0.1)] z-[100]"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)', paddingTop: '12px', paddingLeft: '12px', paddingRight: '12px' }}
+      >
+        <div className="max-w-4xl mx-auto flex items-center gap-2 md:gap-3">
             
             {isOwner ? (
                 <>
                     <form action={async () => { "use server"; await deleteProduct(product.id); }} className="flex-1">
-                        <button className="w-full bg-red-50 text-red-600 h-12 rounded-xl font-bold flex items-center justify-center gap-2 border border-red-200">
-                            <Trash2 size={20} /> Borrar
+                        <button className="w-full bg-red-50 text-red-600 h-12 md:h-14 rounded-xl font-bold flex items-center justify-center gap-2 border border-red-200 active:bg-red-100 transition-colors">
+                            <Trash2 size={20} /> 
+                            <span className="text-sm md:text-base">Borrar</span>
                         </button>
                     </form>
                     <Link href={`/editar/${product.id}`} className="flex-1">
-                        <button className="w-full bg-gray-100 text-gray-800 h-12 rounded-xl font-bold flex items-center justify-center gap-2">
-                            <Edit size={20} /> Editar
+                        <button className="w-full bg-gray-100 text-gray-800 h-12 md:h-14 rounded-xl font-bold flex items-center justify-center gap-2 active:bg-gray-200 transition-colors">
+                            <Edit size={20} /> 
+                            <span className="text-sm md:text-base">Editar</span>
                         </button>
                     </Link>
                 </>
             ) : (
                 <>
-                    <div className="shrink-0">
-                         <div className="h-12 w-12 flex items-center justify-center bg-gray-100 rounded-full border border-gray-200">
-                             <FavoriteButton product={favoriteData} />
-                         </div>
+                    {/* Botón Favoritos (Redondeado y adaptado) */}
+                    <div className="shrink-0 flex items-center justify-center h-12 w-12 md:h-14 md:w-14 bg-gray-50 border border-gray-200 rounded-full active:bg-gray-100 transition-colors">
+                        <FavoriteButton product={favoriteData} />
                     </div>
 
-                    <div className="shrink-0">
+                    {/* Botón Compartir (Redondeado y adaptado) */}
+                    <div className="shrink-0 flex items-center justify-center h-12 w-12 md:h-14 md:w-14 bg-gray-50 border border-gray-200 rounded-full active:bg-gray-100 transition-colors">
                         <ShareButton title={product.title} text={`Mira esto en LaChopin: ${product.title}`} />
                     </div>
 
+                    {/* Botón WhatsApp Principal */}
                     {hasPhone ? (
                         <a 
                             href={whatsappUrl} 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            className="flex-1 bg-green-600 hover:bg-green-700 text-white h-12 rounded-full font-bold flex items-center justify-center gap-2 shadow-lg shadow-green-200 active:scale-95 transition-all"
+                            className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white h-12 md:h-14 rounded-full font-bold flex items-center justify-center gap-1.5 md:gap-2 shadow-lg shadow-green-200/50 active:scale-95 transition-all"
                         >
-                            <MessageCircle size={22} fill="white" className="text-white" />
-                            <span>Contactar</span>
+                            <MessageCircle size={22} fill="white" className="text-white shrink-0" />
+                            <span className="text-sm md:text-base">Contactar</span>
                         </a>
                     ) : (
-                        <button disabled className="flex-1 bg-gray-200 text-gray-500 h-12 rounded-full font-bold flex items-center justify-center gap-2 cursor-not-allowed">
-                            <MessageCircle size={22} />
-                            <span>Sin Teléfono</span>
+                        <button disabled className="flex-1 bg-gray-100 text-gray-400 h-12 md:h-14 rounded-full font-bold flex items-center justify-center gap-1.5 md:gap-2 cursor-not-allowed border border-gray-200">
+                            <MessageCircle size={22} className="shrink-0" />
+                            <span className="text-sm md:text-base">Sin WhatsApp</span>
                         </button>
                     )}
                 </>
