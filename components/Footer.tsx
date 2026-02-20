@@ -78,8 +78,8 @@ export default function Footer() {
           <div className="col-span-1 lg:col-span-1">
             <h3 className="font-bold text-gray-900 mb-4">Vender</h3>
             <ul className="space-y-3 text-sm text-gray-500">
-              <li><Link href="/publicar" className="hover:text-blue-600 transition-colors">Publicar Anuncio</Link></li>
-              <li><Link href="/mi-tienda" className="hover:text-blue-600 transition-colors">Mi Tienda</Link></li>
+              <li><Link href="/vender" className="hover:text-blue-600 transition-colors">Publicar Anuncio</Link></li>
+              <li><Link href="/mis-publicaciones" className="hover:text-blue-600 transition-colors">Mi Tienda</Link></li>
               <li><Link href="/consejos" className="hover:text-blue-600 transition-colors">Consejos de Venta</Link></li>
               <li><Link href="/premium" className="hover:text-blue-600 transition-colors">Vendedor Premium</Link></li>
             </ul>
