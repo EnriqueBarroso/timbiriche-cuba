@@ -151,19 +151,26 @@ export default function EditForm({ product }: Props) {
 
         {/* Categoría (LISTA ACTUALIZADA) */}
         <div>
-          <label className="block text-sm font-bold mb-1">Categoría</label>
-          <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className={inputStyles}>
-             <option value="cellphones">📱 Celulares y Tablets</option>
-             <option value="vehicles">🚗 Motos, Carros y Bicicletas</option>
-             <option value="fashion">👗 Ropa y Calzado</option>
-             <option value="appliances">📺 Electrodomésticos</option>
-             <option value="home">🛋️ Hogar y Muebles</option>
-             <option value="food">🍗 Combos y Alimentos</option>
-             <option value="parts">🔧 Piezas y Accesorios</option>
-             <option value="crafts">🎨 Artesanía y Manufactura</option>
-             <option value="others">📦 Otros</option>
-          </select>
-        </div>
+            <label className="block text-sm font-bold text-gray-700 mb-1">Categoría</label>
+            <select
+              required
+              className={inputStyles}
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            >
+               <option value="" disabled>Selecciona una categoría...</option>
+               {/* 👇 ESTOS 'value' SON LOS QUE IMPORTAN */}
+               <option value="cellphones">📱 Celulares y Tablets</option>
+               <option value="vehicles">🚗 Motos, Carros y Bicicletas</option>
+               <option value="fashion">👗 Ropa y Calzado</option>
+               <option value="appliances">📺 Electrodomésticos</option>
+               <option value="home">🛋️ Hogar y Muebles</option>
+               <option value="food">🍗 Combos y Alimentos</option>
+               <option value="parts">🔧 Piezas y Accesorios</option>
+               <option value="crafts">🎨 Artesanía y Manufactura</option>
+               <option value="others">📦 Otros</option>
+            </select>
+          </div>
 
         {/* Descripción */}
         <div>

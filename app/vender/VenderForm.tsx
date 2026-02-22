@@ -178,6 +178,7 @@ export default function VenderForm({ initialProduct }: Props) {
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             >
                <option value="" disabled>Selecciona una categoría...</option>
+               {/* 👇 ESTOS 'value' SON LOS QUE IMPORTAN */}
                <option value="cellphones">📱 Celulares y Tablets</option>
                <option value="vehicles">🚗 Motos, Carros y Bicicletas</option>
                <option value="fashion">👗 Ropa y Calzado</option>
