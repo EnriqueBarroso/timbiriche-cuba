@@ -136,7 +136,7 @@ export async function createProduct(data: {
   return { success: true };
 }
 
-// 5. ACTUALIZAR PRODUCTO (SIMPLIFICADO)
+// 5. ACTUALIZAR PRODUCTO
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function updateProduct(productId: string, data: any) {
   const user = await currentUser();
@@ -156,15 +156,15 @@ export async function updateProduct(productId: string, data: any) {
     where: { id: productId },
     data: {
       title: data.title,
-      // 👇 AQUÍ TAMBIÉN: Guardamos directo si hay cambio de precio
-      ...(data.price && { price: data.price }),
+      ...(data.price !== undefined && { price: data.price }),
       currency: data.currency,
       category: data.category,
       description: data.description,
-      ...(data.images && data.images.length > 0 && {
+      // Si recibimos el array de imágenes del cliente, actualizamos la galería
+      ...(data.images && {
         images: {
-            deleteMany: {},
-            create: data.images.map((url: string) => ({ url }))
+            deleteMany: {}, // Borramos las relaciones viejas para evitar "fotos huérfanas"
+            create: data.images.map((url: string) => ({ url })) // Creamos las relaciones con el array final
         }
       })
     }
