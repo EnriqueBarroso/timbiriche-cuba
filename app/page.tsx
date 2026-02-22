@@ -1,4 +1,4 @@
-import { getProducts } from "@/lib/actions";
+import { getProducts, getPromotedProducts } from "@/lib/actions";
 import { ProductCard } from "@/components/ProductCard";
 import Pagination from "@/components/Pagination";
 import Link from "next/link";
@@ -14,7 +14,8 @@ import {
   Car,
   Tv,
   Sofa,
-  Package
+  Package,
+  Zap
 } from "lucide-react";
 
 // 👇 AQUÍ ESTÁ LA MAGIA: Las categorías exactas de la base de datos
@@ -121,11 +122,17 @@ export default async function Home({ searchParams }: Props) {
   const searchTerm = search || query || "";
   const currentPage = Number(page) || 1;
   
-  const { products, total, totalPages } = await getProducts({ 
-    query: searchTerm,
-    category: category,
-    page: currentPage,
-  });
+  // 👇 CAMBIO 1: Cargamos los productos normales Y los promocionados al mismo tiempo
+  const [productsData, promotedProducts] = await Promise.all([
+    getProducts({ 
+      query: searchTerm,
+      category: category,
+      page: currentPage,
+    }),
+    getPromotedProducts()
+  ]);
+
+  const { products, total, totalPages } = productsData;
 
   const categoryName = CATEGORIES.find(c => c.slug === category)?.name || category;
 
@@ -194,6 +201,29 @@ export default async function Home({ searchParams }: Props) {
             })}
           </div>
         </div>
+
+        {/* ⚡ CAMBIO 2: SECCIÓN VIP: OFERTAS FLASH (Solo visible en el inicio) */}
+        {!searchTerm && !category && currentPage === 1 && promotedProducts.length > 0 && (
+          <div className="mb-8">
+            <div className="px-4 mb-4 flex items-center gap-2">
+              <div className="bg-orange-100 p-1.5 rounded-lg text-orange-600">
+                <Zap size={20} className="fill-orange-600" />
+              </div>
+              <h2 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 uppercase tracking-tight">
+                Ofertas Flash
+              </h2>
+            </div>
+            {/* Carrusel horizontal de productos premium */}
+            <div className="flex overflow-x-auto gap-4 px-4 pb-4 no-scrollbar snap-x">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              {promotedProducts.map((product: any) => (
+                <div key={product.id} className="min-w-[160px] sm:min-w-[200px] md:min-w-[220px] snap-start">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* RESULTADOS */}
         <div className="px-4 mb-5 flex items-center justify-between">
