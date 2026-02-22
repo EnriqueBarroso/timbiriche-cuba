@@ -35,7 +35,7 @@ export default function EditForm({ product }: Props) {
   const handleRemoveImage = (indexToRemove: number) => {
     setFormData({
       ...formData,
-      images: formData.images.filter((_, index) => index !== indexToRemove)
+      images: formData.images.filter((_: string, index: number) => index !== indexToRemove)
     });
   };
 
