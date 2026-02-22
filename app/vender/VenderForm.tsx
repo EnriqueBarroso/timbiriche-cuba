@@ -26,7 +26,7 @@ export default function VenderForm({ initialProduct }: Props) {
     // ✅ CORREGIDO: Sin divisiones complejas
     price: initialProduct?.price ? initialProduct.price.toString() : "",
     currency: initialProduct?.currency || "USD",
-    category: initialProduct?.category || "food",
+    category: initialProduct?.category || "",
     description: initialProduct?.description || "",
     // Mapeamos las imágenes si existen
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -177,11 +177,16 @@ export default function VenderForm({ initialProduct }: Props) {
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             >
-              <option value="food">🍗 Combos y Alimentos</option>
-              <option value="parts">🔧 Piezas y Accesorios</option>
-              <option value="home">🛋️ Hogar y Decoración</option>
-              <option value="tech">📱 Tecnología</option>
-              <option value="fashion">👗 Ropa y Moda</option>
+               <option value="" disabled>Selecciona una categoría...</option>
+               <option value="cellphones">📱 Celulares y Tablets</option>
+               <option value="vehicles">🚗 Motos, Carros y Bicicletas</option>
+               <option value="fashion">👗 Ropa y Calzado</option>
+               <option value="appliances">📺 Electrodomésticos</option>
+               <option value="home">🛋️ Hogar y Muebles</option>
+               <option value="food">🍗 Combos y Alimentos</option>
+               <option value="parts">🔧 Piezas y Accesorios</option>
+               <option value="crafts">🎨 Artesanía y Manufactura</option>
+               <option value="others">📦 Otros</option>
             </select>
           </div>
 
