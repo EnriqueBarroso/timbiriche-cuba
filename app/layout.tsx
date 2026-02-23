@@ -12,6 +12,7 @@ import SyncUser from "@/components/SyncUser";
 import BottomNav from "@/components/BottomNav";
 import AdminButton from "@/components/AdminButton";
 import CookieNotice from "@/components/CookieNotice";
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 // Providers (Contextos)
 import { CartProvider } from "@/contexts/CartContext";
@@ -141,6 +142,7 @@ export default function RootLayout({
           <CookieNotice />
 
         </body>
+        <GoogleAnalytics gaId="G-BZ481X6JRL" />
       </html>
     </ClerkProvider>
   );
