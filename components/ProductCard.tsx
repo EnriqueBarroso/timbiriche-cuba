@@ -57,16 +57,22 @@ export function ProductCard({ product }: ProductCardProps) {
 
       {/* Imagen del Producto */}
       <div className={`relative aspect-square overflow-hidden bg-gray-100 ${isSold ? "grayscale opacity-80" : ""}`}>
-        <Link href={`/product/${product.id}`} className="block h-full w-full">
+        <Link href={`/product/${product.id}`} className="block h-full w-full relative">
           <Image
             src={mainImage}
             alt={title}
             fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+            /* 👇 AJUSTE CLAVE PARA VELOCIDAD: 
+               Le decimos a Next.js exactamente qué tamaño generar según la pantalla.
+               Esto evita que descargue una imagen de 2000px en un móvil de 300px. */
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
+            // No usamos priority=true a menos que sea la imagen principal del Hero, para no bloquear la carga inicial.
             priority={false}
             placeholder="blur"
             blurDataURL={BLUR_PLACEHOLDER}
+            // 👇 OPTIMIZACIÓN CLAVE: Calidad ligeramente reducida para portadas (ahorra mucho peso, apenas se nota)
+            quality={75} 
           />
         </Link>
 
