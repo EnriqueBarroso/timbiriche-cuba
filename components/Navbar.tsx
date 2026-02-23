@@ -3,7 +3,7 @@
 import { useState, Suspense, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, Heart, ShoppingBag, Plus, User, Settings, ArrowLeft, X } from "lucide-react";
+import { Search, Heart, ShoppingBag, Plus, User, Settings, ArrowLeft, X, Building2 } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { useFavorites } from "@/contexts/FavoritesContext";
 
@@ -96,7 +96,6 @@ function NavbarContent() {
             <div className="flex items-center gap-3">
               <Link href="/" className="flex items-center gap-2 group">
                 <div className="bg-blue-600 text-white p-1.5 rounded-lg transform group-hover:rotate-3 transition-transform">
-                  {/* Icono actualizado a Bolsa de Compras */}
                   <ShoppingBag className="h-5 w-5" />
                 </div>
                 <span className="text-xl font-black tracking-tighter text-gray-900 md:text-2xl">
@@ -137,8 +136,25 @@ function NavbarContent() {
                 <Search className="h-5 w-5" />
               </button>
 
+              {/* Botón Empresas MÓVIL */}
+              <Link
+                href="/mayoristas"
+                className="md:hidden p-2 text-amber-600 hover:bg-amber-50 rounded-full transition-colors"
+                aria-label="Empresas B2B"
+              >
+                <Building2 className="h-5 w-5" />
+              </Link>
+
               {/* Elementos SOLO PC */}
               <div className="hidden md:flex items-center gap-3">
+                {/* Botón Empresas PC */}
+                <Link
+                  href="/mayoristas"
+                  className="flex items-center gap-2 bg-amber-50 text-amber-700 border border-amber-200 px-4 py-2 rounded-full text-sm font-bold hover:bg-amber-100 transition-colors shadow-sm active:scale-95"
+                >
+                  <Building2 className="h-4 w-4" /> Empresas
+                </Link>
+
                 <Link
                   href="/vender"
                   className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-blue-600 transition-colors shadow-sm active:scale-95"

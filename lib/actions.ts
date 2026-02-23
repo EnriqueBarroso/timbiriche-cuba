@@ -29,8 +29,13 @@ export async function getProducts({
     ];
   }
 
+  // 👇 AQUÍ ESTÁ LA MAGIA B2B
   if (category && category !== "all") {
     where.category = { equals: category, mode: "insensitive" };
+  } else {
+    // Si NO hay categoría seleccionada (es decir, estamos en el Inicio normal),
+    // filtramos para que NO salgan los productos mayoristas.
+    where.category = { not: "wholesale" };
   }
 
   try {

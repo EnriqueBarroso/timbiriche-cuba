@@ -149,17 +149,16 @@ export default function EditForm({ product }: Props) {
           </div>
         </div>
 
-        {/* Categoría (LISTA ACTUALIZADA) */}
-        <div>
+       {/* Categoría */}
+          <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">Categoría</label>
             <select
               required
-              className={inputStyles}
+              className="w-full rounded-xl border border-gray-300 bg-white p-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             >
                <option value="" disabled>Selecciona una categoría...</option>
-               {/* 👇 ESTOS 'value' SON LOS QUE IMPORTAN */}
                <option value="cellphones">📱 Celulares y Tablets</option>
                <option value="vehicles">🚗 Motos, Carros y Bicicletas</option>
                <option value="fashion">👗 Ropa y Calzado</option>
@@ -169,6 +168,8 @@ export default function EditForm({ product }: Props) {
                <option value="parts">🔧 Piezas y Accesorios</option>
                <option value="crafts">🎨 Artesanía y Manufactura</option>
                <option value="others">📦 Otros</option>
+               {/* 👇 LA NUEVA LÍNEA DE NEGOCIO B2B */}
+               <option value="wholesale" className="font-bold text-blue-600 bg-blue-50">🏢 Venta Mayorista (B2B)</option>
             </select>
           </div>
 
