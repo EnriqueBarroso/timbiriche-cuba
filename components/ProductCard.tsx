@@ -99,11 +99,23 @@ export function ProductCard({ product }: ProductCardProps) {
           </h3>
         </Link>
 
-        {/* Precio */}
-        <div className="mb-3">
-          <span className={`text-xl md:text-2xl font-bold ${isSold ? "text-gray-400 line-through decoration-gray-400" : "text-gray-900"}`}>
-            {displayPrice}
-          </span>
+       {/* Precio Inteligente */}
+        <div className="mb-3 flex items-center min-h-[32px]">
+          {price === 0 ? (
+            <span className={`text-xs md:text-sm font-black px-3 py-1.5 rounded-lg border shadow-sm ${
+              isSold 
+                ? "bg-gray-50 text-gray-400 border-gray-200" 
+                : "bg-blue-50 text-blue-700 border-blue-200"
+            }`}>
+              🏷️ Varios Precios
+            </span>
+          ) : (
+            <span className={`text-xl md:text-2xl font-bold ${
+              isSold ? "text-gray-400 line-through decoration-gray-400" : "text-gray-900"
+            }`}>
+              {displayPrice}
+            </span>
+          )}
         </div>
 
        {/* Vendedor (AHORA CLIQUEABLE) */}

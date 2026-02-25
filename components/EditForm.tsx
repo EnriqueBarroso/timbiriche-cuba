@@ -136,11 +136,27 @@ export default function EditForm({ product }: Props) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-bold mb-1">Precio</label>
-            <input type="number" step="0.01" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required className={inputStyles} />
+            <input 
+              type="number" 
+              min="0"
+              step="0.01" 
+              value={formData.price} 
+              onChange={(e) => setFormData({ ...formData, price: e.target.value })} 
+              required 
+              className={inputStyles} 
+            />
+            {/* 👇 TEXTO DE AYUDA AÑADIDO AQUÍ 👇 */}
+            <p className="mt-1.5 text-[11px] leading-tight text-gray-500">
+              💡 <span className="font-bold text-blue-600">Tip:</span> Si tienes varios precios, pon <span className="font-bold text-gray-900">0</span>.
+            </p>
           </div>
           <div>
             <label className="block text-sm font-bold mb-1">Moneda</label>
-            <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value })} className={inputStyles}>
+            <select 
+              value={formData.currency} 
+              onChange={(e) => setFormData({ ...formData, currency: e.target.value })} 
+              className={inputStyles}
+            >
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
               <option value="CUP">CUP</option>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { MultiImageUpload } from "@/components/MultiImageUpload";
-import { createProduct, updateProduct } from "@/lib/actions"; 
+import { createProduct, updateProduct } from "@/lib/actions";
 import { Loader2, DollarSign, Store, Save } from "lucide-react";
 import { toast } from "sonner";
 
@@ -57,7 +57,7 @@ export default function VenderForm({ initialProduct }: Props) {
         });
         toast.success("Producto actualizado correctamente");
         router.push("/mis-publicaciones");
-        
+
       } else {
         // --- MODO CREACIÓN ---
         // Validación de perfil
@@ -65,7 +65,7 @@ export default function VenderForm({ initialProduct }: Props) {
         if (!profileRes.ok) throw new Error("Error perfil");
         const profile = await profileRes.json();
         const cleanPhone = profile.phoneNumber?.replace(/\D/g, '') || '';
-        
+
         if (cleanPhone.length < 8) {
           toast.error("WhatsApp requerido");
           router.push("/perfil?returnTo=/vender");
@@ -147,11 +147,17 @@ export default function VenderForm({ initialProduct }: Props) {
                 <input
                   required
                   type="number"
+                  min="0"
+                  step="0.01"
                   className={`${inputStyles} pl-9`}
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 />
               </div>
+              {/* 👇 TEXTO DE AYUDA AÑADIDO AQUÍ 👇 */}
+              <p className="mt-1.5 text-[11px] leading-tight text-gray-500">
+                💡 <span className="font-bold text-blue-600">Tip:</span> Si tienes varios precios, pon <span className="font-bold text-gray-900">0</span>.
+              </p>
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-1">Moneda</label>
@@ -177,18 +183,18 @@ export default function VenderForm({ initialProduct }: Props) {
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             >
-               <option value="" disabled>Selecciona una categoría...</option>
-               <option value="cellphones">📱 Celulares y Tablets</option>
-               <option value="vehicles">🚗 Motos, Carros y Bicicletas</option>
-               <option value="fashion">👗 Ropa y Calzado</option>
-               <option value="appliances">📺 Electrodomésticos</option>
-               <option value="home">🛋️ Hogar y Muebles</option>
-               <option value="food">🍗 Combos y Alimentos</option>
-               <option value="parts">🔧 Piezas y Accesorios</option>
-               <option value="crafts">🎨 Artesanía y Manufactura</option>
-               <option value="others">📦 Otros</option>
-               {/* 👇 LA NUEVA LÍNEA DE NEGOCIO B2B */}
-               <option value="wholesale" className="font-bold text-blue-600 bg-blue-50">🏢 Venta Mayorista (B2B)</option>
+              <option value="" disabled>Selecciona una categoría...</option>
+              <option value="cellphones">📱 Celulares y Tablets</option>
+              <option value="vehicles">🚗 Motos, Carros y Bicicletas</option>
+              <option value="fashion">👗 Ropa y Calzado</option>
+              <option value="appliances">📺 Electrodomésticos</option>
+              <option value="home">🛋️ Hogar y Muebles</option>
+              <option value="food">🍗 Combos y Alimentos</option>
+              <option value="parts">🔧 Piezas y Accesorios</option>
+              <option value="crafts">🎨 Artesanía y Manufactura</option>
+              <option value="others">📦 Otros</option>
+              {/* 👇 LA NUEVA LÍNEA DE NEGOCIO B2B */}
+              <option value="wholesale" className="font-bold text-blue-600 bg-blue-50">🏢 Venta Mayorista (B2B)</option>
             </select>
           </div>
 
