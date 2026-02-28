@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Ban, Zap } from "lucide-react";
+import { MessageCircle, Ban, Zap, Wallet } from "lucide-react"; // Añadimos Wallet
 import Image from "next/image";
 import Link from "next/link";
 import FavoriteButton from "@/components/FavoriteButton";
@@ -30,7 +30,10 @@ export function ProductCard({ product }: ProductCardProps) {
   }
   const hasValidPhone = cleanPhone.length >= 8;
   const isSold = product.isSold || false;
-  const isFlashOffer = product.isFlashOffer || false; // 👇 Leemos si es Oferta Flash
+  const isFlashOffer = product.isFlashOffer || false; 
+  
+  // 👇 Leemos si el vendedor acepta Zelle
+  const acceptsZelle = product.seller?.acceptsZelle || false;
 
   const favoriteData = {
     id: product.id,
@@ -72,12 +75,22 @@ export function ProductCard({ product }: ProductCardProps) {
           />
         </Link>
 
-        {/* 👇 NUEVO: Etiqueta de Oferta Flash (Controlada por el Vendedor) */}
+        {/* Etiqueta de Oferta Flash (Arriba Izquierda) */}
         {!isSold && isFlashOffer && (
           <div className="absolute top-2 left-2 md:top-3 md:left-3 z-20">
             <span className="flex items-center gap-1 bg-amber-500 text-white px-2 py-1 rounded-md text-[10px] md:text-xs font-black tracking-wide shadow-md uppercase">
               <Zap size={12} className="fill-white" />
               Oferta Flash
+            </span>
+          </div>
+        )}
+
+        {/* 👇 NUEVO: Etiqueta de Zelle (Abajo Izquierda) */}
+        {!isSold && acceptsZelle && (
+          <div className="absolute bottom-2 left-2 md:bottom-3 md:left-3 z-20">
+            <span className="flex items-center gap-1 bg-purple-600 text-white px-2 py-1 rounded-md text-[10px] md:text-xs font-black tracking-wide shadow-md uppercase">
+              <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+              Zelle
             </span>
           </div>
         )}
@@ -121,7 +134,6 @@ export function ProductCard({ product }: ProductCardProps) {
             }`}>
               {displayPrice}
               
-              {/* 👇 Pequeño detalle visual en el precio si es Oferta Flash */}
               {!isSold && isFlashOffer && (
                  <span className="text-[10px] md:text-xs font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
                    Rebajado
@@ -131,15 +143,17 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-       {/* Vendedor (AHORA CLIQUEABLE) */}
+       {/* Vendedor (Enlace a /shop/) */}
         {product.sellerId ? (
-          <Link href={`/vendedor/${product.sellerId}`} className="flex items-center gap-2 mb-3 transition-colors md:mb-4 hover:text-blue-600 group">
+          <Link href={`/shop/${product.sellerId}`} className="flex items-center gap-2 mb-3 transition-colors md:mb-4 hover:text-blue-600 group">
             <div className="relative overflow-hidden bg-gray-100 rounded-full shrink-0 h-6 w-6">
               <div className="flex items-center justify-center w-full h-full text-[10px] font-bold text-blue-600 bg-blue-100 group-hover:bg-blue-200">
                 {sellerName.charAt(0).toUpperCase()}
               </div>
             </div>
             <span className="text-xs text-gray-500 truncate group-hover:text-blue-600">{sellerName}</span>
+            {/* Si acepta Zelle, mostramos un pequeño icono morado junto al nombre también */}
+            {acceptsZelle && <Wallet size={12} className="text-purple-600" />}
           </Link>
         ) : (
           <div className="flex items-center gap-2 mb-3 md:mb-4">

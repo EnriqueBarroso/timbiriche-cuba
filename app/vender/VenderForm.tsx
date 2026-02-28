@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { MultiImageUpload } from "@/components/MultiImageUpload";
 import { createProduct, updateProduct } from "@/lib/actions";
-import { Loader2, DollarSign, Store, Save } from "lucide-react";
+import { Loader2, DollarSign, Store, Save, Zap } from "lucide-react";
 import { toast } from "sonner";
+
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -97,6 +98,33 @@ export default function VenderForm({ initialProduct }: Props) {
 
   const inputStyles = "w-full rounded-xl border border-gray-300 bg-white p-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all";
 
+  const handleMagicPaste = () => {
+    navigator.clipboard.readText().then((text) => {
+      if (!text) return toast.error("El portapapeles está vacío");
+
+      const lines = text.split('\n').filter(l => l.trim() !== '');
+      if (lines.length === 0) return;
+
+      // Título: Primera línea
+      const extractedTitle = lines[0].substring(0, 80);
+
+      // Precio: Buscamos patrones como "1200 USD", "$500", "500.00"
+      const priceMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:USD|\$|CUP|MLC|EUR)/i)
+        || text.match(/(?:USD|\$|CUP|MLC|EUR)\s*(\d+(?:\.\d+)?)/i);
+
+      const extractedPrice = priceMatch ? priceMatch[1] : "";
+
+      setFormData(prev => ({
+        ...prev,
+        title: extractedTitle,
+        price: extractedPrice,
+        description: text // Ponemos todo el texto en la descripción
+      }));
+
+      toast.success("¡Anuncio importado mágicamente! ✨");
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 pb-32">
       <div className="max-w-2xl mx-auto">
@@ -113,6 +141,23 @@ export default function VenderForm({ initialProduct }: Props) {
             {isEditing ? "Edita tu " : "Impulsa tu "}
             <span className="text-blue-600">{isEditing ? "Producto" : "Negocio"}</span>
           </h1>
+        </div>
+
+        <div className="mb-6 p-4 bg-blue-50 border-2 border-dashed border-blue-200 rounded-2xl">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <h4 className="text-sm font-bold text-blue-900">¿Tienes el anuncio en otro sitio?</h4>
+              <p className="text-xs text-blue-700">Copia el texto de Revolico o Facebook y dale al botón.</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleMagicPaste}
+              className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-all flex items-center gap-2"
+            >
+              <Zap size={14} className="fill-white" />
+              Rellenado Mágico
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-3xl shadow-sm border border-gray-200">

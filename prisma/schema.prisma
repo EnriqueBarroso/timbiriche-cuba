@@ -28,6 +28,7 @@ model Product {
   
   // 👇 NUEVO CAMPO: Para las Ofertas Flash (Lo maneja el vendedor)
   isFlashOffer Boolean       @default(false)
+  views        Int      @default(0)
   
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
@@ -55,6 +56,9 @@ model Seller {
   reviews     Int       @default(0)
   avatar      String?
   createdAt   DateTime  @default(now())
+  updatedAt   DateTime?  @updatedAt       // 👈 Añade esta línea
+  acceptsZelle Boolean  @default(false)  // 👈 Zelle (El interruptor)
+  zelleEmail   String?                   // 👈 Zelle (El correo/teléfono)
   products    Product[]
   followers   Follower[]
 }

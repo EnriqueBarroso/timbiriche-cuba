@@ -102,7 +102,7 @@ export async function createProduct(data: {
   category: string;
   description: string;
   images: string[];
-  isFlashOffer: boolean; 
+  isFlashOffer: boolean;
 }) {
   const user = await currentUser();
   if (!user || !user.emailAddresses[0]) throw new Error("Debes iniciar sesión");
@@ -114,7 +114,7 @@ export async function createProduct(data: {
     where: { email: email },
     update: {},
     create: {
-      id: user.id, 
+      id: user.id,
       email: email,
       storeName: userName,
       avatar: user.imageUrl,
@@ -127,8 +127,8 @@ export async function createProduct(data: {
   await prisma.product.create({
     data: {
       title: data.title,
-      price: data.price, 
-      currency: data.currency, 
+      price: data.price,
+      currency: data.currency,
       description: data.description,
       category: data.category,
       sellerId: seller.id,
@@ -158,7 +158,7 @@ export async function updateProduct(productId: string, data: any) {
   if (!product || !product.seller || product.seller.email !== email) {
     throw new Error("No tienes permiso");
   }
-  
+
   await prisma.product.update({
     where: { id: productId },
     data: {
@@ -167,12 +167,12 @@ export async function updateProduct(productId: string, data: any) {
       currency: data.currency,
       category: data.category,
       description: data.description,
-      ...(data.isFlashOffer !== undefined && { isFlashOffer: data.isFlashOffer }), // 👇 CORRECCIÓN AÑADIDA AQUÍ
+      ...(data.isFlashOffer !== undefined && { isFlashOffer: data.isFlashOffer }), 
       // Si recibimos el array de imágenes del cliente, actualizamos la galería
       ...(data.images && {
         images: {
-            deleteMany: {}, // Borramos las relaciones viejas para evitar "fotos huérfanas"
-            create: data.images.map((url: string) => ({ url })) // Creamos las relaciones con el array final
+          deleteMany: {}, // Borramos las relaciones viejas para evitar "fotos huérfanas"
+          create: data.images.map((url: string) => ({ url })) // Creamos las relaciones con el array final
         }
       })
     }
@@ -183,26 +183,39 @@ export async function updateProduct(productId: string, data: any) {
   revalidatePath("/");
 }
 
-// ... Resto de funciones (updateProfile, syncUserAction, etc.) ...
-// Puedes dejar las que ya tenías, no han cambiado.
-export async function updateProfile(data: { storeName: string; phoneNumber: string; avatar?: string }) {
+// 6. ACTUALIZAR PERFIL (AHORA CON ZELLE)
+export async function updateProfile(data: {
+  storeName: string;
+  phoneNumber: string;
+  avatar?: string;
+  acceptsZelle?: boolean; 
+  zelleEmail?: string;    
+}) {
   const user = await currentUser();
   if (!user) throw new Error("No autorizado");
   const email = user.emailAddresses[0].emailAddress;
+
   await prisma.seller.upsert({
     where: { email },
     update: {
       storeName: data.storeName,
       phoneNumber: data.phoneNumber,
       ...(data.avatar && { avatar: data.avatar }),
+      acceptsZelle: data.acceptsZelle ?? false,
+      zelleEmail: data.zelleEmail || null,
     },
     create: {
-      id: user.id, email,
+      id: user.id,
+      email,
       storeName: data.storeName,
       phoneNumber: data.phoneNumber,
-      avatar: data.avatar || user.imageUrl, isVerified: false,
+      avatar: data.avatar || user.imageUrl,
+      isVerified: false,
+      acceptsZelle: data.acceptsZelle ?? false,
+      zelleEmail: data.zelleEmail || null,
     },
   });
+
   revalidatePath("/perfil");
   revalidatePath("/vender");
   revalidatePath("/mis-publicaciones");
@@ -347,7 +360,7 @@ export async function getFlashOffers() {
       include: { images: true, seller: true },
       orderBy: { createdAt: "desc" },
     });
-  } catch (error) { 
-    return []; 
+  } catch (error) {
+    return [];
   }
 }

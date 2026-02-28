@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import { Save, User, Phone, Loader2, Camera } from "lucide-react";
+import { Save, User, Phone, Loader2, Camera, Wallet } from "lucide-react"; // Importamos Wallet para el icono
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
@@ -12,10 +12,11 @@ interface Props {
     storeName: string | null;
     phoneNumber: string | null;
     avatar?: string | null;
+    acceptsZelle?: boolean; // Nuevos campos
+    zelleEmail?: string | null;
   }
 }
 
-// Estilos de alta legibilidad (Texto Negro sobre Blanco)
 const inputStyles = "w-full p-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm";
 
 export default function ProfileForm({ initialData }: Props) {
@@ -30,6 +31,8 @@ export default function ProfileForm({ initialData }: Props) {
     storeName: initialData.storeName || "",
     phoneNumber: initialData.phoneNumber || "",
     avatar: initialData.avatar || "",
+    acceptsZelle: initialData.acceptsZelle || false, // Estado de Zelle
+    zelleEmail: initialData.zelleEmail || "",
   });
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,10 +66,14 @@ export default function ProfileForm({ initialData }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validación mínima para WhatsApp
     const cleanPhone = formData.phoneNumber.replace(/\D/g, '');
     if (cleanPhone.length < 8) {
       return toast.error("El teléfono debe tener al menos 8 dígitos");
+    }
+
+    // Validación de Zelle: Si dice que acepta, debe poner el correo
+    if (formData.acceptsZelle && !formData.zelleEmail.trim()) {
+      return toast.error("Debes ingresar tu correo o teléfono de Zelle");
     }
 
     setIsSubmitting(true);
@@ -76,6 +83,8 @@ export default function ProfileForm({ initialData }: Props) {
         storeName: formData.storeName,
         phoneNumber: formData.phoneNumber,
         avatar: formData.avatar,
+        acceptsZelle: formData.acceptsZelle, // Enviamos a la BD
+        zelleEmail: formData.zelleEmail,
       });
       toast.success("¡Perfil actualizado!");      
       router.refresh(); 
@@ -99,6 +108,7 @@ export default function ProfileForm({ initialData }: Props) {
         
         {/* Avatar Section */}
         <div className="flex flex-col items-center gap-4 mb-2">
+          {/* ... (Tu código de avatar intacto) ... */}
           <div className="relative group">
             <div className="h-28 w-28 rounded-full overflow-hidden border-4 border-white bg-gray-50 relative shadow-md">
               {formData.avatar ? (
@@ -131,7 +141,7 @@ export default function ProfileForm({ initialData }: Props) {
           <p className="text-xs text-gray-500 font-medium">Foto de tu negocio o perfil</p>
         </div>
 
-        {/* Nombre de la Tienda */}
+        {/* Nombre y Teléfono */}
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
             <User className="w-4 h-4 text-blue-600" />
@@ -147,7 +157,6 @@ export default function ProfileForm({ initialData }: Props) {
           />
         </div>
 
-        {/* WhatsApp */}
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
             <Phone className="w-4 h-4 text-green-600" />
@@ -166,15 +175,57 @@ export default function ProfileForm({ initialData }: Props) {
               required
             />
           </div>
-          <p className="text-xs text-gray-500 mt-2">
-            Los compradores te contactarán por WhatsApp
-          </p>
+        </div>
+
+        {/* 👇 NUEVA SECCIÓN: MÉTODOS DE PAGO (ZELLE) 👇 */}
+        <div className="pt-4 border-t border-gray-100">
+          <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Wallet className="w-4 h-4 text-purple-600" />
+            Métodos de Pago
+          </h3>
+          
+          <div className={`p-4 rounded-2xl border-2 transition-all ${formData.acceptsZelle ? 'border-purple-600 bg-purple-50' : 'border-gray-200 bg-gray-50'}`}>
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <span className="font-bold text-gray-900 text-base">Acepto Zelle</span>
+                <p className="text-xs text-gray-500 font-medium">Recibe pagos desde USA</p>
+              </div>
+              
+              {/* Toggle Switch */}
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer"
+                  checked={formData.acceptsZelle}
+                  onChange={(e) => setFormData({ ...formData, acceptsZelle: e.target.checked })}
+                />
+                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+              </label>
+            </div>
+
+            {/* Campo que aparece solo si activa Zelle */}
+            {formData.acceptsZelle && (
+              <div className="mt-4 animate-in fade-in slide-in-from-top-2">
+                <label className="block text-xs font-bold text-purple-800 mb-1">
+                  Correo o Teléfono de tu cuenta Zelle
+                </label>
+                <input
+                  type="text"
+                  value={formData.zelleEmail}
+                  onChange={(e) => setFormData({ ...formData, zelleEmail: e.target.value })}
+                  placeholder="ejemplo@correo.com o +1234567890"
+                  className="w-full p-2.5 bg-white border border-purple-200 rounded-lg text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 outline-none text-sm"
+                  required={formData.acceptsZelle}
+                />
+              </div>
+            )}
+          </div>
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting || isUploadingAvatar}
-          className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg active:scale-[0.98]"
+          className="w-full py-4 mt-2 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg active:scale-[0.98]"
         >
           {isSubmitting ? <Loader2 className="animate-spin" /> : <Save className="w-5 h-5" />}
           Guardar Cambios
