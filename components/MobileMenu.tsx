@@ -1,7 +1,7 @@
 "use client";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, HelpCircle, FileText, ChevronRight, LayoutGrid, Zap, Truck, User, LogIn } from "lucide-react";
+import { Menu, HelpCircle, FileText, ChevronRight, LayoutGrid, Crown, Truck, User, LogIn } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { CATEGORIES } from "@/lib/categories";
@@ -68,21 +68,21 @@ export default function MobileMenu() {
           
           {/* SECCIÓN 1: ACCIONES RÁPIDAS */}
           <div className="space-y-3">
-            {/* OFERTAS FLASH (Estilo Vibrante) */}
+            {/* ANUNCIOS PREMIUM (Estilo Dorado VIP) */}
             <Link
-                href="/ofertas"
+                href="/" // 👇 Lo enviamos al inicio, que es donde está el carrusel Premium
                 onClick={() => setOpen(false)}
-                className="relative overflow-hidden flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/20 group hover:scale-[1.02] transition-transform"
+                className="relative overflow-hidden flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg shadow-amber-500/20 group hover:scale-[1.02] transition-transform"
             >
                 <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/20 rounded-full blur-2xl"></div>
                 
                 <div className="flex items-center gap-4 relative z-10">
                     <div className="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm">
-                        <Zap size={20} className="text-yellow-300 fill-yellow-300" />
+                        <Crown size={20} className="text-white fill-white" />
                     </div>
                     <div>
-                        <p className="font-bold text-lg leading-none">Ofertas Flash</p>
-                        <p className="text-orange-100 text-xs mt-1 font-medium">¡Descuentos hoy!</p>
+                        <p className="font-bold text-lg leading-none text-white">Anuncios Premium</p>
+                        <p className="text-amber-100 text-xs mt-1 font-medium">Los más destacados</p>
                     </div>
                 </div>
                 <ChevronRight size={20} className="text-white/70 relative z-10" />
