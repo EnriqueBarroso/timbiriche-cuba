@@ -1,21 +1,20 @@
 import { Zap, ArrowLeft, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-// 👇 CAMBIO 1: Importamos la función específica de ofertas
-import { getPromotedProducts } from "@/lib/actions"; 
+// 👇 CAMBIO 1: Importamos la NUEVA función específica de ofertas flash
+import { getFlashOffers } from "@/lib/actions"; 
 import { ProductCard } from "@/components/ProductCard";
 
-// 👇 CAMBIO 2: Forzamos que la página se actualice siempre (para ver cambios al momento)
+// Forzamos que la página se actualice siempre (para ver cambios al momento)
 export const dynamic = "force-dynamic";
 
 export default async function FlashDealsPage() {
-  // 👇 CAMBIO 3: Usamos la función real. 
-  // Ya no "simulamos" con slice(0,8), ahora trae SOLO los que tienen isPromoted: true
-  const flashProducts = await getPromotedProducts();
+  // 👇 CAMBIO 2: Usamos la función real que trae los productos con isFlashOffer: true
+  const flashProducts = await getFlashOffers();
 
   return (
     <div className="min-h-screen bg-orange-50/30 pb-20">
       
-      {/* Header Temático (Tu diseño original conservado) */}
+      {/* Header Temático */}
       <div className="bg-gradient-to-r from-orange-500 to-red-600 py-10 px-4 text-center text-white mb-8 relative shadow-lg">
         {/* Botón atrás mejorado para móvil */}
         <Link href="/" className="absolute top-4 left-4 p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors backdrop-blur-sm">

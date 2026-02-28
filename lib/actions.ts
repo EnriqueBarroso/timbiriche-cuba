@@ -336,3 +336,18 @@ export async function checkIfFollowing(sellerId: string) {
 
   return !!follow; // Retorna true si existe, false si no
 }
+
+/**
+ * 12. OBTENER OFERTAS FLASH (Controladas por vendedores)
+ */
+export async function getFlashOffers() {
+  try {
+    return await prisma.product.findMany({
+      where: { isFlashOffer: true, isSold: false },
+      include: { images: true, seller: true },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) { 
+    return []; 
+  }
+}

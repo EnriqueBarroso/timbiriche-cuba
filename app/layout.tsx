@@ -92,6 +92,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  verification: {
+    google: "Nzf6-O8WHWnyktJv2kTAffTX65ANuA0BEkChzgaWYpc", // 👇 Añade esta línea
+  },
   manifest: "/manifest.json",
 };
 
