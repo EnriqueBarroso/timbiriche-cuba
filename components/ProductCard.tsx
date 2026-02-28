@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Ban } from "lucide-react";
+import { MessageCircle, Ban, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import FavoriteButton from "@/components/FavoriteButton";
@@ -30,6 +30,7 @@ export function ProductCard({ product }: ProductCardProps) {
   }
   const hasValidPhone = cleanPhone.length >= 8;
   const isSold = product.isSold || false;
+  const isFlashOffer = product.isFlashOffer || false; // 👇 Leemos si es Oferta Flash
 
   const favoriteData = {
     id: product.id,
@@ -62,19 +63,24 @@ export function ProductCard({ product }: ProductCardProps) {
             src={mainImage}
             alt={title}
             fill
-            /* 👇 AJUSTE CLAVE PARA VELOCIDAD: 
-               Le decimos a Next.js exactamente qué tamaño generar según la pantalla.
-               Esto evita que descargue una imagen de 2000px en un móvil de 300px. */
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
-            // No usamos priority=true a menos que sea la imagen principal del Hero, para no bloquear la carga inicial.
             priority={false}
             placeholder="blur"
             blurDataURL={BLUR_PLACEHOLDER}
-            // 👇 OPTIMIZACIÓN CLAVE: Calidad ligeramente reducida para portadas (ahorra mucho peso, apenas se nota)
             quality={75} 
           />
         </Link>
+
+        {/* 👇 NUEVO: Etiqueta de Oferta Flash (Controlada por el Vendedor) */}
+        {!isSold && isFlashOffer && (
+          <div className="absolute top-2 left-2 md:top-3 md:left-3 z-20">
+            <span className="flex items-center gap-1 bg-amber-500 text-white px-2 py-1 rounded-md text-[10px] md:text-xs font-black tracking-wide shadow-md uppercase">
+              <Zap size={12} className="fill-white" />
+              Oferta Flash
+            </span>
+          </div>
+        )}
 
         {/* Cartel de VENDIDO */}
         {isSold && (
@@ -110,10 +116,17 @@ export function ProductCard({ product }: ProductCardProps) {
               🏷️ Varios Precios
             </span>
           ) : (
-            <span className={`text-xl md:text-2xl font-bold ${
+            <span className={`text-xl md:text-2xl font-bold flex items-center gap-2 ${
               isSold ? "text-gray-400 line-through decoration-gray-400" : "text-gray-900"
             }`}>
               {displayPrice}
+              
+              {/* 👇 Pequeño detalle visual en el precio si es Oferta Flash */}
+              {!isSold && isFlashOffer && (
+                 <span className="text-[10px] md:text-xs font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
+                   Rebajado
+                 </span>
+              )}
             </span>
           )}
         </div>

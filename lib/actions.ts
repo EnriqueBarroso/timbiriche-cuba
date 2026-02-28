@@ -102,6 +102,7 @@ export async function createProduct(data: {
   category: string;
   description: string;
   images: string[];
+  isFlashOffer: boolean; 
 }) {
   const user = await currentUser();
   if (!user || !user.emailAddresses[0]) throw new Error("Debes iniciar sesión");
@@ -131,6 +132,7 @@ export async function createProduct(data: {
       description: data.description,
       category: data.category,
       sellerId: seller.id,
+      isFlashOffer: data.isFlashOffer,
       images: {
         create: data.images.map((url) => ({ url })),
       },
@@ -165,6 +167,7 @@ export async function updateProduct(productId: string, data: any) {
       currency: data.currency,
       category: data.category,
       description: data.description,
+      ...(data.isFlashOffer !== undefined && { isFlashOffer: data.isFlashOffer }), // 👇 CORRECCIÓN AÑADIDA AQUÍ
       // Si recibimos el array de imágenes del cliente, actualizamos la galería
       ...(data.images && {
         images: {

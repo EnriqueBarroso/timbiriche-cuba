@@ -28,6 +28,7 @@ export default function VenderForm({ initialProduct }: Props) {
     currency: initialProduct?.currency || "USD",
     category: initialProduct?.category || "",
     description: initialProduct?.description || "",
+    isFlashOffer: false,
     // Mapeamos las imágenes si existen
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     images: initialProduct?.images ? initialProduct.images.map((img: any) => img.url) : [] as string[],
@@ -80,6 +81,7 @@ export default function VenderForm({ initialProduct }: Props) {
           category: formData.category,
           description: formData.description,
           images: formData.images,
+          isFlashOffer: formData.isFlashOffer || false,
         });
         toast.success("¡Producto publicado!");
         router.push("/");
@@ -196,6 +198,25 @@ export default function VenderForm({ initialProduct }: Props) {
               {/* 👇 LA NUEVA LÍNEA DE NEGOCIO B2B */}
               <option value="wholesale" className="font-bold text-blue-600 bg-blue-50">🏢 Venta Mayorista (B2B)</option>
             </select>
+          </div>
+
+          {/* Oferta Flash (Controlada por el vendedor) */}
+          <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">
+            <input
+              type="checkbox"
+              id="isFlashOffer"
+              checked={formData.isFlashOffer || false}
+              onChange={(e) => setFormData({ ...formData, isFlashOffer: e.target.checked })}
+              className="w-5 h-5 text-amber-600 rounded border-gray-300 focus:ring-amber-500"
+            />
+            <div>
+              <label htmlFor="isFlashOffer" className="font-bold text-amber-900 cursor-pointer flex items-center gap-1">
+                ⚡ Poner en Oferta Flash
+              </label>
+              <p className="text-xs text-amber-700 mt-0.5">
+                Destaca tu producto con una etiqueta especial de rebaja.
+              </p>
+            </div>
           </div>
 
           {/* 5. Descripción */}

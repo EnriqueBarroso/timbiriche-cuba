@@ -29,6 +29,7 @@ export default function EditForm({ product }: Props) {
     description: product.description || "",
     category: product.category || "others",
     images: initialImages, // Ahora guardamos un array de imágenes
+    isFlashOffer: product.isFlashOffer || false, // 👇 NUEVO: Leemos si ya estaba en oferta
   });
 
   // Función para eliminar una imagen de la lista
@@ -57,7 +58,8 @@ export default function EditForm({ product }: Props) {
         currency: formData.currency,
         description: formData.description,
         category: formData.category,
-        images: formData.images // Le pasamos el array completo de imágenes finales
+        images: formData.images, // Le pasamos el array completo de imágenes finales
+        isFlashOffer: formData.isFlashOffer // 👇 NUEVO: Enviamos el estado de la oferta
       };
 
       await updateProduct(product.id, payload);
@@ -163,7 +165,7 @@ export default function EditForm({ product }: Props) {
               <option value="MLC">MLC</option>
             </select>
           </div>
-        </div>
+        </div>  
 
        {/* Categoría */}
           <div>
@@ -184,10 +186,28 @@ export default function EditForm({ product }: Props) {
                <option value="parts">🔧 Piezas y Accesorios</option>
                <option value="crafts">🎨 Artesanía y Manufactura</option>
                <option value="others">📦 Otros</option>
-               {/* 👇 LA NUEVA LÍNEA DE NEGOCIO B2B */}
                <option value="wholesale" className="font-bold text-blue-600 bg-blue-50">🏢 Venta Mayorista (B2B)</option>
             </select>
           </div>
+
+        {/* 👇 NUEVO: Oferta Flash (Controlada por el vendedor) */}
+        <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">
+          <input
+            type="checkbox"
+            id="isFlashOffer"
+            checked={formData.isFlashOffer}
+            onChange={(e) => setFormData({ ...formData, isFlashOffer: e.target.checked })}
+            className="w-5 h-5 text-amber-600 rounded border-gray-300 focus:ring-amber-500"
+          />
+          <div>
+            <label htmlFor="isFlashOffer" className="font-bold text-amber-900 cursor-pointer flex items-center gap-1">
+              ⚡ Poner en Oferta Flash
+            </label>
+            <p className="text-xs text-amber-700 mt-0.5">
+              Destaca tu producto con una etiqueta especial de rebaja.
+            </p>
+          </div>
+        </div>
 
         {/* Descripción */}
         <div>

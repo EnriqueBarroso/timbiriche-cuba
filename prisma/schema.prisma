@@ -23,8 +23,11 @@ model Product {
   isActive    Boolean        @default(true)
   isSold      Boolean        @default(false)
 
-  // 👇 NUEVO CAMPO: Para las Ofertas Flash (Solo tú lo cambias)
-  isPromoted  Boolean  @default(false)
+  // 👇 Para tus Anuncios Premium/Destacados (Solo tú lo cambias)
+  isPromoted  Boolean        @default(false)
+  
+  // 👇 NUEVO CAMPO: Para las Ofertas Flash (Lo maneja el vendedor)
+  isFlashOffer Boolean       @default(false)
   
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt

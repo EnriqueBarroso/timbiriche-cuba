@@ -202,15 +202,15 @@ export default async function Home({ searchParams }: Props) {
           </div>
         </div>
 
-        {/* ⚡ CAMBIO 2: SECCIÓN VIP: OFERTAS FLASH (Solo visible en el inicio) */}
+       {/* 👑 SECCIÓN VIP: ANUNCIOS PREMIUM (Controlada por el Admin) */}
         {!searchTerm && !category && currentPage === 1 && promotedProducts.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-8 bg-gradient-to-b from-amber-50/50 to-transparent pt-4 pb-2 rounded-t-3xl border-t border-amber-100/50">
             <div className="px-4 mb-4 flex items-center gap-2">
-              <div className="bg-orange-100 p-1.5 rounded-lg text-orange-600">
-                <Zap size={20} className="fill-orange-600" />
+              <div className="bg-gradient-to-tr from-amber-400 to-yellow-300 p-1.5 rounded-lg shadow-sm">
+                <span className="text-lg">👑</span>
               </div>
-              <h2 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 uppercase tracking-tight">
-                Ofertas Flash
+              <h2 className="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-yellow-600 uppercase tracking-tight">
+                Anuncios Premium
               </h2>
             </div>
             {/* Carrusel horizontal de productos premium */}
