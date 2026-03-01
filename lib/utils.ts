@@ -1,8 +1,8 @@
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export const isAdmin = (email?: string): boolean => {
@@ -27,9 +27,21 @@ export function formatPrice(amount: number, currency: string = "USD") {
   if (currency === "CUP") {
     return `${number} CUP`;
   }
-  
+
   return `$${number} ${currency}`;
 }
 // Placeholder blur genérico (gris neutro, ~100 bytes)
 export const BLUR_PLACEHOLDER =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIklEQVQYV2N88ODBfwYGBgZGRkYGJgYKABMDhYCRYhMA/70EBf4CmOkAAAAASUVORK5CYII=";
+
+// Generador de slug automático
+export function generateSlug(name: string): string {
+  const base = name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  const suffix = Math.random().toString(36).substring(2, 6);
+  return `${base}-${suffix}`;
+}

@@ -57,7 +57,7 @@ const isProtectedRoute = createRouteMatcher([
 
 // 🔥 NUEVO: Definimos explícitamente las rutas públicas
 const isPublicRoute = createRouteMatcher([
-  '/shop(.*)',
+  '/vendedor(.*)',
   '/product(.*)',
 ]);
 

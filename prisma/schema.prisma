@@ -50,6 +50,7 @@ model Seller {
   id          String    @id @default(uuid())
   storeName   String
   email       String    @unique
+  slug        String?   @unique
   phoneNumber String?
   isVerified  Boolean   @default(false)
   rating      Float     @default(5.0)

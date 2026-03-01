@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { generateSlug } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -117,6 +118,7 @@ export async function createProduct(data: {
       id: user.id,
       email: email,
       storeName: userName,
+      slug: generateSlug(userName),
       avatar: user.imageUrl,
       phoneNumber: "",
       isVerified: false,
@@ -167,7 +169,7 @@ export async function updateProduct(productId: string, data: any) {
       currency: data.currency,
       category: data.category,
       description: data.description,
-      ...(data.isFlashOffer !== undefined && { isFlashOffer: data.isFlashOffer }), 
+      ...(data.isFlashOffer !== undefined && { isFlashOffer: data.isFlashOffer }),
       // Si recibimos el array de imágenes del cliente, actualizamos la galería
       ...(data.images && {
         images: {
@@ -188,8 +190,8 @@ export async function updateProfile(data: {
   storeName: string;
   phoneNumber: string;
   avatar?: string;
-  acceptsZelle?: boolean; 
-  zelleEmail?: string;    
+  acceptsZelle?: boolean;
+  zelleEmail?: string;
 }) {
   const user = await currentUser();
   if (!user) throw new Error("No autorizado");
@@ -199,6 +201,7 @@ export async function updateProfile(data: {
     where: { email },
     update: {
       storeName: data.storeName,
+      slug: generateSlug(data.storeName),
       phoneNumber: data.phoneNumber,
       ...(data.avatar && { avatar: data.avatar }),
       acceptsZelle: data.acceptsZelle ?? false,
@@ -208,6 +211,7 @@ export async function updateProfile(data: {
       id: user.id,
       email,
       storeName: data.storeName,
+      slug: generateSlug(data.storeName),
       phoneNumber: data.phoneNumber,
       avatar: data.avatar || user.imageUrl,
       isVerified: false,
@@ -230,9 +234,13 @@ export async function syncUserAction() {
     where: { email },
     update: { avatar: user.imageUrl },
     create: {
-      id: user.id, email: email,
+      id: user.id,
+      email: email,
       storeName: user.firstName || "Mi Tienda",
-      avatar: user.imageUrl, phoneNumber: "", isVerified: false,
+      slug: generateSlug(user.firstName || "mi-tienda"),
+      avatar: user.imageUrl,
+      phoneNumber: "",
+      isVerified: false,
     },
   });
 }
