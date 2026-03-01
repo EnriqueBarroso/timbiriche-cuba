@@ -1,75 +1,79 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { UserPlus, UserCheck, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { toggleFollowAction } from "@/lib/actions";
+import { toggleFollowAction } from "@/lib/actions"; // Ajusta la ruta si es necesario
 import { useRouter } from "next/navigation";
+import { UserPlus, UserMinus } from "lucide-react";
 
-interface Props {
+interface FollowButtonProps {
   sellerId: string;
   isFollowingInitial: boolean;
   isMe: boolean;
   isLoggedIn: boolean;
 }
 
-export default function FollowButton({ sellerId, isFollowingInitial, isMe, isLoggedIn }: Props) {
+export default function FollowButton({
+  sellerId,
+  isFollowingInitial,
+  isMe,
+  isLoggedIn,
+}: FollowButtonProps) {
   const [isFollowing, setIsFollowing] = useState(isFollowingInitial);
   const [isPending, startTransition] = useTransition();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
 
-  if (isMe) return null; // No mostrar si soy yo
+  if (isMe) return null; // No mostrar si es tu propio perfil
 
-  const handleToggle = () => {
+  const handleFollow = () => {
+    // 1. Validar login ANTES de llamar al servidor
     if (!isLoggedIn) {
-      toast.error("Inicia sesión para seguir vendedores");
+      router.push("/sign-in"); // Redirigir a Clerk si no está logueado
       return;
     }
 
-    // Cambio Optimista (Visual inmediato)
-    const previousState = isFollowing;
+    // 2. Optimistic UI (Cambio visual inmediato)
     setIsFollowing(!isFollowing);
 
+    // 3. Ejecutar la acción del servidor en background
     startTransition(async () => {
       try {
         const result = await toggleFollowAction(sellerId);
         
-        // ✅ CORREGIDO: Usamos "in" para comprobar si existe la propiedad error
-        if (result && 'error' in result && result.error) {
-          setIsFollowing(previousState); // Revertir si hubo error
-          toast.error(result.error);
+        // Si hay error (ej. intentar seguirse a sí mismo), revertir visualmente
+        if (result && "error" in result) {
+            setIsFollowing(isFollowing);
+            console.error(result.error);
+            return;
         }
+
+        // Refrescar la ruta para actualizar el contador de seguidores en el layout
+        router.refresh(); 
+
       } catch (error) {
-        setIsFollowing(previousState);
-        toast.error("Error al conectar con el servidor");
+        // Si el POST falla, revertimos el botón
+        setIsFollowing(isFollowing);
+        console.error("Error al intentar seguir:", error);
       }
     });
   };
 
   return (
     <button
-      onClick={handleToggle}
+      onClick={handleFollow}
       disabled={isPending}
-      className={`
-        flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95
-        ${isFollowing 
-          ? "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200" 
-          : "bg-gray-900 text-white hover:bg-gray-800 shadow-md shadow-gray-200"
-        }
-      `}
+      className={`px-5 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-colors shadow-sm disabled:opacity-70 ${
+        isFollowing
+          ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
+          : "bg-blue-600 text-white hover:bg-blue-700"
+      }`}
     >
-      {isPending ? (
-        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-      ) : isFollowing ? (
+      {isFollowing ? (
         <>
-          <UserCheck size={14} /> 
-          <span className="group-hover:hidden">Siguiendo</span>
-          <span className="hidden group-hover:inline">Dejar de seguir</span>
+          <UserMinus size={18} /> Dejar de seguir
         </>
       ) : (
         <>
-          <UserPlus size={14} /> Seguir
+          <UserPlus size={18} /> Seguir
         </>
       )}
     </button>

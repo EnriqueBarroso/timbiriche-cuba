@@ -16,6 +16,10 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const seller = await prisma.seller.findUnique({ where: { id } });
+
+  // Añade esto para evitar que metadata falle
+  if (!seller) return { title: "Error de ID | LaChopin" };
+
   return {
     title: seller?.storeName ? `${seller.storeName} | LaChopin` : "Perfil de Vendedor",
   };
@@ -38,7 +42,21 @@ export default async function SellerProfilePage({ params }: Props) {
     },
   });
 
-  if (!seller) return notFound();
+  if (!seller) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-10 bg-red-50 text-center">
+        <h1 className="text-4xl font-bold text-red-600 mb-4">🚨 Vendedor No Encontrado en Prisma</h1>
+        <p className="text-xl text-gray-700">
+          Prisma intentó buscar el ID: <br/> 
+          <strong className="bg-white p-2 text-black rounded shadow mt-2 block">{id}</strong>
+        </p>
+        <p className="mt-4 text-gray-500">
+          Este ID no existe en la columna 'id' de la tabla 'Seller' en Supabase, 
+          o hay un problema de conexión con la base de datos correcta.
+        </p>
+      </div>
+    );
+  }
 
   // 2. Lógica de Social (Del archivo nuevo)
   const isFollowing = await checkIfFollowing(seller.id);

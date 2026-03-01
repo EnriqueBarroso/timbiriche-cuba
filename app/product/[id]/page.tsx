@@ -192,7 +192,7 @@ export default async function ProductPage({ params }: Props) {
           {/* 3. Sección Vendedor */}
           <div className="p-5 mb-4 bg-white border border-gray-100 shadow-sm rounded-2xl">
             <div className="flex items-center gap-4">
-              <Link href={`/shop/${product.sellerId}`} className="flex items-center flex-1 gap-4 group">
+              <Link href={`/vendedor/${product.sellerId}`} className="flex items-center flex-1 gap-4 group">
                 <div className="relative shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={avatarUrl} alt={sellerName} className="object-cover border border-gray-200 rounded-full w-14 h-14 group-hover:ring-2 group-hover:ring-blue-100 transition-all" />

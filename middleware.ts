@@ -55,6 +55,12 @@ const isProtectedRoute = createRouteMatcher([
   '/editar(.*)',
 ]);
 
+// 🔥 NUEVO: Definimos explícitamente las rutas públicas
+const isPublicRoute = createRouteMatcher([
+  '/shop(.*)',
+  '/product(.*)',
+]);
+
 // Rutas de escritura (rate limit estricto)
 const isWriteRoute = createRouteMatcher([
   '/api/upload(.*)',
@@ -93,6 +99,12 @@ export default clerkMiddleware(async (auth, req) => {
         { status: 429 }
       );
     }
+  }
+
+  // 🔥 NUEVO: Forzamos a Clerk a ignorar sus validaciones internas en las rutas públicas
+  // Esto soluciona el error 404 POST de "detectKeylessEnvDriftAction"
+  if (isPublicRoute(req)) {
+    return NextResponse.next();
   }
 
   // Clerk auth para rutas protegidas
