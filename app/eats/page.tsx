@@ -47,9 +47,7 @@ export default async function EatsHubPage() {
                             // Intentamos buscar una foto de perfil/avatar válida
                             const restaurantData = restaurant as any;
 
-                            const avatar = restaurantData.profileImage ||
-                                restaurantData.logo ||
-                                restaurantData.avatar || // Por si acaso se llama avatar
+                           const avatar = restaurantData.avatar ||
                                 `https://ui-avatars.com/api/?name=${encodeURIComponent(restaurant.storeName)}&background=D32F2F&color=fff`;
                             // 👇 NUEVO: Verificamos si tiene imagen de portada
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any

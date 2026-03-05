@@ -45,7 +45,7 @@ export default async function VendedorProfilePage({ params }: VendedorPageProps)
               {/* Logo Redondo */}
               <div className="w-28 h-28 bg-white rounded-full p-1.5 shadow-xl border border-gray-100 relative">
                 <img 
-                  src={seller.profileImage || seller.logo || `https://ui-avatars.com/api/?name=${seller.storeName}&background=D32F2F&color=fff`} 
+                 src={seller.avatar || `https://ui-avatars.com/api/?name=${seller.storeName}&background=D32F2F&color=fff`}
                   alt="Logo" 
                   className="w-full h-full rounded-full object-cover" 
                 />
