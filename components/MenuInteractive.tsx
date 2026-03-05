@@ -56,7 +56,7 @@ export default function MenuInteractive({ seller, groupedProducts, categories, s
             {/* Logo Circular del Restaurante */}
             <div className="w-20 h-20 bg-white rounded-full p-1 shadow-2xl mb-3 border border-gray-100 relative">
                <img 
-                 src={seller.profileImage || seller.logo || `https://ui-avatars.com/api/?name=${seller.storeName}&background=D32F2F&color=fff`} 
+                 src={seller.avatar || `https://ui-avatars.com/api/?name=${seller.storeName}&background=D32F2F&color=fff`} 
                  alt="Logo" 
                  className="w-full h-full rounded-full object-cover" 
                />
