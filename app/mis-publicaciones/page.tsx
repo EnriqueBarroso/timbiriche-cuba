@@ -23,6 +23,12 @@ export default async function MyProductsPage() {
     }
   });
 
+  // 👇 EL GUARDIA DE SEGURIDAD 🛡️
+  // Si no existe, o si no ha completado el teléfono (onboarding incompleto), ¡A elegir tarjeta!
+  if (!seller || !seller.phoneNumber) {
+    redirect("/perfil?returnTo=/mis-publicaciones");
+  }
+
   const products = seller?.products || [];
 
   return (

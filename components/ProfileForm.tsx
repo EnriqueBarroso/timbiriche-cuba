@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import { Save, User, Phone, Loader2, Camera, Wallet } from "lucide-react"; // Importamos Wallet para el icono
+import { Save, User, Phone, Loader2, Camera, Wallet, UtensilsCrossed, Store } from "lucide-react"; 
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
@@ -12,12 +12,11 @@ interface Props {
     storeName: string | null;
     phoneNumber: string | null;
     avatar?: string | null;
-    acceptsZelle?: boolean; // Nuevos campos
+    acceptsZelle?: boolean; 
     zelleEmail?: string | null;
+    isRestaurant: boolean;
   }
 }
-
-const inputStyles = "w-full p-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm";
 
 export default function ProfileForm({ initialData }: Props) {
   const router = useRouter();
@@ -31,11 +30,21 @@ export default function ProfileForm({ initialData }: Props) {
     storeName: initialData.storeName || "",
     phoneNumber: initialData.phoneNumber || "",
     avatar: initialData.avatar || "",
-    acceptsZelle: initialData.acceptsZelle || false, // Estado de Zelle
+    acceptsZelle: initialData.acceptsZelle || false, 
     zelleEmail: initialData.zelleEmail || "",
+    // 👇 LO GUARDAMOS EN EL ESTADO
+    isRestaurant: initialData.isRestaurant,
   });
 
+  // 👇 COLORES DINÁMICOS SEGÚN EL ROL
+  const themeColor = formData.isRestaurant ? "text-[#D32F2F]" : "text-blue-600";
+  const bgThemeColor = formData.isRestaurant ? "bg-[#D32F2F] hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700";
+  const focusThemeColor = formData.isRestaurant ? "focus:ring-[#D32F2F]" : "focus:ring-blue-500";
+  
+  const inputStyles = `w-full p-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder:text-gray-400 focus:ring-2 ${focusThemeColor} outline-none transition-all shadow-sm`;
+
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // ... (Tu código intacto de Cloudinary) ...
     const file = e.target.files?.[0];
     if (!file) return;
     
@@ -47,10 +56,7 @@ export default function ProfileForm({ initialData }: Props) {
     try {
       const res = await fetch(
         `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: "POST",
-          body: data,
-        }
+        { method: "POST", body: data }
       );
       const fileData = await res.json();
       setFormData(prev => ({ ...prev, avatar: fileData.secure_url }));
@@ -66,12 +72,18 @@ export default function ProfileForm({ initialData }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log("🔍 isRestaurant:", formData.isRestaurant, typeof formData.isRestaurant);
+
+if (formData.isRestaurant) {
+  router.push("/vender/nuevo-plato");
+} else {
+  router.push("/vender/nuevo");
+}
     const cleanPhone = formData.phoneNumber.replace(/\D/g, '');
     if (cleanPhone.length < 8) {
       return toast.error("El teléfono debe tener al menos 8 dígitos");
     }
 
-    // Validación de Zelle: Si dice que acepta, debe poner el correo
     if (formData.acceptsZelle && !formData.zelleEmail.trim()) {
       return toast.error("Debes ingresar tu correo o teléfono de Zelle");
     }
@@ -79,19 +91,25 @@ export default function ProfileForm({ initialData }: Props) {
     setIsSubmitting(true);
 
     try {
+      // 1. Guardamos en la base de datos
       await updateProfile({
         storeName: formData.storeName,
         phoneNumber: formData.phoneNumber,
         avatar: formData.avatar,
-        acceptsZelle: formData.acceptsZelle, // Enviamos a la BD
+        acceptsZelle: formData.acceptsZelle, 
         zelleEmail: formData.zelleEmail,
+        isRestaurant: formData.isRestaurant, 
       });
-      toast.success("¡Perfil actualizado!");      
-      router.refresh(); 
-      if (returnTo) {
-        router.push(returnTo);
+      
+      toast.success("¡Perfil configurado con éxito!");      
+
+      // 2. ENRUTAMIENTO DIRECTO Y ESTRICTO
+      // Quitamos por completo la lógica de "returnTo" para evitar fugas.
+      if (formData.isRestaurant) {
+        // Como me mencionaste que tu ruta es /vender/menu, lo mandamos directo ahí:
+        router.push("/vender/nuevo-plato"); 
       } else {
-        router.push("/vender"); 
+        router.push("/vender/nuevo"); 
       }
 
     } catch (error) {
@@ -108,16 +126,10 @@ export default function ProfileForm({ initialData }: Props) {
         
         {/* Avatar Section */}
         <div className="flex flex-col items-center gap-4 mb-2">
-          {/* ... (Tu código de avatar intacto) ... */}
           <div className="relative group">
             <div className="h-28 w-28 rounded-full overflow-hidden border-4 border-white bg-gray-50 relative shadow-md">
               {formData.avatar ? (
-                <Image 
-                  src={formData.avatar} 
-                  alt="Avatar" 
-                  fill 
-                  className="object-cover" 
-                />
+                <Image src={formData.avatar} alt="Avatar" fill className="object-cover" />
               ) : (
                 <User className="h-14 w-14 text-gray-300 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
               )}
@@ -127,40 +139,35 @@ export default function ProfileForm({ initialData }: Props) {
                 </div>
               )}
             </div>
-            <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-2.5 rounded-full cursor-pointer hover:bg-blue-700 transition-all shadow-lg active:scale-90">
+            <label className={`absolute bottom-0 right-0 text-white p-2.5 rounded-full cursor-pointer transition-all shadow-lg active:scale-90 ${bgThemeColor}`}>
               <Camera className="w-5 h-5" />
-              <input 
-                type="file" 
-                className="hidden" 
-                accept="image/*" 
-                onChange={handleAvatarUpload} 
-                disabled={isUploadingAvatar} 
-              />
+              <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={isUploadingAvatar} />
             </label>
           </div>
-          <p className="text-xs text-gray-500 font-medium">Foto de tu negocio o perfil</p>
+          <p className="text-xs text-gray-500 font-medium">Foto de tu negocio o logo</p>
         </div>
 
-        {/* Nombre y Teléfono */}
+        {/* Nombre */}
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-            <User className="w-4 h-4 text-blue-600" />
-            Nombre de tu Tienda / Usuario
+            {formData.isRestaurant ? <UtensilsCrossed className={`w-4 h-4 ${themeColor}`} /> : <Store className={`w-4 h-4 ${themeColor}`} />}
+            {formData.isRestaurant ? "Nombre de tu Restaurante" : "Nombre de tu Tienda"}
           </label>
           <input
             type="text"
             value={formData.storeName}
             onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
-            placeholder="Ej: Mi Tienda en LaChopin"
+            placeholder={formData.isRestaurant ? "Ej: Pizzería Bella Napoli" : "Ej: Mi Tienda en LaChopin"}
             className={inputStyles}
             required
           />
         </div>
 
+        {/* Teléfono */}
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
             <Phone className="w-4 h-4 text-green-600" />
-            WhatsApp (Solo números)
+            WhatsApp para recibir pedidos
           </label>
           <div className="flex">
             <span className="inline-flex items-center px-4 rounded-l-xl border border-r-0 border-gray-300 bg-gray-100 text-gray-700 font-bold text-sm">
@@ -177,21 +184,17 @@ export default function ProfileForm({ initialData }: Props) {
           </div>
         </div>
 
-        {/* 👇 NUEVA SECCIÓN: MÉTODOS DE PAGO (ZELLE) 👇 */}
+        {/* Zelle */}
         <div className="pt-4 border-t border-gray-100">
           <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Wallet className="w-4 h-4 text-purple-600" />
-            Métodos de Pago
+            <Wallet className="w-4 h-4 text-purple-600" /> Métodos de Pago
           </h3>
-          
           <div className={`p-4 rounded-2xl border-2 transition-all ${formData.acceptsZelle ? 'border-purple-600 bg-purple-50' : 'border-gray-200 bg-gray-50'}`}>
             <div className="flex items-center justify-between mb-2">
               <div>
                 <span className="font-bold text-gray-900 text-base">Acepto Zelle</span>
                 <p className="text-xs text-gray-500 font-medium">Recibe pagos desde USA</p>
               </div>
-              
-              {/* Toggle Switch */}
               <label className="relative inline-flex items-center cursor-pointer">
                 <input 
                   type="checkbox" 
@@ -202,13 +205,9 @@ export default function ProfileForm({ initialData }: Props) {
                 <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
               </label>
             </div>
-
-            {/* Campo que aparece solo si activa Zelle */}
             {formData.acceptsZelle && (
               <div className="mt-4 animate-in fade-in slide-in-from-top-2">
-                <label className="block text-xs font-bold text-purple-800 mb-1">
-                  Correo o Teléfono de tu cuenta Zelle
-                </label>
+                <label className="block text-xs font-bold text-purple-800 mb-1">Correo o Teléfono de tu cuenta Zelle</label>
                 <input
                   type="text"
                   value={formData.zelleEmail}
@@ -225,10 +224,10 @@ export default function ProfileForm({ initialData }: Props) {
         <button
           type="submit"
           disabled={isSubmitting || isUploadingAvatar}
-          className="w-full py-4 mt-2 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg active:scale-[0.98]"
+          className={`w-full py-4 mt-2 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg active:scale-[0.98] ${bgThemeColor}`}
         >
           {isSubmitting ? <Loader2 className="animate-spin" /> : <Save className="w-5 h-5" />}
-          Guardar Cambios
+          Guardar y Continuar
         </button>
       </div>
     </form>

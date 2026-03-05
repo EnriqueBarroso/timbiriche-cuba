@@ -53,6 +53,7 @@ model Seller {
   slug        String?   @unique
   phoneNumber String?
   isVerified  Boolean   @default(false)
+  isRestaurant Boolean   @default(false)
   rating      Float     @default(5.0)
   reviews     Int       @default(0)
   avatar      String?
@@ -62,6 +63,7 @@ model Seller {
   zelleEmail   String?                   // 👈 Zelle (El correo/teléfono)
   products    Product[]
   followers   Follower[]
+
 }
 
 model Favorite {

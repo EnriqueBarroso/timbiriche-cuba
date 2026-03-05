@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/ProductCard";
-import { BadgeCheck, MapPin, Calendar, MessageCircle, Package, Star } from "lucide-react";
+import { BadgeCheck, MapPin, Calendar, MessageCircle, Package, Star, Utensils } from "lucide-react";
 import FollowButton from "@/components/FollowButton";
 import { checkIfFollowing } from "@/lib/actions";
 import { currentUser } from "@clerk/nextjs/server";
 import { Metadata } from "next";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -145,6 +146,15 @@ export default async function SellerProfilePage({ params }: Props) {
                   )}
                 </div>
               </div>
+              <div className="mt-8 w-full flex justify-center md:justify-start">
+                <Link
+                  href={`/vendedor/${seller.slug || seller.id}/menu`}
+                  className="w-full md:max-w-md bg-[#D32F2F] text-white rounded-xl p-4 text-lg font-bold shadow-lg shadow-red-200 flex items-center justify-center gap-3 hover:bg-red-700 active:scale-95 transition-all"
+                >
+                  <Utensils size={24} />
+                  Ver Menú Interactivo
+                </Link>
+              </div>  
             </div>
           </div>
         </div>

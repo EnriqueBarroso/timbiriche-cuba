@@ -40,15 +40,25 @@ export async function getProducts({
   }
 
   try {
+    // 👇 1. Interceptamos el filtro y le añadimos la regla de LaChopin Eats
+    const filtroFinal = {
+      ...where, // Mantenemos todos los filtros que ya tenías (búsqueda, categorías, etc.)
+      seller: {
+        ...(where.seller || {}), // Por si acaso ya había un filtro de vendedor
+        isRestaurant: false      // ¡La magia! Excluimos a los restaurantes
+      }
+    };
+
+    // 2. Usamos el nuevo 'filtroFinal' en lugar del 'where' original
     const [products, total] = await Promise.all([
       prisma.product.findMany({
-        where,
+        where: filtroFinal,
         take: ITEMS_PER_PAGE,
         skip: skip,
         orderBy: { createdAt: "desc" },
         include: { images: true, seller: true },
       }),
-      prisma.product.count({ where }),
+      prisma.product.count({ where: filtroFinal }),
     ]);
 
     return {
@@ -185,13 +195,14 @@ export async function updateProduct(productId: string, data: any) {
   revalidatePath("/");
 }
 
-// 6. ACTUALIZAR PERFIL (AHORA CON ZELLE)
+// 6. ACTUALIZAR PERFIL (AHORA CON ZELLE Y RESTAURANTES)
 export async function updateProfile(data: {
   storeName: string;
   phoneNumber: string;
   avatar?: string;
   acceptsZelle?: boolean;
   zelleEmail?: string;
+  isRestaurant?: boolean; // 👈 1. AÑADIDO EN LA FIRMA DE LA FUNCIÓN
 }) {
   const user = await currentUser();
   if (!user) throw new Error("No autorizado");
@@ -206,6 +217,7 @@ export async function updateProfile(data: {
       ...(data.avatar && { avatar: data.avatar }),
       acceptsZelle: data.acceptsZelle ?? false,
       zelleEmail: data.zelleEmail || null,
+      isRestaurant: data.isRestaurant ?? false, // 👈 2. AÑADIDO AL ACTUALIZAR
     },
     create: {
       id: user.id,
@@ -217,6 +229,7 @@ export async function updateProfile(data: {
       isVerified: false,
       acceptsZelle: data.acceptsZelle ?? false,
       zelleEmail: data.zelleEmail || null,
+      isRestaurant: data.isRestaurant ?? false, // 👈 3. AÑADIDO AL CREAR
     },
   });
 
