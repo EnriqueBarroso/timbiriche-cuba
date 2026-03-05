@@ -96,7 +96,7 @@ export default function FloatingCartBar({ sellerName, sellerPhoneNumber }: Float
                                             >-</button>
                                             <span className="px-2 text-sm font-semibold">{item.quantity}</span>
                                             <button
-                                                onClick={() => useCartStore.getState().addItem(item, item.sellerId!)} // ¡Ojo aquí con el non-null assertion!
+                                                onClick={() => useCartStore.getState().addItem(item, useCartStore.getState().sellerId!)} 
                                                 className="px-3 py-1 text-gray-500 hover:bg-gray-50"
                                             >+</button>
                                         </div>
