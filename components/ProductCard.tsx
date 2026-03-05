@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Ban, Zap, Wallet } from "lucide-react"; // Añadimos Wallet
+import { MessageCircle, Ban, Zap, Wallet, Utensils } from "lucide-react"; // Añadimos Utensils
 import Image from "next/image";
 import Link from "next/link";
 import FavoriteButton from "@/components/FavoriteButton";
@@ -13,7 +13,12 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const mainImage = product.images?.[0]?.url || "/placeholder.png";
+  // Extraemos la URL y validamos que sea real
+  const rawImageUrl = product.images?.[0]?.url;
+  const hasValidImage = typeof rawImageUrl === "string" && (rawImageUrl.startsWith("http") || rawImageUrl.startsWith("/"));
+  
+  // Usamos una imagen por defecto solo para los datos de favoritos en caso de no tener foto
+  const mainImage = hasValidImage ? rawImageUrl : "/placeholder.png";
 
   const title = product.title || "Producto sin nombre";
   const price = product.price || 0;
@@ -32,14 +37,13 @@ export function ProductCard({ product }: ProductCardProps) {
   const isSold = product.isSold || false;
   const isFlashOffer = product.isFlashOffer || false; 
   
-  // 👇 Leemos si el vendedor acepta Zelle
   const acceptsZelle = product.seller?.acceptsZelle || false;
 
   const favoriteData = {
     id: product.id,
     title: title,
     price: price,
-    image: mainImage,
+    image: mainImage, 
     currency: currency,
     seller: product.seller
   };
@@ -59,23 +63,33 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-100 transition-all duration-300 hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-1">
 
-      {/* Imagen del Producto */}
-      <div className={`relative aspect-square overflow-hidden bg-gray-100 ${isSold ? "grayscale opacity-80" : ""}`}>
+      {/* Imagen del Producto Inteligente */}
+      <div className={`relative aspect-square overflow-hidden bg-gray-50 ${isSold ? "grayscale opacity-80" : ""}`}>
         <Link href={`/product/${product.id}`} className="block h-full w-full relative">
-          <Image
-            src={mainImage}
-            alt={title}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            priority={false}
-            placeholder="blur"
-            blurDataURL={BLUR_PLACEHOLDER}
-            quality={75} 
-          />
+          {hasValidImage ? (
+            <Image
+              src={rawImageUrl}
+              alt={title}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              priority={false}
+              placeholder="blur"
+              blurDataURL={BLUR_PLACEHOLDER}
+              quality={75} 
+            />
+          ) : (
+            // Diseño Alternativo si NO hay foto válida
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 text-gray-300 transition-transform duration-500 group-hover:scale-105">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-3 shadow-sm border border-gray-100">
+                <Utensils className="w-8 h-8 text-gray-300" />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Sin Foto</span>
+            </div>
+          )}
         </Link>
 
-        {/* Etiqueta de Oferta Flash (Arriba Izquierda) */}
+        {/* Etiqueta de Oferta Flash */}
         {!isSold && isFlashOffer && (
           <div className="absolute top-2 left-2 md:top-3 md:left-3 z-20">
             <span className="flex items-center gap-1 bg-amber-500 text-white px-2 py-1 rounded-md text-[10px] md:text-xs font-black tracking-wide shadow-md uppercase">
@@ -85,7 +99,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
 
-        {/* 👇 NUEVO: Etiqueta de Zelle (Abajo Izquierda) */}
+        {/* Etiqueta de Zelle */}
         {!isSold && acceptsZelle && (
           <div className="absolute bottom-2 left-2 md:bottom-3 md:left-3 z-20">
             <span className="flex items-center gap-1 bg-purple-600 text-white px-2 py-1 rounded-md text-[10px] md:text-xs font-black tracking-wide shadow-md uppercase">
@@ -143,7 +157,7 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-       {/* Vendedor (Enlace a /vendedor/) */}
+       {/* Vendedor */}
         {product.sellerId ? (
           <Link href={`/vendedor/${product.seller?.slug || product.sellerId}`} className="flex items-center gap-2 mb-3 transition-colors md:mb-4 hover:text-blue-600 group">
             <div className="relative overflow-hidden bg-gray-100 rounded-full shrink-0 h-6 w-6">
@@ -152,7 +166,6 @@ export function ProductCard({ product }: ProductCardProps) {
               </div>
             </div>
             <span className="text-xs text-gray-500 truncate group-hover:text-blue-600">{sellerName}</span>
-            {/* Si acepta Zelle, mostramos un pequeño icono morado junto al nombre también */}
             {acceptsZelle && <Wallet size={12} className="text-purple-600" />}
           </Link>
         ) : (

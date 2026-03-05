@@ -1,6 +1,6 @@
 "use client";
 
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus, Utensils } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
 
 interface MenuItemProps {
@@ -10,7 +10,7 @@ interface MenuItemProps {
     description: string;
     price: number;
     sellerId: string;
-    image?: string; // Asumimos que podemos pasarle una imagen
+    image?: string; 
   };
 }
 
@@ -19,6 +19,8 @@ export default function MenuItemCard({ product }: MenuItemProps) {
   
   const cartItem = items.find((item) => item.id === product.id);
   const quantity = cartItem?.quantity || 0;
+
+  const hasValidImage = typeof product.image === "string" && (product.image.startsWith("http") || product.image.startsWith("/"));
 
   const handleAdd = () => {
     addItem({ id: product.id, title: product.title, price: product.price }, product.sellerId);
@@ -31,60 +33,62 @@ export default function MenuItemCard({ product }: MenuItemProps) {
   };
 
   return (
-    <div className="flex gap-3 p-4 bg-white border-b border-gray-100 w-full">
+    // Añadimos un hover suave para que reaccione al pasar el dedo o el ratón
+    <div className="group flex gap-4 p-4 bg-white border-b border-gray-100 w-full hover:bg-red-50/40 transition-colors duration-300 last:border-0">
+      
       {/* Imagen del Plato (Miniatura) */}
-      <div className="w-20 h-20 flex-shrink-0 bg-gray-200 rounded-lg overflow-hidden">
-        {product.image ? (
-          <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
+      <div className="w-24 h-24 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shadow-sm relative">
+        {hasValidImage ? (
+          <img 
+            src={product.image} 
+            alt={product.title} 
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+          />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">Sin foto</div>
+          <div className="w-full h-full flex items-center justify-center text-gray-300">
+            <Utensils className="w-8 h-8" />
+          </div>
         )}
       </div>
 
       {/* Información del plato */}
-      <div className="flex flex-col flex-1 justify-between">
+      <div className="flex flex-col flex-1 justify-between py-1">
         <div>
-          <h3 className="text-sm font-bold text-gray-900 leading-tight">
-            {/* El puntito verde/rojo que se ve en el diseño se puede simular así */}
-            <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+          <h3 className="text-[15px] font-black text-gray-800 leading-tight mb-1">
             {product.title}
           </h3>
-          <p className="text-xs text-gray-500 line-clamp-2 mt-1 leading-snug">
+          <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
             {product.description}
-          </p>
-          {/* Tiempo de preparación estático por ahora, o dinámico si lo agregas a Prisma */}
-          <p className="text-[10px] text-gray-400 mt-1 font-medium">
-            Tiempo de Preparación: 20 Minutos
           </p>
         </div>
 
-        {/* Precio y Botón Agregar (Paso 1 del mockup) */}
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-sm font-bold text-gray-900">
+        {/* Precio y Botón Agregar (Rediseñados) */}
+        <div className="flex items-center justify-between mt-3">
+          <span className="text-base font-black text-gray-900 tracking-tight">
             ${product.price.toFixed(2)}
           </span>
 
           {quantity === 0 ? (
             <button
               onClick={handleAdd}
-              className="text-xs font-semibold text-[#D32F2F] border border-[#D32F2F] rounded-md px-4 py-1.5 hover:bg-red-50 transition-colors"
+              className="text-xs font-bold text-[#D32F2F] bg-red-50 border border-red-100 rounded-full px-5 py-1.5 hover:bg-[#D32F2F] hover:text-white transition-all active:scale-95 shadow-sm"
             >
               Agregar
             </button>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 bg-gray-50 rounded-full border border-gray-200 p-1 shadow-inner">
               <button
                 onClick={handleDecrease}
-                className="w-6 h-6 flex items-center justify-center bg-gray-100 rounded-full text-gray-600"
+                className="w-7 h-7 flex items-center justify-center bg-white rounded-full text-gray-700 shadow-sm hover:text-[#D32F2F] transition-colors"
               >
-                <Minus size={14} />
+                <Minus size={16} />
               </button>
-              <span className="text-sm font-semibold">{quantity}</span>
+              <span className="text-sm font-black text-gray-800 w-4 text-center">{quantity}</span>
               <button
                 onClick={handleAdd}
-                className="w-6 h-6 flex items-center justify-center bg-gray-100 rounded-full text-gray-600"
+                className="w-7 h-7 flex items-center justify-center bg-[#D32F2F] rounded-full text-white shadow-sm hover:bg-red-700 transition-colors"
               >
-                <Plus size={14} />
+                <Plus size={16} />
               </button>
             </div>
           )}

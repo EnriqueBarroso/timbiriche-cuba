@@ -385,3 +385,62 @@ export async function getFlashOffers() {
     return [];
   }
 }
+
+// 13. SCRIPT HACKER: INYECTAR MENÚ COMPLETO
+export async function injectMenuHacker(jsonData: string) {
+  // Asegurarnos de que solo el admin pueda correr esto
+  const user = await currentUser();
+  if (!user || user.emailAddresses[0].emailAddress !== process.env.ADMIN_EMAIL) {
+    throw new Error("Acceso denegado: Solo el admin puede inyectar menús");
+  }
+
+  try {
+    const data = JSON.parse(jsonData);
+    const { emailDueño, platos } = data;
+
+    // 1. Buscamos al restaurante en la base de datos
+    const seller = await prisma.seller.findUnique({
+      where: { email: emailDueño }
+    });
+
+    if (!seller) {
+      throw new Error(`No se encontró ningún vendedor con el email: ${emailDueño}`);
+    }
+
+    if (!seller.isRestaurant) {
+      throw new Error("¡Cuidado! Este usuario está registrado como tienda, no como restaurante.");
+    }
+
+    // 2. Inyectamos los platos uno por uno a la velocidad de la luz
+    let count = 0;
+    for (const plato of platos) {
+      await prisma.product.create({
+        data: {
+          title: plato.title,
+          price: Number(plato.price),
+          currency: "USD",
+          
+          // 👇 LA MAGIA AQUÍ: Leemos la categoría del JSON, si no trae, le ponemos "Otros"
+          category: plato.categoria || "Otros", 
+          
+          description: plato.description,
+          sellerId: seller.id,
+          isFlashOffer: false,
+          images: {
+            create: [{ url: plato.imageUrl || "https://via.placeholder.com/400" }]
+          }
+        }
+      });
+      count++;
+    }
+
+    revalidatePath("/");
+    revalidatePath("/eats");
+    
+    return { success: true, message: `¡Magia pura! ${count} platos inyectados correctamente.` };
+
+  } catch (error: any) {
+    console.error("Error inyectando:", error);
+    throw new Error(error.message || "Error procesando el JSON");
+  }
+}

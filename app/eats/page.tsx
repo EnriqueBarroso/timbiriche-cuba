@@ -40,18 +40,31 @@ export default async function EatsHubPage() {
         {restaurants.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {restaurants.map((restaurant) => {
-              // Calculamos el enlace dinámico al menú
-              const menuUrl = `/vendedor/${restaurant.slug || restaurant.id}/menu`;
-              const avatar = restaurant.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(restaurant.storeName)}&background=random`;
+              
+              // 👇 AQUÍ ESTABA EL ERROR: Ahora apunta al perfil de presentación, NO al menú directo
+              const profileUrl = `/vendedor/${restaurant.slug || restaurant.id}`;
+              
+              // Intentamos buscar una foto de perfil/avatar válida
+              const avatar = restaurant.profileImage || restaurant.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(restaurant.storeName)}&background=D32F2F&color=fff`;
+              
+              // 👇 NUEVO: Verificamos si tiene imagen de portada
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const coverImage = (restaurant as any).coverImage; 
 
               return (
                 <Link 
-                  href={menuUrl} 
+                  href={profileUrl} 
                   key={restaurant.id}
                   className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-100 flex flex-col"
                 >
-                  {/* Banner/Portada del Restaurante (Simulada con un color/gradiente por ahora) */}
-                  <div className="h-24 bg-gradient-to-r from-gray-100 to-gray-200 w-full relative">
+                  {/* Banner/Portada del Restaurante */}
+                  <div className="h-28 w-full relative bg-gray-900">
+                    {coverImage ? (
+                      <img src={coverImage} alt="Portada" className="w-full h-full object-cover opacity-80" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-r from-gray-200 to-gray-300"></div>
+                    )}
+                    
                     {/* Avatar superpuesto */}
                     <div className="absolute -bottom-6 left-6">
                       <img 

@@ -9,19 +9,34 @@ export default function Footer() {
 
   // 1. Detectamos si estamos en una página que necesita el footer resumido
   const isProductPage = pathname?.startsWith("/product/");
+  
+  // 👇 NUEVO: Detectamos si estamos en el perfil o menú de un restaurante/vendedor
+  const isSellerPage = pathname?.startsWith("/vendedor/");
 
   // ------------------------------------------------------------------
-  // 2. VERSIÓN MINIMALISTA (Solo para la página de producto)
+  // 2. VERSIÓN MINIMALISTA (Para producto y para el restaurante)
   // ------------------------------------------------------------------
-  if (isProductPage) {
+  if (isProductPage || isSellerPage) {
     return (
       <footer className="bg-gray-50 border-t border-gray-200 pt-6 pb-28 md:pb-6 mt-10">
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-4 px-4">
-          <div className="flex items-center gap-4 text-gray-400">
-            <a href="#" className="hover:text-blue-600 transition-colors"><Facebook size={20} /></a>
-            <a href="#" className="hover:text-pink-600 transition-colors"><Instagram size={20} /></a>
-            <a href="#" className="hover:text-blue-400 transition-colors"><Twitter size={20} /></a>
-          </div>
+          
+          {/* Si es restaurante, le damos el toque de LaChopin Eats */}
+          {isSellerPage ? (
+            <div className="text-center mb-2">
+               <span className="text-2xl mb-1 opacity-40 grayscale block">🍔</span>
+               <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                 Powered by <span className="text-[#D32F2F]">LaChopin Eats</span>
+               </p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4 text-gray-400">
+              <a href="#" className="hover:text-blue-600 transition-colors"><Facebook size={20} /></a>
+              <a href="#" className="hover:text-pink-600 transition-colors"><Instagram size={20} /></a>
+              <a href="#" className="hover:text-blue-400 transition-colors"><Twitter size={20} /></a>
+            </div>
+          )}
+
           <div className="text-center">
             <p className="text-xs text-gray-500 mb-2">
               © {new Date().getFullYear()} LaChopin. Todos los derechos reservados.
