@@ -64,6 +64,9 @@ model Seller {
   products    Product[]
   followers   Follower[]
   coverImage    String?
+   address       String?    // ← NUEVO
+  openTime      String?    // ← NUEVO
+  closeTime     String?    // ← NUEVO
 
 }
 

@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import type { NextRequest, NextFetchEvent } from "next/server";
 
 // ============================================
 // 🔒 RATE LIMITER EN MEMORIA
@@ -74,9 +74,9 @@ const isApiRoute = createRouteMatcher([
 ]);
 
 // ============================================
-// 🚀 MIDDLEWARE PRINCIPAL
+// ⚙️ LÓGICA DE CLERK (Guardada en constante)
 // ============================================
-export default clerkMiddleware(async (auth, req) => {
+const clerkHandler = clerkMiddleware(async (auth, req) => {
   const ip = getClientIp(req);
 
   // Rate limiting para rutas de escritura
@@ -101,8 +101,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // 🔥 NUEVO: Forzamos a Clerk a ignorar sus validaciones internas en las rutas públicas
-  // Esto soluciona el error 404 POST de "detectKeylessEnvDriftAction"
+  // Forzamos a Clerk a ignorar sus validaciones internas en las rutas públicas
   if (isPublicRoute(req)) {
     return NextResponse.next();
   }
@@ -112,6 +111,31 @@ export default clerkMiddleware(async (auth, req) => {
     await auth.protect();
   }
 });
+
+// ============================================
+// 🚀 EXPORTACIÓN CON GRACEFUL DEGRADATION (EL ESCUDO)
+// ============================================
+export default async function middleware(req: NextRequest, event: NextFetchEvent) {
+  try {
+    // 1. Intentamos ejecutar el middleware de Clerk normalmente
+    return await clerkHandler(req, event);
+  } catch (error) {
+    // 2. 🔥 SI CLERK EXPLOTA (Ej. Error de DNS, Caída de Servidores)
+    console.error("🚨 [ESCUDO ACTIVO] Fallo crítico en el proveedor de Auth (Clerk):", error);
+
+    // 3. DEGRADACIÓN ELEGANTE: Si la ruta es pública (catálogo), ¡DEJAMOS PASAR AL USUARIO!
+    if (isPublicRoute(req)) {
+      console.log("✅ Permitiendo acceso a ruta pública a pesar del fallo en Clerk.");
+      return NextResponse.next();
+    }
+
+    // 4. Si intentaban entrar a una ruta protegida (ej. /perfil), mostramos error amistoso.
+    return new NextResponse(
+      "El sistema de inicio de sesión está en mantenimiento. Los catálogos públicos siguen disponibles.",
+      { status: 503, headers: { "Content-Type": "text/html; charset=utf-8" } }
+    );
+  }
+}
 
 export const config = {
   matcher: [

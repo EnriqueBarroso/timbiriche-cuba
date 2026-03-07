@@ -10,11 +10,11 @@ import { useFavorites } from "@/contexts/FavoritesContext";
 function NavbarContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Estado para el input (query) y para la visibilidad del buscador móvil
   const [query, setQuery] = useState(searchParams.get("query") || "");
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  
+
   const { favorites } = useFavorites();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -29,7 +29,7 @@ function NavbarContent() {
     e.preventDefault();
     if (query.trim()) {
       router.push(`/?query=${encodeURIComponent(query)}`);
-      setIsMobileSearchOpen(false); 
+      setIsMobileSearchOpen(false);
     } else {
       router.push("/");
     }
@@ -37,29 +37,29 @@ function NavbarContent() {
 
   const closeMobileSearch = () => {
     setIsMobileSearchOpen(false);
-    setQuery(""); 
+    setQuery("");
   };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md transition-all duration-300">
       <div className="mx-auto flex h-14 md:h-16 max-w-7xl items-center justify-between px-4">
-        
+
         {/* ==============================================
             MODO BÚSQUEDA MÓVIL
            ============================================== */}
         {isMobileSearchOpen ? (
-          <form 
-            onSubmit={handleSearch} 
+          <form
+            onSubmit={handleSearch}
             className="flex w-full items-center gap-2 md:hidden animate-in fade-in slide-in-from-top-2 duration-200"
           >
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={closeMobileSearch}
               className="p-2 -ml-2 text-gray-500 hover:text-gray-900"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            
+
             <div className="relative flex-1">
               <input
                 ref={inputRef}
@@ -79,8 +79,8 @@ function NavbarContent() {
                 </button>
               )}
             </div>
-            
-            <button 
+
+            <button
               type="submit"
               className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 shadow-sm"
             >
@@ -126,9 +126,9 @@ function NavbarContent() {
 
             {/* DERECHA: Iconos */}
             <div className="flex items-center gap-1 md:gap-3">
-              
+
               {/* Botón búsqueda móvil */}
-              <button 
+              <button
                 onClick={() => setIsMobileSearchOpen(true)}
                 className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
                 aria-label="Buscar"
@@ -161,7 +161,7 @@ function NavbarContent() {
                 >
                   <Plus className="h-4 w-4" /> Vender
                 </Link>
-                
+
                 <Link
                   href="/favoritos"
                   className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors relative"
@@ -186,8 +186,26 @@ function NavbarContent() {
                 <SignedIn>
                   <UserButton afterSignOutUrl="/">
                     <UserButton.MenuItems>
-                      <UserButton.Action label="Mi Perfil" labelIcon={<User className="w-4 h-4" />} onClick={() => router.push("/perfil")} />
-                      <UserButton.Action label="Configurar Cuenta" labelIcon={<Settings className="w-4 h-4" />} onClick={() => router.push("/perfil")} />
+                      {/* 1. PERFIL PERSONAL (Como cliente) */}
+                      <UserButton.Action
+                        label="Mi Perfil"
+                        labelIcon={<User className="w-4 h-4" />}
+                        onClick={() => router.push("/perfil")}
+                      />
+
+                      {/* 2. CONFIGURAR NEGOCIO (Donde editas Horarios, Header, etc.) */}
+                      <UserButton.Action
+                        label="Configurar Negocio"
+                        labelIcon={<Settings className="w-4 h-4" />}
+                        onClick={() => router.push("/vendedor/dashboard")} // O la ruta de edición que elijas
+                      />
+
+                      {/* 3. VER MI TIENDA PÚBLICA (La que ven los clientes) */}
+                      <UserButton.Action
+                        label="Ver mi Restaurante"
+                        labelIcon={<Building2 className="w-4 h-4" />}
+                        onClick={() => router.push("/eats")} // Aquí podrías poner la ruta dinámica del slug si la tienes a mano
+                      />
                     </UserButton.MenuItems>
                   </UserButton>
                 </SignedIn>
@@ -200,7 +218,6 @@ function NavbarContent() {
                   </SignInButton>
                 </SignedOut>
               </div>
-
             </div>
           </>
         )}
