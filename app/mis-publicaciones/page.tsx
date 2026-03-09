@@ -35,7 +35,7 @@ export default async function MyProductsPage() {
   if (seller.isRestaurant) {
     const restaurantProducts = products.map(p => ({
       id: p.id,
-      name: p.name || p.title || "Sin título",
+      name: p.title || "Sin título",
       price: p.price,
       category: p.category || "General",
       image: p.images[0]?.url || "",

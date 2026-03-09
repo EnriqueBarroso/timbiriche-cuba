@@ -28,7 +28,7 @@ export default function InventoryManager({ initialProducts }: { initialProducts:
 
     // 2. Filtrado robusto
     const filteredProducts = products.filter(p => {
-        const safeName = p.name ?? "Sin nombre";
+        const safeName = p.title ?? "Sin nombre";
         const matchesSearch = safeName.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesTab = activeTab === "Todos" || (p.category || "General") === activeTab;
         return matchesSearch && matchesTab;
