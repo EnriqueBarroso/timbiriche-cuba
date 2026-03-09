@@ -1,169 +1,118 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
-import { MultiImageUpload } from "@/components/MultiImageUpload";
-import { createProduct } from "@/lib/actions";
-import { Loader2, DollarSign, Utensils, AlignLeft, ChefHat } from "lucide-react";
-import { toast } from "sonner";
+import { Save, Utensils, DollarSign, Tag, AlignLeft, ArrowLeft, Loader2, ImagePlus, X, Link as LinkIcon } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { createFoodProduct } from "./actions";
 
-export default function NuevoPlatoForm() {
-  const router = useRouter();
-  const { isLoaded, isSignedIn } = useUser();
-  const [isLoading, setIsLoading] = useState(false);
+export default function NuevoPlatoPage() {
+  const [loading, setLoading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadMode, setUploadMode] = useState<"file" | "url">("file");
 
-  const [formData, setFormData] = useState({
-    title: "",
-    price: "",
-    description: "",
-    images: [] as string[],
-  });
+  const foodCategories = ["Entrantes", "Platos Fuertes", "Pizzas", "Pastas", "Postres", "Bebidas", "Cafés"];
 
-  if (isLoaded && !isSignedIn) {
-    router.push("/");
-    return null;
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (formData.images.length === 0) {
-      return toast.error("¡Sube al menos 1 foto apetitosa de tu plato!");
-    }
-
-    try {
-      setIsLoading(true);
-
-      // Validación de perfil (igual que en tu form normal)
-      const profileRes = await fetch('/perfil/check', { cache: 'no-store' });
-      if (!profileRes.ok) throw new Error("Error perfil");
-      const profile = await profileRes.json();
-      const cleanPhone = profile.phoneNumber?.replace(/\D/g, '') || '';
-
-      if (cleanPhone.length < 8) {
-        toast.error("Número de WhatsApp requerido para recibir pedidos");
-        router.push("/perfil?returnTo=/vender");
-        return;
-      }
-
-      // Creamos el plato usando tu Server Action existente
-      await createProduct({
-        title: formData.title,
-        price: Number(formData.price),
-        currency: "USD", // Forzamos moneda principal por defecto para comida
-        category: "food", // Guardamos silenciosamente en la categoría comida
-        description: formData.description,
-        images: formData.images,
-        isFlashOffer: false, 
-      });
-
-      toast.success("¡Plato añadido al menú!");
-      router.push("/eats"); // Lo mandamos al hub de Eats
-
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al publicar el plato");
-    } finally {
-      setIsLoading(false);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
     }
   };
 
-  const inputStyles = "w-full rounded-xl border border-gray-300 bg-white p-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#D32F2F] focus:ring-1 focus:ring-[#D32F2F] outline-none transition-all";
-
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center py-8 px-4 pb-32">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 h-fit">
+    <div className="min-h-screen bg-gray-50 py-10 px-4 pb-20">
+      <div className="max-w-xl mx-auto">
         
-        {/* Cabecera del Formulario */}
-        <div className="bg-[#D32F2F] p-6 text-white text-center relative">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
-            <ChefHat size={32} className="text-white" />
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8 text-gray-900 font-black uppercase italic tracking-tighter">
+          <Link href="/vender" className="p-2 bg-white rounded-full shadow-sm border border-gray-100 text-gray-400">
+            <ArrowLeft size={20} />
+          </Link>
+          <h1 className="text-xl">Nuevo Plato</h1>
+          <div className="w-10" />
+        </div>
+
+        <form 
+          action={async (formData) => {
+            setLoading(true);
+            try {
+              await createFoodProduct(formData);
+            } catch (err) {
+              alert("Error al subir el plato");
+              setLoading(false);
+            }
+          }} 
+          className="space-y-4"
+        >
+          {/* SECTOR DE IMAGEN (LA NOVEDAD 📸) */}
+          <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100">
+            <div className="flex justify-between items-center mb-4">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Foto del Plato</label>
+              <div className="flex bg-gray-100 p-1 rounded-xl">
+                <button type="button" onClick={() => setUploadMode("file")} className={`px-3 py-1 text-[10px] font-bold rounded-lg transition-all ${uploadMode === "file" ? "bg-white shadow-sm text-red-600" : "text-gray-400"}`}>ARCHIVO</button>
+                <button type="button" onClick={() => setUploadMode("url")} className={`px-3 py-1 text-[10px] font-bold rounded-lg transition-all ${uploadMode === "url" ? "bg-white shadow-sm text-red-600" : "text-gray-400"}`}>URL</button>
+              </div>
+            </div>
+
+            {uploadMode === "file" ? (
+              <div className="relative group">
+                {imagePreview ? (
+                  <div className="relative h-48 w-full rounded-2xl overflow-hidden border-2 border-dashed border-red-100">
+                    <Image src={imagePreview} alt="Preview" fill className="object-cover" />
+                    <button onClick={() => setImagePreview(null)} className="absolute top-2 right-2 bg-black/50 p-1 rounded-full text-white hover:bg-black"><X size={16} /></button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center h-48 w-full border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:bg-red-50/30 hover:border-red-200 transition-all">
+                    <ImagePlus size={32} className="text-gray-300 mb-2" />
+                    <span className="text-xs font-bold text-gray-400">Subir foto desde el móvil</span>
+                    <input type="file" name="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                  </label>
+                )}
+              </div>
+            ) : (
+              <div className="relative">
+                <LinkIcon className="absolute left-4 top-3.5 text-gray-300" size={18} />
+                <input name="imageUrl" placeholder="https://ejemplo.com/foto.jpg" className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-sm outline-none" />
+              </div>
+            )}
           </div>
-          <h1 className="text-2xl font-black tracking-tight">Añadir Plato</h1>
-          <p className="text-red-100 text-sm mt-1">Sube un nuevo plato a tu menú digital</p>
-        </div>
 
-        <div className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            
-            {/* Foto del Plato usando tu componente */}
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Foto del plato *</label>
-              <MultiImageUpload
-                values={formData.images}
-                onUpload={(urls) => setFormData({ ...formData, images: urls })}
-                maxImages={1} // Recomendamos 1 foto principal para restaurantes
-              />
+          {/* DATOS BÁSICOS (Nombre, Precio, Categoría) */}
+          <div className="bg-white p-5 rounded-[2.5rem] shadow-sm border border-gray-100">
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">Nombre</label>
+            <div className="relative">
+              <Utensils className="absolute left-4 top-3 text-red-500" size={18} />
+              <input name="name" required placeholder="Ej: Pizza Serrana" className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl font-bold outline-none" />
             </div>
+          </div>
 
-            {/* Nombre del Plato */}
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Nombre del plato</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Utensils size={18} className="text-gray-400" />
-                </div>
-                <input 
-                  required
-                  type="text" 
-                  placeholder="Ej: Pizza Pepperoni Familiar" 
-                  className={`${inputStyles} pl-11`}
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white p-5 rounded-[2.5rem] shadow-sm border border-gray-100">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">Precio</label>
+              <div className="relative"><DollarSign className="absolute left-4 top-3 text-green-500" size={18} />
+                <input name="price" type="number" required className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl font-bold outline-none" />
               </div>
             </div>
 
-            {/* Ingredientes / Descripción */}
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Ingredientes (Descripción)</label>
-              <div className="relative">
-                <div className="absolute top-3 left-4 pointer-events-none">
-                  <AlignLeft size={18} className="text-gray-400" />
-                </div>
-                <textarea 
-                  required
-                  rows={3}
-                  placeholder="Salsa de tomate artesanal, doble mozzarella, pepperoni..." 
-                  className={`${inputStyles} pl-11 resize-none`}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
+            <div className="bg-white p-5 rounded-[2.5rem] shadow-sm border border-gray-100">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">Categoría</label>
+              <div className="relative"><Tag className="absolute left-4 top-3 text-orange-500" size={18} />
+                <select name="category" required className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl font-bold appearance-none outline-none">
+                  <option value="" disabled selected>Elegir...</option>
+                  {foodCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
               </div>
             </div>
+          </div>
 
-            {/* Precio */}
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Precio ($)</label>
-              <div className="relative w-1/2">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <DollarSign size={18} className="text-gray-400" />
-                </div>
-                <input 
-                  required
-                  type="number" 
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00" 
-                  className={`${inputStyles} pl-11 font-bold text-lg`}
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                />
-              </div>
-            </div>
-
-            {/* Botón Guardar */}
-            <button 
-              disabled={isLoading}
-              type="submit"
-              className="w-full bg-[#D32F2F] text-white font-bold text-lg py-4 rounded-xl hover:bg-red-700 disabled:opacity-50 active:scale-95 transition-all shadow-lg shadow-red-200 mt-4 flex justify-center items-center gap-2"
-            >
-              {isLoading ? <Loader2 className="animate-spin" size={24} /> : <Utensils size={24} />}
-              {isLoading ? "Publicando plato..." : "Publicar en el Menú"}
-            </button>
-          </form>
-        </div>
+          <button disabled={loading} className="w-full bg-[#D32F2F] text-white p-5 rounded-[2.5rem] font-black text-lg shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-70">
+            {loading ? <Loader2 className="animate-spin" /> : <Save size={24} />}
+            {loading ? "SUBIENDO..." : "AÑADIR AL MENÚ"}
+          </button>
+        </form>
       </div>
     </div>
   );
