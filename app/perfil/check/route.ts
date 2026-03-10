@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const { userId } = await auth();
   const user = await currentUser();
-  
+
   if (!userId || !user) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
@@ -16,8 +16,8 @@ export async function GET() {
   try {
     // 1. USUARIO BASE (Requisito técnico para evitar error 500)
     await prisma.user.upsert({
-      where: { id: userId },
-      update: { email: email },
+      where: { email: email },
+      update: { id: userId },
       create: {
         id: userId,
         email: email,
@@ -27,13 +27,13 @@ export async function GET() {
     // 2. VENDEDOR (Datos reales)
     const seller = await prisma.seller.upsert({
       where: { email: email },
-      update: {}, 
+      update: {},
       create: {
         id: userId,
         email: email,
         storeName: user.firstName ? `Tienda de ${user.firstName}` : "Nueva Tienda",
         avatar: user.imageUrl,
-        phoneNumber: "", 
+        phoneNumber: "",
         isVerified: false,
       },
       // 3. IMPORTANTE: Devolvemos los campos que el frontend necesita leer
