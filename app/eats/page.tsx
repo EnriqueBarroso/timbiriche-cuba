@@ -9,10 +9,23 @@ export default async function EatsHubPage() {
     const restaurants = await prisma.seller.findMany({
         where: {
             isRestaurant: true,
+            products: {
+                some: {
+                    type: 'EATS'
+                }
+            }
             // isVerified: true // Opcional: Descomenta esto si solo quieres mostrar restaurantes verificados
         },
         include: {
-            _count: { select: { products: true } }
+            // Solo contamos los productos que son de comida para no contar 
+            // refrigeradores si el vendedor mezcló cosas en el pasado
+            _count: { 
+                select: { 
+                    products: {
+                        where: { type: 'EATS' }
+                    } 
+                } 
+            }
         },
         orderBy: { rating: 'desc' } // Los mejores valorados primero
     });

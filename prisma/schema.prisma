@@ -1,3 +1,8 @@
+enum ProductType {
+  MARKETPLACE // Para ropa, celulares, electrodomésticos...
+  EATS        // Para comida, restaurantes...
+}
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -37,6 +42,8 @@ model Product {
   favorites   Favorite[]
   seller      Seller?        @relation(fields: [sellerId], references: [id])
   images      ProductImage[]
+
+  type ProductType @default(MARKETPLACE)
 }
 
 model ProductImage {
@@ -93,3 +100,4 @@ model Follower {
   // Esto evita que sigas al mismo vendedor 2 veces
   @@unique([followerId, sellerId])
 }
+

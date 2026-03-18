@@ -42,7 +42,8 @@ export async function getProducts({
   try {
     // 👇 1. Interceptamos el filtro y le añadimos la regla de LaChopin Eats
     const filtroFinal = {
-      ...where, // Mantenemos todos los filtros que ya tenías (búsqueda, categorías, etc.)
+      ...where,
+      type: 'MARKETPLACE', // Mantenemos todos los filtros que ya tenías (búsqueda, categorías, etc.)
       seller: {
         ...(where.seller || {}), // Por si acaso ya había un filtro de vendedor
         isRestaurant: false      // ¡La magia! Excluimos a los restaurantes
@@ -275,7 +276,7 @@ export async function toggleProductStatus(productId: string) {
 export async function getPromotedProducts() {
   try {
     return await prisma.product.findMany({
-      where: { isPromoted: true, isSold: false },
+      where: { isPromoted: true, isSold: false, type: 'MARKETPLACE' },
       include: { images: true, seller: true },
       orderBy: { createdAt: "desc" },
     });
@@ -422,6 +423,7 @@ export async function injectMenuHacker(jsonData: string) {
           
           // 👇 LA MAGIA AQUÍ: Leemos la categoría del JSON, si no trae, le ponemos "Otros"
           category: plato.categoria || "Otros", 
+          type: 'EATS',
           
           description: plato.description,
           sellerId: seller.id,

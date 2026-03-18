@@ -18,6 +18,7 @@ import {
   Package,
   Zap
 } from "lucide-react";
+import HeroCarousel from "@/components/HeroCarousel"
 
 // 👇 AQUÍ ESTÁ LA MAGIA: Las categorías exactas de la base de datos
 const CATEGORIES = [
@@ -152,21 +153,7 @@ export default async function Home({ searchParams }: Props) {
     <div className="min-h-screen pb-24 bg-gray-50/50">
 
       {/* HERO SECTION */}
-      {!searchTerm && !category && currentPage === 1 && (
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 py-10 md:rounded-b-[2.5rem] shadow-xl mb-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl pointer-events-none"></div>
-          <div className="max-w-7xl mx-auto relative z-10">
-            <h1 className="text-3xl md:text-5xl font-black mb-3 tracking-tight leading-tight">
-              ¡Hola! 👋 <br />
-              <span className="text-blue-200">¿Qué buscas hoy?</span>
-            </h1>
-            <p className="text-blue-100 text-sm md:text-lg max-w-md opacity-90 font-medium">
-              Explora miles de productos cerca de ti en Cuba. Compra y vende fácil.
-            </p>
-          </div>
-        </div>
-      )}
-
+      <HeroCarousel />
       <div className="max-w-7xl mx-auto">
 
         {/* CARRUSEL DE CATEGORÍAS */}

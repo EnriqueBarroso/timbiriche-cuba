@@ -96,7 +96,7 @@ export default function Footer() {
               <li><Link href="/vender" className="hover:text-blue-600 transition-colors">Publicar Anuncio</Link></li>
               <li><Link href="/mis-publicaciones" className="hover:text-blue-600 transition-colors">Mi Tienda</Link></li>
               <li><Link href="/consejos" className="hover:text-blue-600 transition-colors">Consejos de Venta</Link></li>
-              <li><Link href="/premium" className="hover:text-blue-600 transition-colors">Vendedor Premium</Link></li>
+              <li><Link href="/pro" className="hover:text-blue-600 transition-colors">Vendedor Premium</Link></li>
             </ul>
           </div>
 
