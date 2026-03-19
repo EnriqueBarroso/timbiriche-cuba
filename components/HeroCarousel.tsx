@@ -4,9 +4,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 
-// 📝 Aquí definimos la información de tus 3 banners estratégicos
+// 📝 Datos de tus banners
 const BANNERS = [
   {
     id: "captacion",
@@ -14,16 +15,15 @@ const BANNERS = [
     subtitle: "Digitaliza tu catálogo gratis y recibe pedidos por WhatsApp.",
     cta: "Crear mi tienda",
     href: "/vender",
-    // Reemplaza esta URL con la imagen real que diseñes
     image: "/banners/banner-b2b.jpg", 
-    color: "from-blue-900/90 to-blue-900/40", // Degradado para que el texto se lea bien
+    color: "from-blue-900/90 to-blue-900/40",
   },
   {
     id: "premium",
     title: "Ofertas Premium",
-    subtitle: "Descubre los productos más destacados de LaChopin.",
+    subtitle: "Descubre los productos más destacados.", // Acorté ligeramente para móvil
     cta: "Ver ofertas",
-    href: "/premium", // O la ruta que decidas para premium
+    href: "/premium",
     image: "/banners/banner-premium.png",
     color: "from-amber-900/90 to-amber-900/40",
   },
@@ -31,22 +31,20 @@ const BANNERS = [
     id: "mayoristas",
     title: "Ventas Mayoristas",
     subtitle: "Compra por volumen y maximiza las ganancias de tu negocio.",
-    cta: "Explorar mayoristas",
-    href: "/mayoristas", // Ajusta a tu ruta real
+    cta: "Explorar", // Acorté ligeramente el CTA para móvil
+    href: "/mayoristas",
     image: "/banners/banner-mayorista.png",
     color: "from-emerald-900/90 to-emerald-900/40",
   },
 ];
 
 export default function HeroCarousel() {
-  // Configuramos Embla con Autoplay (pasa cada 5 segundos)
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
     Autoplay({ delay: 5000, stopOnInteraction: false }),
   ]);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // Esta función actualiza los puntitos (dots) cuando cambia el slide
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setSelectedIndex(emblaApi.selectedScrollSnap());
@@ -60,36 +58,46 @@ export default function HeroCarousel() {
   }, [emblaApi, onSelect]);
 
   return (
-    <div className="relative w-full max-w-7xl mx-auto mb-8 px-4 sm:px-6 lg:px-8">
-      {/* Contenedor principal de Embla */}
+    // Reduje mb-8 a mb-6 para dar más aire general en móvil
+    <div className="relative w-full max-w-7xl mx-auto mb-6 md:mb-8 px-4 sm:px-6 lg:px-8">
       <div className="overflow-hidden rounded-2xl shadow-lg" ref={emblaRef}>
         <div className="flex touch-pan-y">
-          {BANNERS.map((banner) => (
+          {BANNERS.map((banner, index) => (
             <div
               key={banner.id}
-              className="relative flex-[0_0_100%] min-w-0 aspect-[16/9] md:aspect-[21/7]"
+              className="relative flex-[0_0_100%] min-w-0 aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/7]" // Hice el aspecto móvil ligeramente más alto [16/10] para dar aire
             >
-              {/* Imagen de fondo */}
-              <img
+              <Image
                 src={banner.image}
                 alt={banner.title}
-                className="absolute inset-0 w-full h-full object-cover"
+                fill
+                priority={index === 0}
+                style={{ objectFit: 'cover' }}
+                sizes="(max-width: 768px) 100vw, 1200px"
               />
               
-              {/* Capa de degradado oscuro para que resalte el texto */}
               <div className={`absolute inset-0 bg-gradient-to-r ${banner.color}`} />
 
-              {/* Contenido del Banner */}
-              <div className="absolute inset-0 flex flex-col justify-center px-8 md:px-16">
-                <h2 className="text-3xl md:text-5xl font-bold text-white mb-2 md:mb-4 drop-shadow-md">
+              {/* 👇 AJUSTES DE CONTENIDO PARA MÓVIL 👇 */}
+              <div className="absolute inset-0 flex flex-col justify-start pt-6 px-6 pb-12 md:pt-0 md:justify-center md:px-16 md:pb-0 z-10">
+                {/* justify-start pt-6 px-6 pb-12 -> Móvil: Contenido arriba con padding top/bottom
+                  md:pt-0 md:justify-center md:px-16 md:pb-0 -> Escritorio: Centrado vertical y padding lateral original
+                */}
+                
+                <h2 className="text-2xl xs:text-3xl md:text-5xl font-bold text-white mb-1.5 md:mb-4 drop-shadow-md leading-tight">
+                  {/* Reduje text-3xl a text-2xl y mb-2 a mb-1.5 en móvil */}
                   {banner.title}
                 </h2>
-                <p className="text-sm md:text-lg text-gray-200 mb-6 max-w-md drop-shadow">
+                
+                <p className="text-sm md:text-lg text-gray-200 mb-4 md:mb-6 max-w-sm md:max-w-md drop-shadow">
+                  {/* Reduje mb-6 a mb-4 y max-w en móvil */}
                   {banner.subtitle}
                 </p>
+                
                 <Link
                   href={banner.href}
-                  className="inline-flex items-center w-fit px-5 py-2.5 bg-white text-gray-900 font-semibold rounded-full hover:bg-gray-100 transition-colors shadow-md"
+                  // Reduje padding y text size en móvil
+                  className="inline-flex items-center w-fit px-4 py-2 md:px-5 md:py-2.5 bg-white text-gray-900 text-sm md:text-base font-semibold rounded-full hover:bg-gray-100 transition-colors shadow-md"
                 >
                   {banner.cta}
                   <ChevronRight className="w-4 h-4 ml-1" />
@@ -100,15 +108,17 @@ export default function HeroCarousel() {
         </div>
       </div>
 
-      {/* Indicadores (Dots) */}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+      {/* 👇 AJUSTE DE DOTS PARA MÓVIL 👇 */}
+      <div className="absolute bottom-3 md:bottom-4 left-0 right-0 flex justify-center gap-1.5 md:gap-2 z-20">
+        {/* Bajé bottom-4 a bottom-3 y gap-2 a gap-1.5 en móvil */}
         {BANNERS.map((_, index) => (
           <button
             key={index}
             onClick={() => emblaApi?.scrollTo(index)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+            // Dots ligeramente más pequeños en móvil (w-1.5 h-1.5)
+            className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-all duration-300 ${
               index === selectedIndex
-                ? "bg-white w-6" // El dot activo es más ancho (estilo Apple)
+                ? "bg-white w-5 md:w-6"
                 : "bg-white/50 hover:bg-white/80"
             }`}
             aria-label={`Ir a la diapositiva ${index + 1}`}
