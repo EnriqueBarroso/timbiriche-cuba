@@ -257,7 +257,6 @@ export async function updateProfile(data: {
     where: { email },
     update: {
       storeName: data.storeName,
-      slug: await getUniqueSlug(data.storeName),
       phoneNumber: data.phoneNumber,
       ...(data.avatar && { avatar: data.avatar }),
       acceptsZelle: data.acceptsZelle ?? false,
