@@ -62,10 +62,10 @@ export async function getProducts({
 
       // 2. Filtramos en memoria: Máximo 2 productos por tienda en la portada
       const sellerCounts: Record<string, number> = {};
-      const mixedProducts = [];
+      const mixedProducts: typeof rawProducts = [];
 
       for (const product of rawProducts) {
-        const sId = product.sellerId;
+        const sId = product.sellerId ?? "unknown";
         sellerCounts[sId] = (sellerCounts[sId] || 0) + 1;
 
         if (sellerCounts[sId] <= 2) { // <- LÍMITE: 2 productos por vendedor
