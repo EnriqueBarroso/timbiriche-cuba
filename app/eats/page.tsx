@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { UtensilsCrossed, Star, MapPin, Clock, ChevronRight } from "lucide-react";
+import { optimizeImage } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -19,12 +20,12 @@ export default async function EatsHubPage() {
         include: {
             // Solo contamos los productos que son de comida para no contar 
             // refrigeradores si el vendedor mezcló cosas en el pasado
-            _count: { 
-                select: { 
+            _count: {
+                select: {
                     products: {
                         where: { type: 'EATS' }
-                    } 
-                } 
+                    }
+                }
             }
         },
         orderBy: { rating: 'desc' } // Los mejores valorados primero
@@ -57,10 +58,8 @@ export default async function EatsHubPage() {
                             // 👇 AQUÍ ESTABA EL ERROR: Ahora apunta al perfil de presentación, NO al menú directo
                             const profileUrl = `/vendedor/${restaurant.slug || restaurant.id}`;
 
-                            // Intentamos buscar una foto de perfil/avatar válida
-                            const restaurantData = restaurant as any;
 
-                           const avatar = restaurantData.avatar ||
+                            const avatar = optimizeImage(restaurant.avatar || "", 200) ||
                                 `https://ui-avatars.com/api/?name=${encodeURIComponent(restaurant.storeName)}&background=D32F2F&color=fff`;
                             // 👇 NUEVO: Verificamos si tiene imagen de portada
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,7 +74,7 @@ export default async function EatsHubPage() {
                                     {/* Banner/Portada del Restaurante */}
                                     <div className="h-28 w-full relative bg-gray-900">
                                         {coverImage ? (
-                                            <img src={coverImage} alt="Portada" className="w-full h-full object-cover opacity-80" />
+                                            <img src={optimizeImage(coverImage, 800)} alt="Portada" className="w-full h-full object-cover opacity-80" />
                                         ) : (
                                             <div className="w-full h-full bg-gradient-to-r from-gray-200 to-gray-300"></div>
                                         )}

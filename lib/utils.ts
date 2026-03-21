@@ -45,3 +45,13 @@ export function generateSlug(name: string): string {
   const suffix = Math.random().toString(36).substring(2, 6);
   return `${base}-${suffix}`;
 }
+
+export function optimizeImage(url: string, width: number = 400): string {
+  if (!url || !url.includes("res.cloudinary.com")) return url;
+  
+  // Inserta transformaciones después de /upload/
+  return url.replace(
+    "/upload/",
+    `/upload/w_${width},q_auto,f_auto/`
+  );
+}

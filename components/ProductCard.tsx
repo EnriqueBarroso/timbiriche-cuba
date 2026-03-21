@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import FavoriteButton from "@/components/FavoriteButton";
 import { toast } from "sonner";
-import { formatPrice, BLUR_PLACEHOLDER } from "@/lib/utils";
+import { formatPrice, BLUR_PLACEHOLDER, optimizeImage  } from "@/lib/utils";
 
 interface ProductCardProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,7 +68,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <Link href={`/product/${product.id}`} className="block h-full w-full relative">
           {hasValidImage ? (
             <Image
-              src={rawImageUrl}
+              src={optimizeImage(rawImageUrl, 400)}
               alt={title}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"

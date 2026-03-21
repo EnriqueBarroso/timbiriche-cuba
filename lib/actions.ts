@@ -78,9 +78,9 @@ export async function getProducts({
 
       // Si después del filtro no llegamos a ITEMS_PER_PAGE, rellenamos con lo que haya
       if (mixedProducts.length < ITEMS_PER_PAGE && rawProducts.length > mixedProducts.length) {
-         const remainingNeeded = ITEMS_PER_PAGE - mixedProducts.length;
-         const remainingProducts = rawProducts.filter(p => !mixedProducts.includes(p)).slice(0, remainingNeeded);
-         mixedProducts.push(...remainingProducts);
+        const remainingNeeded = ITEMS_PER_PAGE - mixedProducts.length;
+        const remainingProducts = rawProducts.filter(p => !mixedProducts.includes(p)).slice(0, remainingNeeded);
+        mixedProducts.push(...remainingProducts);
       }
 
       const total = await prisma.product.count({ where: filtroFinal });
@@ -463,11 +463,11 @@ export async function injectMenuHacker(jsonData: string) {
           title: plato.title,
           price: Number(plato.price),
           currency: "USD",
-          
+
           // 👇 LA MAGIA AQUÍ: Leemos la categoría del JSON, si no trae, le ponemos "Otros"
-          category: plato.categoria || "Otros", 
+          category: plato.categoria || "Otros",
           type: 'EATS',
-          
+
           description: plato.description,
           sellerId: seller.id,
           isFlashOffer: false,
@@ -481,12 +481,12 @@ export async function injectMenuHacker(jsonData: string) {
 
     revalidatePath("/");
     revalidatePath("/eats");
-    
+
     return { success: true, message: `¡Magia pura! ${count} platos inyectados correctamente.` };
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error inyectando:", error);
-    throw new Error(error.message || "Error procesando el JSON");
+    throw new Error(error instanceof Error ? error.message : "Error procesando el JSON");
   }
 }
 

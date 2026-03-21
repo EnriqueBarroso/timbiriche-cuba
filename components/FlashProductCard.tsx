@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Zap } from "lucide-react";
-import { formatPrice, BLUR_PLACEHOLDER } from "@/lib/utils";
+import { formatPrice, BLUR_PLACEHOLDER, optimizeImage  } from "@/lib/utils";
 
 interface FlashProduct {
   id: string;
@@ -24,7 +24,7 @@ export default function FlashProductCard({ product }: { product: FlashProduct })
     >
       <div className="relative">
         <Image
-          src={imageUrl}
+          src={optimizeImage(imageUrl, 300)}
           alt={product.title}
           width={300}
           height={300}

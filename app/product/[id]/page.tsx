@@ -10,7 +10,7 @@ import ProductJsonLd from "@/components/ProductJsonLd"
 import { Metadata } from "next"
 import { currentUser } from "@clerk/nextjs/server"
 import { deleteProduct, checkIfFollowing } from '@/lib/actions'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, optimizeImage } from '@/lib/utils'
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = product.description
     ? `${priceText} — ${product.description.slice(0, 140)}`
     : `${priceText} — Disponible en LaChopin`;
-  const imageUrl = product.images[0]?.url || "/opengraph-image.png";
+  const imageUrl = optimizeImage(product.images[0]?.url || "/opengraph-image.png", 800)
   const productUrl = `https://www.lachopin.com/product/${product.id}`;
 
   return {
@@ -107,7 +107,7 @@ export default async function ProductPage({ params }: Props) {
     id: product.id,
     title: product.title,
     price: product.price,
-    image: product.images[0]?.url || "/placeholder.jpg",
+    image: optimizeImage(product.images[0]?.url || "/opengraph-image.png", 800),
     currency: currency,
     seller: product.seller ? {
       name: sellerName,
@@ -133,7 +133,7 @@ export default async function ProductPage({ params }: Props) {
         description={product.description}
         price={product.price}
         currency={currency}
-        imageUrl={product.images[0]?.url || "/opengraph-image.png"}
+        imageUrl={optimizeImage(product.images[0]?.url || "/opengraph-image.png", 800)}
         url={`https://www.lachopin.com/product/${product.id}`}
         sellerName={sellerName}
         isSold={product.isSold}
@@ -150,7 +150,7 @@ export default async function ProductPage({ params }: Props) {
 
         {/* 2. Galería */}
         <div className="md:rounded-3xl overflow-hidden shadow-sm bg-white">
-          <ProductImageGallery images={product.images.map(img => img.url)} />
+          <ProductImageGallery images={product.images.map(img => optimizeImage(img.url, 800))} />
         </div>
 
         <div className="p-4 md:p-0 mt-4">
