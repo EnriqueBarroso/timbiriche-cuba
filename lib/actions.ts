@@ -7,7 +7,15 @@ import { generateSlug } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 12;
 
-// 1. OBTENER PRODUCTOS (CON PAGINACIÓN)
+// Genera un slug único: primero intenta sin sufijo, si ya existe añade uno
+async function getUniqueSlug(name: string): Promise<string> {
+  const base = generateSlug(name);
+  const existing = await prisma.seller.findUnique({ where: { slug: base } });
+  if (!existing) return base;
+  const suffix = Math.random().toString(36).substring(2, 6);
+  return `${base}-${suffix}`;
+}
+
 // 1. OBTENER PRODUCTOS (CON PAGINACIÓN Y ANTI-MONOPOLIO B2B)
 export async function getProducts({
   query,
@@ -48,19 +56,16 @@ export async function getProducts({
     };
 
     // 🔥 ALGORITMO ANTI-MONOPOLIO 🔥
-    // Si estamos en la portada pura (sin filtros ni búsquedas)
     const isHomepage = !query && !category && page === 1;
 
     if (isHomepage) {
-      // 1. Traemos un lote grande (ej. 50) para tener variedad de donde escoger
       const rawProducts = await prisma.product.findMany({
         where: filtroFinal,
-        take: 50, // Traemos más de lo necesario para mezclar
+        take: 50,
         orderBy: { createdAt: "desc" },
         include: { images: true, seller: true },
       });
 
-      // 2. Filtramos en memoria: Máximo 2 productos por tienda en la portada
       const sellerCounts: Record<string, number> = {};
       const mixedProducts: typeof rawProducts = [];
 
@@ -68,15 +73,13 @@ export async function getProducts({
         const sId = product.sellerId ?? "unknown";
         sellerCounts[sId] = (sellerCounts[sId] || 0) + 1;
 
-        if (sellerCounts[sId] <= 2) { // <- LÍMITE: 2 productos por vendedor
+        if (sellerCounts[sId] <= 2) {
           mixedProducts.push(product);
         }
 
-        // Si ya llenamos la página, paramos
         if (mixedProducts.length === ITEMS_PER_PAGE) break;
       }
 
-      // Si después del filtro no llegamos a ITEMS_PER_PAGE, rellenamos con lo que haya
       if (mixedProducts.length < ITEMS_PER_PAGE && rawProducts.length > mixedProducts.length) {
         const remainingNeeded = ITEMS_PER_PAGE - mixedProducts.length;
         const remainingProducts = rawProducts.filter(p => !mixedProducts.includes(p)).slice(0, remainingNeeded);
@@ -93,7 +96,7 @@ export async function getProducts({
       };
     }
 
-    // 🔄 COMPORTAMIENTO NORMAL (Si el usuario busca o filtra por categoría, mostramos TODO)
+    // 🔄 COMPORTAMIENTO NORMAL
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where: filtroFinal,
@@ -149,7 +152,7 @@ export async function deleteProduct(productId: string) {
   return { success: true };
 }
 
-// 4. CREAR PRODUCTO (SIMPLIFICADO: Guardamos el precio tal cual)
+// 4. CREAR PRODUCTO
 export async function createProduct(data: {
   title: string;
   price: number;
@@ -172,14 +175,13 @@ export async function createProduct(data: {
       id: user.id,
       email: email,
       storeName: userName,
-      slug: generateSlug(userName),
+      slug: await getUniqueSlug(userName),
       avatar: user.imageUrl,
       phoneNumber: "",
       isVerified: false,
     },
   });
 
-  // 👇 AQUÍ ESTÁ EL CAMBIO: Guardamos data.price directo. Sin multiplicar.
   await prisma.product.create({
     data: {
       title: data.title,
@@ -224,11 +226,10 @@ export async function updateProduct(productId: string, data: any) {
       category: data.category,
       description: data.description,
       ...(data.isFlashOffer !== undefined && { isFlashOffer: data.isFlashOffer }),
-      // Si recibimos el array de imágenes del cliente, actualizamos la galería
       ...(data.images && {
         images: {
-          deleteMany: {}, // Borramos las relaciones viejas para evitar "fotos huérfanas"
-          create: data.images.map((url: string) => ({ url })) // Creamos las relaciones con el array final
+          deleteMany: {},
+          create: data.images.map((url: string) => ({ url }))
         }
       })
     }
@@ -239,14 +240,14 @@ export async function updateProduct(productId: string, data: any) {
   revalidatePath("/");
 }
 
-// 6. ACTUALIZAR PERFIL (AHORA CON ZELLE Y RESTAURANTES)
+// 6. ACTUALIZAR PERFIL (CON ZELLE Y RESTAURANTES)
 export async function updateProfile(data: {
   storeName: string;
   phoneNumber: string;
   avatar?: string;
   acceptsZelle?: boolean;
   zelleEmail?: string;
-  isRestaurant?: boolean; // 👈 1. AÑADIDO EN LA FIRMA DE LA FUNCIÓN
+  isRestaurant?: boolean;
 }) {
   const user = await currentUser();
   if (!user) throw new Error("No autorizado");
@@ -256,24 +257,24 @@ export async function updateProfile(data: {
     where: { email },
     update: {
       storeName: data.storeName,
-      slug: generateSlug(data.storeName),
+      slug: await getUniqueSlug(data.storeName),
       phoneNumber: data.phoneNumber,
       ...(data.avatar && { avatar: data.avatar }),
       acceptsZelle: data.acceptsZelle ?? false,
       zelleEmail: data.zelleEmail || null,
-      isRestaurant: data.isRestaurant ?? false, // 👈 2. AÑADIDO AL ACTUALIZAR
+      isRestaurant: data.isRestaurant ?? false,
     },
     create: {
       id: user.id,
       email,
       storeName: data.storeName,
-      slug: generateSlug(data.storeName),
+      slug: await getUniqueSlug(data.storeName),
       phoneNumber: data.phoneNumber,
       avatar: data.avatar || user.imageUrl,
       isVerified: false,
       acceptsZelle: data.acceptsZelle ?? false,
       zelleEmail: data.zelleEmail || null,
-      isRestaurant: data.isRestaurant ?? false, // 👈 3. AÑADIDO AL CREAR
+      isRestaurant: data.isRestaurant ?? false,
     },
   });
 
@@ -294,7 +295,7 @@ export async function syncUserAction() {
       id: user.id,
       email: email,
       storeName: user.firstName || "Mi Tienda",
-      slug: generateSlug(user.firstName || "mi-tienda"),
+      slug: await getUniqueSlug(user.firstName || "mi-tienda"),
       avatar: user.imageUrl,
       phoneNumber: "",
       isVerified: false,
@@ -358,10 +359,8 @@ export async function toggleFollowAction(sellerId: string) {
 
   const followerId = user.id;
 
-  // No puedes seguirte a ti mismo
   if (followerId === sellerId) return { error: "No puedes seguirte a ti mismo" };
 
-  // Verificamos si ya lo sigue
   const existingFollow = await prisma.follower.findUnique({
     where: {
       followerId_sellerId: {
@@ -372,7 +371,6 @@ export async function toggleFollowAction(sellerId: string) {
   });
 
   if (existingFollow) {
-    // Si existe -> BORRAR (Dejar de seguir)
     await prisma.follower.delete({
       where: {
         followerId_sellerId: {
@@ -381,10 +379,9 @@ export async function toggleFollowAction(sellerId: string) {
         },
       },
     });
-    revalidatePath(`/product/[id]`); // Actualizar caché
+    revalidatePath(`/product/[id]`);
     return { isFollowing: false };
   } else {
-    // Si no existe -> CREAR (Seguir)
     await prisma.follower.create({
       data: {
         followerId,
@@ -412,7 +409,7 @@ export async function checkIfFollowing(sellerId: string) {
     },
   });
 
-  return !!follow; // Retorna true si existe, false si no
+  return !!follow;
 }
 
 /**
@@ -432,7 +429,6 @@ export async function getFlashOffers() {
 
 // 13. SCRIPT HACKER: INYECTAR MENÚ COMPLETO
 export async function injectMenuHacker(jsonData: string) {
-  // Asegurarnos de que solo el admin pueda correr esto
   const user = await currentUser();
   if (!user || user.emailAddresses[0].emailAddress !== process.env.ADMIN_EMAIL) {
     throw new Error("Acceso denegado: Solo el admin puede inyectar menús");
@@ -442,7 +438,6 @@ export async function injectMenuHacker(jsonData: string) {
     const data = JSON.parse(jsonData);
     const { emailDueño, platos } = data;
 
-    // 1. Buscamos al restaurante en la base de datos
     const seller = await prisma.seller.findUnique({
       where: { email: emailDueño }
     });
@@ -455,7 +450,6 @@ export async function injectMenuHacker(jsonData: string) {
       throw new Error("¡Cuidado! Este usuario está registrado como tienda, no como restaurante.");
     }
 
-    // 2. Inyectamos los platos uno por uno a la velocidad de la luz
     let count = 0;
     for (const plato of platos) {
       await prisma.product.create({
@@ -463,11 +457,8 @@ export async function injectMenuHacker(jsonData: string) {
           title: plato.title,
           price: Number(plato.price),
           currency: "USD",
-
-          // 👇 LA MAGIA AQUÍ: Leemos la categoría del JSON, si no trae, le ponemos "Otros"
           category: plato.categoria || "Otros",
           type: 'EATS',
-
           description: plato.description,
           sellerId: seller.id,
           isFlashOffer: false,
@@ -496,7 +487,7 @@ export async function getFeaturedSellers() {
     return await prisma.seller.findMany({
       where: {
         isRestaurant: false,
-        isFeatured: true, // 👈 AHORA SOLO TRAE LAS QUE TÚ HAYAS MARCADO
+        isFeatured: true,
         products: {
           some: { type: 'MARKETPLACE' }
         }
@@ -532,6 +523,6 @@ export async function toggleSellerFeaturedStatus(sellerId: string) {
   });
 
   revalidatePath("/");
-  revalidatePath("/admin"); // Asumiendo que tu panel está en /admin
+  revalidatePath("/admin");
   return { success: true, isFeatured: updated.isFeatured };
 }

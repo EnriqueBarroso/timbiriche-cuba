@@ -36,14 +36,12 @@ export const BLUR_PLACEHOLDER =
 
 // Generador de slug automático
 export function generateSlug(name: string): string {
-  const base = name
+  return name
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
-  const suffix = Math.random().toString(36).substring(2, 6);
-  return `${base}-${suffix}`;
 }
 
 export function optimizeImage(url: string, width: number = 400): string {

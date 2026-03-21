@@ -61,19 +61,7 @@ export default function VenderForm({ initialProduct }: Props) {
         router.push("/mis-publicaciones");
 
       } else {
-        // --- MODO CREACIÓN ---
-        // Validación de perfil
-        const profileRes = await fetch('/perfil/check', { cache: 'no-store' });
-        if (!profileRes.ok) throw new Error("Error perfil");
-        const profile = await profileRes.json();
-        const cleanPhone = profile.phoneNumber?.replace(/\D/g, '') || '';
-
-        if (cleanPhone.length < 8) {
-          toast.error("WhatsApp requerido");
-          router.push("/perfil?returnTo=/vender");
-          return;
-        }
-
+        
         // ✅ CORREGIDO: Sin multiplicar por 100
         await createProduct({
           title: formData.title,
