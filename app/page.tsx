@@ -1,4 +1,4 @@
-import { getProducts, getPromotedProducts } from "@/lib/actions";
+import { getProducts, getPromotedProducts, getFeaturedSellers } from "@/lib/actions";
 import { ProductCard } from "@/components/ProductCard";
 import Pagination from "@/components/Pagination";
 import Link from "next/link";
@@ -125,13 +125,15 @@ export default async function Home({ searchParams }: Props) {
   const currentPage = Number(page) || 1;
 
   // 👇 CAMBIO 1: Cargamos los productos normales Y los promocionados al mismo tiempo
-  const [productsData, promotedProducts] = await Promise.all([
+  // 👇 Cargamos todo en paralelo para máxima velocidad
+  const [productsData, promotedProducts, featuredSellers] = await Promise.all([
     getProducts({
       query: searchTerm,
       category: category,
       page: currentPage,
     }),
-    getPromotedProducts()
+    getPromotedProducts(),
+    getFeaturedSellers() // <-- Añadimos la nueva función aquí
   ]);
 
   const { products, total, totalPages } = productsData;
@@ -189,6 +191,53 @@ export default async function Home({ searchParams }: Props) {
             })}
           </div>
         </div>
+
+        {/* CARRUSEL DE CATEGORÍAS */}
+        <div className="sticky top-[56px] md:top-[64px] z-30 bg-gray-50/95 backdrop-blur-md py-4 border-b border-gray-200/50 mb-6 transition-all">
+         {/* ... tu código actual de categorías ... */}
+        </div>
+
+        {/* 🏪 NUEVO: TIENDAS DESTACADAS (Solo en la página principal) */}
+      {/* 🏪 TIENDAS DESTACADAS DINÁMICAS */}
+        {!searchTerm && !category && currentPage === 1 && featuredSellers.length > 0 && (
+          <div className="mb-8 px-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Tiendas Destacadas</h2>
+              <Link href="/tiendas" className="text-sm font-semibold text-blue-600 hover:text-blue-800">
+                Ver todas
+              </Link>
+            </div>
+            
+            <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x">
+              {featuredSellers.map((seller) => (
+                <Link 
+                  key={seller.id} 
+                  href={`/vendedor/${seller.slug}`} 
+                  className="min-w-[280px] snap-start bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all flex items-center gap-4 group"
+                >
+                  <div className="w-16 h-16 rounded-full bg-blue-50 overflow-hidden shrink-0 border-2 border-white shadow-sm group-hover:scale-105 transition-transform">
+                     {/* Usamos una imagen por defecto de ui-avatars si el vendedor no ha subido foto */}
+                     <img 
+                       src={seller.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(seller.storeName)}&background=random&color=fff`} 
+                       alt={seller.storeName} 
+                       className="w-full h-full object-cover" 
+                     />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-lg leading-tight group-hover:text-blue-600 transition-colors line-clamp-1">
+                      {seller.storeName}
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-1 flex items-center gap-1 font-medium">
+                      <span className="w-2 h-2 rounded-full bg-blue-500"></span> 
+                      {seller._count.products} {seller._count.products === 1 ? 'Producto' : 'Productos'}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+        {/* 👑 SECCIÓN VIP: ANUNCIOS PREMIUM */}
 
         {/* 👑 SECCIÓN VIP: ANUNCIOS PREMIUM (Controlada por el Admin) */}
         {!searchTerm && !category && currentPage === 1 && promotedProducts.length > 0 && (

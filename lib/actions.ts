@@ -8,6 +8,7 @@ import { generateSlug } from "@/lib/utils";
 const ITEMS_PER_PAGE = 12;
 
 // 1. OBTENER PRODUCTOS (CON PAGINACIÓN)
+// 1. OBTENER PRODUCTOS (CON PAGINACIÓN Y ANTI-MONOPOLIO B2B)
 export async function getProducts({
   query,
   category,
@@ -30,27 +31,69 @@ export async function getProducts({
     ];
   }
 
-  // 👇 AQUÍ ESTÁ LA MAGIA B2B
   if (category && category !== "all") {
     where.category = { equals: category, mode: "insensitive" };
   } else {
-    // Si NO hay categoría seleccionada (es decir, estamos en el Inicio normal),
-    // filtramos para que NO salgan los productos mayoristas.
     where.category = { not: "wholesale" };
   }
 
   try {
-    // 👇 1. Interceptamos el filtro y le añadimos la regla de LaChopin Eats
     const filtroFinal = {
       ...where,
-      type: 'MARKETPLACE', // Mantenemos todos los filtros que ya tenías (búsqueda, categorías, etc.)
+      type: 'MARKETPLACE',
       seller: {
-        ...(where.seller || {}), // Por si acaso ya había un filtro de vendedor
-        isRestaurant: false      // ¡La magia! Excluimos a los restaurantes
+        ...(where.seller || {}),
+        isRestaurant: false
       }
     };
 
-    // 2. Usamos el nuevo 'filtroFinal' en lugar del 'where' original
+    // 🔥 ALGORITMO ANTI-MONOPOLIO 🔥
+    // Si estamos en la portada pura (sin filtros ni búsquedas)
+    const isHomepage = !query && !category && page === 1;
+
+    if (isHomepage) {
+      // 1. Traemos un lote grande (ej. 50) para tener variedad de donde escoger
+      const rawProducts = await prisma.product.findMany({
+        where: filtroFinal,
+        take: 50, // Traemos más de lo necesario para mezclar
+        orderBy: { createdAt: "desc" },
+        include: { images: true, seller: true },
+      });
+
+      // 2. Filtramos en memoria: Máximo 2 productos por tienda en la portada
+      const sellerCounts: Record<string, number> = {};
+      const mixedProducts = [];
+
+      for (const product of rawProducts) {
+        const sId = product.sellerId;
+        sellerCounts[sId] = (sellerCounts[sId] || 0) + 1;
+
+        if (sellerCounts[sId] <= 2) { // <- LÍMITE: 2 productos por vendedor
+          mixedProducts.push(product);
+        }
+
+        // Si ya llenamos la página, paramos
+        if (mixedProducts.length === ITEMS_PER_PAGE) break;
+      }
+
+      // Si después del filtro no llegamos a ITEMS_PER_PAGE, rellenamos con lo que haya
+      if (mixedProducts.length < ITEMS_PER_PAGE && rawProducts.length > mixedProducts.length) {
+         const remainingNeeded = ITEMS_PER_PAGE - mixedProducts.length;
+         const remainingProducts = rawProducts.filter(p => !mixedProducts.includes(p)).slice(0, remainingNeeded);
+         mixedProducts.push(...remainingProducts);
+      }
+
+      const total = await prisma.product.count({ where: filtroFinal });
+
+      return {
+        products: mixedProducts,
+        total,
+        totalPages: Math.ceil(total / ITEMS_PER_PAGE),
+        currentPage: page,
+      };
+    }
+
+    // 🔄 COMPORTAMIENTO NORMAL (Si el usuario busca o filtra por categoría, mostramos TODO)
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where: filtroFinal,
@@ -445,4 +488,50 @@ export async function injectMenuHacker(jsonData: string) {
     console.error("Error inyectando:", error);
     throw new Error(error.message || "Error procesando el JSON");
   }
+}
+
+// 14. OBTENER TIENDAS DESTACADAS (Marketplace)
+export async function getFeaturedSellers() {
+  try {
+    return await prisma.seller.findMany({
+      where: {
+        isRestaurant: false,
+        isFeatured: true, // 👈 AHORA SOLO TRAE LAS QUE TÚ HAYAS MARCADO
+        products: {
+          some: { type: 'MARKETPLACE' }
+        }
+      },
+      take: 6,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: { select: { products: { where: { type: 'MARKETPLACE' } } } }
+      }
+    });
+  } catch (error) {
+    console.error("Error cargando tiendas destacadas:", error);
+    return [];
+  }
+}
+
+// 15. DESTACAR / QUITAR DE DESTACADOS A UN VENDEDOR (Solo Admin)
+export async function toggleSellerFeaturedStatus(sellerId: string) {
+  const user = await currentUser();
+  if (!user) throw new Error("No autorizado");
+
+  const email = user.emailAddresses[0].emailAddress;
+  if (email !== process.env.ADMIN_EMAIL) {
+    throw new Error("Solo el administrador puede destacar tiendas");
+  }
+
+  const seller = await prisma.seller.findUnique({ where: { id: sellerId } });
+  if (!seller) throw new Error("Vendedor no encontrado");
+
+  const updated = await prisma.seller.update({
+    where: { id: sellerId },
+    data: { isFeatured: !seller.isFeatured },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/admin"); // Asumiendo que tu panel está en /admin
+  return { success: true, isFeatured: updated.isFeatured };
 }

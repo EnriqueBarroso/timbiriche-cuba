@@ -49,6 +49,7 @@ export default function Pagination({
       {hasPrev ? (
         <Link
           href={buildUrl(currentPage - 1)}
+          scroll={false} // 👈 EVITA EL SCROLL BRUSCO HACIA ARRIBA
           className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors"
           aria-label="Página anterior"
         >
@@ -72,7 +73,8 @@ export default function Pagination({
         ) : (
           <Link
             key={page}
-            href={buildUrl(page)}
+            href={buildUrl(page as number)}
+            scroll={false} // 👈 EVITA EL SCROLL BRUSCO HACIA ARRIBA
             className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold transition-colors ${
               page === currentPage
                 ? "bg-blue-600 text-white shadow-md shadow-blue-200"
@@ -90,6 +92,7 @@ export default function Pagination({
       {hasNext ? (
         <Link
           href={buildUrl(currentPage + 1)}
+          scroll={false} // 👈 EVITA EL SCROLL BRUSCO HACIA ARRIBA
           className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors"
           aria-label="Página siguiente"
         >
