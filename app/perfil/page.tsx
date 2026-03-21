@@ -112,7 +112,6 @@ export default async function ProfilePage({ searchParams }: Props) {
           </p>
         </div>
         
-        {/* @ts-ignore */}
         <ProfileForm initialData={initialData} />
       </div>
     </div>
