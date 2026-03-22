@@ -494,7 +494,7 @@ export async function getFeaturedSellers() {
         }
       },
       take: 6,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { products: { _count: 'desc' } },
       include: {
         _count: { select: { products: { where: { type: 'MARKETPLACE' } } } }
       }
