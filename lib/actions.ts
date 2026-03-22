@@ -23,13 +23,19 @@ export async function getProducts({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = { isSold: false };
 
-  if (query) {
-    where.OR = [
-      { title: { contains: query, mode: "insensitive" } },
-      { description: { contains: query, mode: "insensitive" } },
-      { category: { contains: query, mode: "insensitive" } },
-    ];
-  }
+  // DESPUÉS
+if (query) {
+  // Convertimos "celular samsung" → "celular & samsung" para búsqueda AND
+  const searchTerms = query.trim().split(/\s+/).join(" & ");
+  
+  where.OR = [
+    { title: { search: searchTerms } },
+    { description: { search: searchTerms } },
+    // Fallback con contains para búsquedas parciales
+    { title: { contains: query, mode: "insensitive" } },
+    { description: { contains: query, mode: "insensitive" } },
+  ];
+}
 
   if (category && category !== "all") {
     where.category = { equals: category, mode: "insensitive" };
