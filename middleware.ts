@@ -1,41 +1,37 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest, NextFetchEvent } from "next/server";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
 // ============================================
-// 🔒 RATE LIMITER EN MEMORIA
+// 🔒 RATE LIMITER CON UPSTASH REDIS
 // ============================================
-const rateLimit = new Map<string, { count: number; resetTime: number }>();
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
-const RATE_LIMIT_CONFIG = {
-  // Rutas de escritura (crear/editar productos, upload)
-  write: { windowMs: 60 * 1000, maxRequests: 10 },  // 10 por minuto
-  // API routes generales
-  api: { windowMs: 60 * 1000, maxRequests: 30 },     // 30 por minuto
-};
+// Rate limiter para rutas de escritura: 10 requests por minuto
+const writeRateLimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, "1 m"),
+  prefix: "rl:write",
+});
 
-// Limpiar entradas expiradas cada 5 minutos
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, value] of rateLimit.entries()) {
-    if (now > value.resetTime) {
-      rateLimit.delete(key);
-    }
-  }
-}, 5 * 60 * 1000);
+// Rate limiter para API routes: 30 requests por minuto
+const apiRateLimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(30, "1 m"),
+  prefix: "rl:api",
+});
 
-function isRateLimited(key: string, windowMs: number, maxRequests: number): boolean {
-  const now = Date.now();
-  const entry = rateLimit.get(key);
-
-  if (!entry || now > entry.resetTime) {
-    rateLimit.set(key, { count: 1, resetTime: now + windowMs });
-    return false;
-  }
-
-  entry.count++;
-  return entry.count > maxRequests;
-}
+// Rate limiter para búsqueda (autocompletado): 60 requests por minuto
+const searchRateLimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(60, "1 m"),
+  prefix: "rl:search",
+});
 
 function getClientIp(req: NextRequest): string {
   return (
@@ -46,7 +42,7 @@ function getClientIp(req: NextRequest): string {
 }
 
 // ============================================
-// 🛡️ RUTAS PROTEGIDAS (CLERK)
+// 🛡️ RUTAS (CLERK + RATE LIMIT)
 // ============================================
 const isProtectedRoute = createRouteMatcher([
   '/vender(.*)',
@@ -55,45 +51,55 @@ const isProtectedRoute = createRouteMatcher([
   '/editar(.*)',
 ]);
 
-// 🔥 NUEVO: Definimos explícitamente las rutas públicas
 const isPublicRoute = createRouteMatcher([
   '/vendedor(.*)',
   '/product(.*)',
 ]);
 
-// Rutas de escritura (rate limit estricto)
 const isWriteRoute = createRouteMatcher([
   '/api/upload(.*)',
   '/vender(.*)',
   '/editar(.*)',
 ]);
 
-// Rutas API (rate limit moderado)
 const isApiRoute = createRouteMatcher([
   '/api/(.*)',
 ]);
 
+const isSearchRoute = createRouteMatcher([
+  '/api/search(.*)',
+]);
+
 // ============================================
-// ⚙️ LÓGICA DE CLERK (Guardada en constante)
+// ⚙️ LÓGICA DE CLERK + RATE LIMITING
 // ============================================
 const clerkHandler = clerkMiddleware(async (auth, req) => {
   const ip = getClientIp(req);
 
+  // Rate limiting para búsqueda (autocompletado)
+  if (isSearchRoute(req)) {
+    const { success } = await searchRateLimit.limit(ip);
+    if (!success) {
+      return NextResponse.json(
+        { error: "Demasiadas búsquedas. Intenta en un momento." },
+        { status: 429 }
+      );
+    }
+  }
   // Rate limiting para rutas de escritura
-  if (isWriteRoute(req)) {
-    const key = `write:${ip}`;
-    if (isRateLimited(key, RATE_LIMIT_CONFIG.write.windowMs, RATE_LIMIT_CONFIG.write.maxRequests)) {
+  else if (isWriteRoute(req)) {
+    const { success } = await writeRateLimit.limit(ip);
+    if (!success) {
       return NextResponse.json(
         { error: "Demasiadas solicitudes. Intenta en un minuto." },
         { status: 429 }
       );
     }
   }
-
-  // Rate limiting para API routes
-  if (isApiRoute(req)) {
-    const key = `api:${ip}`;
-    if (isRateLimited(key, RATE_LIMIT_CONFIG.api.windowMs, RATE_LIMIT_CONFIG.api.maxRequests)) {
+  // Rate limiting para API routes generales
+  else if (isApiRoute(req)) {
+    const { success } = await apiRateLimit.limit(ip);
+    if (!success) {
       return NextResponse.json(
         { error: "Límite de solicitudes alcanzado. Intenta en un minuto." },
         { status: 429 }
@@ -113,23 +119,18 @@ const clerkHandler = clerkMiddleware(async (auth, req) => {
 });
 
 // ============================================
-// 🚀 EXPORTACIÓN CON GRACEFUL DEGRADATION (EL ESCUDO)
+// 🚀 EXPORTACIÓN CON GRACEFUL DEGRADATION
 // ============================================
 export default async function middleware(req: NextRequest, event: NextFetchEvent) {
   try {
-    // 1. Intentamos ejecutar el middleware de Clerk normalmente
     return await clerkHandler(req, event);
   } catch (error) {
-    // 2. 🔥 SI CLERK EXPLOTA (Ej. Error de DNS, Caída de Servidores)
-    console.error("🚨 [ESCUDO ACTIVO] Fallo crítico en el proveedor de Auth (Clerk):", error);
+    console.error("🚨 [ESCUDO ACTIVO] Fallo crítico en Auth o Rate Limiter:", error);
 
-    // 3. DEGRADACIÓN ELEGANTE: Si la ruta es pública (catálogo), ¡DEJAMOS PASAR AL USUARIO!
     if (isPublicRoute(req)) {
-      console.log("✅ Permitiendo acceso a ruta pública a pesar del fallo en Clerk.");
       return NextResponse.next();
     }
 
-    // 4. Si intentaban entrar a una ruta protegida (ej. /perfil), mostramos error amistoso.
     return new NextResponse(
       "El sistema de inicio de sesión está en mantenimiento. Los catálogos públicos siguen disponibles.",
       { status: 503, headers: { "Content-Type": "text/html; charset=utf-8" } }
