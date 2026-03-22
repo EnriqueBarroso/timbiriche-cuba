@@ -11,6 +11,7 @@ import { Metadata } from "next"
 import { currentUser } from "@clerk/nextjs/server"
 import { deleteProduct, checkIfFollowing } from '@/lib/actions'
 import { formatPrice, optimizeImage } from '@/lib/utils'
+import { ProductCard } from '@/components/ProductCard'
 
 export const dynamic = "force-dynamic";
 
@@ -79,6 +80,28 @@ export default async function ProductPage({ params }: Props) {
   })
 
   if (!product) return notFound()
+
+  const [moreBySeller, relatedProducts] = await Promise.all([
+    prisma.product.findMany({
+      where: {
+        sellerId: product.sellerId,
+        id: { not: product.id },
+        isSold: false,
+      },
+      take: 4,
+      include: { images: true, seller: true },
+    }),
+    prisma.product.findMany({
+      where: {
+        category: product.category,
+        sellerId: { not: product.sellerId ?? undefined },
+        id: { not: product.id },
+        isSold: false,
+      },
+      take: 4,
+      include: { images: true, seller: true },
+    }),
+  ])
 
   const isOwner = user?.emailAddresses[0]?.emailAddress === product.seller?.email;
 
@@ -255,6 +278,30 @@ export default async function ProductPage({ params }: Props) {
             </p>
           </div>
         </div>
+
+        {/* Más de este vendedor */}
+        {moreBySeller.length > 0 && (
+          <div className="px-4 md:px-0 mt-8">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Más de este vendedor</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {moreBySeller.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* También te puede interesar */}
+        {relatedProducts.length > 0 && (
+          <div className="px-4 md:px-0 mt-8 mb-4">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">También te puede interesar</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {relatedProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 4. Sticky Footer */}
