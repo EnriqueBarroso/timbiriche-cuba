@@ -15,7 +15,7 @@ const BANNERS = [
     subtitle: "Digitaliza tu catálogo gratis y recibe pedidos por WhatsApp.",
     cta: "Crear mi tienda",
     href: "/vender",
-    image: "/banners/banner-b2b.jpg", 
+    image: "/banners/banner-b2b.webp", 
     color: "from-blue-900/90 to-blue-900/40",
   },
   {
@@ -24,7 +24,7 @@ const BANNERS = [
     subtitle: "Descubre los productos más destacados.", // Acorté ligeramente para móvil
     cta: "Ver ofertas",
     href: "/premium",
-    image: "/banners/banner-premium.png",
+    image: "/banners/banner-premium.webp",
     color: "from-amber-900/90 to-amber-900/40",
   },
   {
@@ -33,7 +33,7 @@ const BANNERS = [
     subtitle: "Compra por volumen y maximiza las ganancias de tu negocio.",
     cta: "Explorar", // Acorté ligeramente el CTA para móvil
     href: "/mayoristas",
-    image: "/banners/banner-mayorista.png",
+    image: "/banners/banner-mayorista.webp",
     color: "from-emerald-900/90 to-emerald-900/40",
   },
 ];
