@@ -4,34 +4,56 @@ import type { NextRequest, NextFetchEvent } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
+
 // ============================================
 // 🔒 RATE LIMITER CON UPSTASH REDIS
 // ============================================
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+
+// Guard: solo inicializa Redis si las variables existen
+const redis =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      })
+    : null;
 
 // Rate limiter para rutas de escritura: 10 requests por minuto
-const writeRateLimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(10, "1 m"),
-  prefix: "rl:write",
-});
+const writeRateLimit = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(10, "1 m"),
+      prefix: "rl:write",
+    })
+  : null;
 
 // Rate limiter para API routes: 30 requests por minuto
-const apiRateLimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(30, "1 m"),
-  prefix: "rl:api",
-});
+const apiRateLimit = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(30, "1 m"),
+      prefix: "rl:api",
+    })
+  : null;
 
 // Rate limiter para búsqueda (autocompletado): 60 requests por minuto
-const searchRateLimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(60, "1 m"),
-  prefix: "rl:search",
-});
+const searchRateLimit = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(60, "1 m"),
+      prefix: "rl:search",
+    })
+  : null;
+
+// Helper tipado para no repetir el check en cada bloque
+async function checkLimit(
+  limiter: Ratelimit | null,
+  ip: string
+): Promise<boolean> {
+  if (!limiter) return true; // Sin Redis → permitir siempre
+  const { success } = await limiter.limit(ip);
+  return success;
+}
 
 function getClientIp(req: NextRequest): string {
   return (
@@ -40,6 +62,7 @@ function getClientIp(req: NextRequest): string {
     "unknown"
   );
 }
+
 
 // ============================================
 // 🛡️ RUTAS (CLERK + RATE LIMIT)
@@ -70,6 +93,7 @@ const isSearchRoute = createRouteMatcher([
   '/api/search(.*)',
 ]);
 
+
 // ============================================
 // ⚙️ LÓGICA DE CLERK + RATE LIMITING
 // ============================================
@@ -78,8 +102,8 @@ const clerkHandler = clerkMiddleware(async (auth, req) => {
 
   // Rate limiting para búsqueda (autocompletado)
   if (isSearchRoute(req)) {
-    const { success } = await searchRateLimit.limit(ip);
-    if (!success) {
+    const allowed = await checkLimit(searchRateLimit, ip);
+    if (!allowed) {
       return NextResponse.json(
         { error: "Demasiadas búsquedas. Intenta en un momento." },
         { status: 429 }
@@ -88,8 +112,8 @@ const clerkHandler = clerkMiddleware(async (auth, req) => {
   }
   // Rate limiting para rutas de escritura
   else if (isWriteRoute(req)) {
-    const { success } = await writeRateLimit.limit(ip);
-    if (!success) {
+    const allowed = await checkLimit(writeRateLimit, ip);
+    if (!allowed) {
       return NextResponse.json(
         { error: "Demasiadas solicitudes. Intenta en un minuto." },
         { status: 429 }
@@ -98,8 +122,8 @@ const clerkHandler = clerkMiddleware(async (auth, req) => {
   }
   // Rate limiting para API routes generales
   else if (isApiRoute(req)) {
-    const { success } = await apiRateLimit.limit(ip);
-    if (!success) {
+    const allowed = await checkLimit(apiRateLimit, ip);
+    if (!allowed) {
       return NextResponse.json(
         { error: "Límite de solicitudes alcanzado. Intenta en un minuto." },
         { status: 429 }
@@ -117,6 +141,7 @@ const clerkHandler = clerkMiddleware(async (auth, req) => {
     await auth.protect();
   }
 });
+
 
 // ============================================
 // 🚀 EXPORTACIÓN CON GRACEFUL DEGRADATION
@@ -137,6 +162,7 @@ export default async function middleware(req: NextRequest, event: NextFetchEvent
     );
   }
 }
+
 
 export const config = {
   matcher: [
