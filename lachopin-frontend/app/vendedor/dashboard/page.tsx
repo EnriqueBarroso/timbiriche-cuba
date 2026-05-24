@@ -8,7 +8,7 @@ export default async function VendedorDashboardBridge() {
 
   if (!userEmail) redirect("/");
 
-  const seller = await getSellerByEmail(userEmail);
+  const seller = await getSellerByEmail(userEmail).catch(() => null);
 
   if (!seller?.slug) redirect("/perfil");
 

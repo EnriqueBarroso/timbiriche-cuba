@@ -75,18 +75,26 @@ export default async function Home({ searchParams }: Props) {
   const currentMinPrice = minPrice ? Number(minPrice) : undefined;
   const currentMaxPrice = maxPrice ? Number(maxPrice) : undefined;
 
-  const [productsData, promotedProducts, groupedSellers] = await Promise.all([
-    getProducts({
-      query: searchTerm,
-      category,
-      page: currentPage,
-      sort: currentSort,
-      minPrice: currentMinPrice,
-      maxPrice: currentMaxPrice,
-    }),
-    getPromotedProducts(),
-    getGroupedSellers(),
-  ]);
+  let productsData = { products: [] as Awaited<ReturnType<typeof getProducts>>["products"], total: 0, totalPages: 0, currentPage };
+  let promotedProducts: Awaited<ReturnType<typeof getPromotedProducts>> = [];
+  let groupedSellers: Awaited<ReturnType<typeof getGroupedSellers>> = [];
+
+  try {
+    [productsData, promotedProducts, groupedSellers] = await Promise.all([
+      getProducts({
+        query: searchTerm,
+        category,
+        page: currentPage,
+        sort: currentSort,
+        minPrice: currentMinPrice,
+        maxPrice: currentMaxPrice,
+      }),
+      getPromotedProducts(),
+      getGroupedSellers(),
+    ]);
+  } catch {
+    // API caída — renderizar home vacío en lugar de 500
+  }
 
   const { products, total, totalPages } = productsData;
 

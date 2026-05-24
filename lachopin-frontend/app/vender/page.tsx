@@ -14,7 +14,7 @@ export default async function VenderLandingPage() {
     redirect("/sign-in");
   }
 
-  const seller = await getSellerByEmail(user.emailAddresses[0].emailAddress);
+  const seller = await getSellerByEmail(user.emailAddresses[0].emailAddress).catch(() => null);
   if (!seller) redirect("/perfil");
 
   // Si el código llega hasta aquí, significa que SÍ tiene tienda.

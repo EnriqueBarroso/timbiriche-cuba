@@ -16,7 +16,7 @@ export default async function ProfilePage({ searchParams }: Props) {
 
   const email = user.emailAddresses[0].emailAddress;
 
-  const seller = await getSellerByEmail(email);
+  const seller = await getSellerByEmail(email).catch(() => null);
 
   const resolvedSearchParams = await searchParams;
   const role = resolvedSearchParams.role;

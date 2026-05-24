@@ -18,9 +18,9 @@ export default async function AdminPage() {
   }
 
   const [pendingSellers, verifiedSellers, allProducts] = await Promise.all([
-    getSellers({ isVerified: false }),
-    getSellers({ isVerified: true }),
-    getProducts({ limit: 20 }),
+    getSellers({ isVerified: false }).catch(() => []),
+    getSellers({ isVerified: true }).catch(() => []),
+    getProducts({ limit: 20 }).catch(() => []),
   ]);
 
   return (

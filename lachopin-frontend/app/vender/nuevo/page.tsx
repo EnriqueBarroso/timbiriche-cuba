@@ -10,7 +10,7 @@ export default async function VenderPage() {
   if (!user) return redirect("/");
 
   const email = user.emailAddresses[0].emailAddress;
-  const seller = await getSellerByEmail(email);
+  const seller = await getSellerByEmail(email).catch(() => null);
 
   if (!seller || !seller.phoneNumber) redirect("/perfil");
 

@@ -10,7 +10,7 @@ export const metadata = {
 };
 
 export default async function TiendasPage() {
-  const allSellers = await getSellers();
+  const allSellers = await getSellers().catch(() => []);
   const sellers = allSellers.filter(s => !s.isRestaurant);
 
   return (

@@ -6,7 +6,7 @@ import { optimizeImage } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export default async function EatsHubPage() {
-    const allSellers = await getSellers();
+    const allSellers = await getSellers().catch(() => []);
     const restaurants = allSellers.filter(s => s.isRestaurant);
 
     return (

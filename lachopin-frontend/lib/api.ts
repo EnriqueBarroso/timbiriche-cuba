@@ -175,14 +175,20 @@ interface ApiFetchOptions extends Omit<RequestInit, 'headers'> {
 async function apiFetch<T>(path: string, options?: ApiFetchOptions): Promise<T> {
   const { token, headers: extraHeaders, ...init } = options ?? {};
   const url = `${BASE_URL}${path}`;
-  const res = await fetch(url, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...extraHeaders,
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...init,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...extraHeaders,
+      },
+    });
+  } catch (err) {
+    console.error(`[apiFetch] fetch failed — URL: ${url}`, err);
+    throw err;
+  }
 
   if (!res.ok) {
     let message = `Error ${res.status} en ${path}`;
