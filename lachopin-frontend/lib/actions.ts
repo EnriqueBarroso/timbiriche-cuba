@@ -57,33 +57,37 @@ export async function getProducts({
     !query && !category && page === 1 && !minPrice && !maxPrice && sort === "recent";
 
   if (isHomepage) {
-    const rawData = await getProductsPage({ ...filters, page: 1, limit: 50 });
-    const rawProducts = rawData.products;
+    try {
+      const rawData = await getProductsPage({ ...filters, page: 1, limit: 50 });
+      const rawProducts = rawData.products;
 
-    const sellerCounts: Record<string, number> = {};
-    const mixedProducts: typeof rawProducts = [];
+      const sellerCounts: Record<string, number> = {};
+      const mixedProducts: typeof rawProducts = [];
 
-    for (const product of rawProducts) {
-      const sId = product.sellerId ?? "unknown";
-      sellerCounts[sId] = (sellerCounts[sId] || 0) + 1;
-      if (sellerCounts[sId] <= 2) mixedProducts.push(product);
-      if (mixedProducts.length === ITEMS_PER_PAGE) break;
+      for (const product of rawProducts) {
+        const sId = product.sellerId ?? "unknown";
+        sellerCounts[sId] = (sellerCounts[sId] || 0) + 1;
+        if (sellerCounts[sId] <= 2) mixedProducts.push(product);
+        if (mixedProducts.length === ITEMS_PER_PAGE) break;
+      }
+
+      if (mixedProducts.length < ITEMS_PER_PAGE && rawProducts.length > mixedProducts.length) {
+        const remainingNeeded = ITEMS_PER_PAGE - mixedProducts.length;
+        const remainingProducts = rawProducts
+          .filter((p) => !mixedProducts.includes(p))
+          .slice(0, remainingNeeded);
+        mixedProducts.push(...remainingProducts);
+      }
+
+      return {
+        products: mixedProducts,
+        total: rawData.total,
+        totalPages: rawData.totalPages,
+        currentPage: page,
+      };
+    } catch {
+      return { products: [], total: 0, totalPages: 0, currentPage: page };
     }
-
-    if (mixedProducts.length < ITEMS_PER_PAGE && rawProducts.length > mixedProducts.length) {
-      const remainingNeeded = ITEMS_PER_PAGE - mixedProducts.length;
-      const remainingProducts = rawProducts
-        .filter((p) => !mixedProducts.includes(p))
-        .slice(0, remainingNeeded);
-      mixedProducts.push(...remainingProducts);
-    }
-
-    return {
-      products: mixedProducts,
-      total: rawData.total,
-      totalPages: rawData.totalPages,
-      currentPage: page,
-    };
   }
 
   try {

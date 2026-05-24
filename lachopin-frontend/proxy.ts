@@ -146,7 +146,7 @@ const clerkHandler = clerkMiddleware(async (auth, req) => {
 // ============================================
 // 🚀 EXPORTACIÓN CON GRACEFUL DEGRADATION
 // ============================================
-export default async function middleware(req: NextRequest, event: NextFetchEvent) {
+export default async function proxy(req: NextRequest, event: NextFetchEvent) {
   try {
     return await clerkHandler(req, event);
   } catch (error) {

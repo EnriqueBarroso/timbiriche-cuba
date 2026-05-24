@@ -161,7 +161,11 @@ export interface UpdateSellerPayload {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function normalizeApiUrl(url: string): string {
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `https://${url}`;
+}
+const BASE_URL = normalizeApiUrl(process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001');
 
 interface ApiFetchOptions extends Omit<RequestInit, 'headers'> {
   headers?: Record<string, string>;
