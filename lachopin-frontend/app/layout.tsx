@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { esES } from "@clerk/localizations";
 
 // Componentes UI
 import Navbar from "@/components/Navbar";
+import MainWrapper from "@/components/MainWrapper";
 import Footer from "@/components/Footer";
 import { Toaster } from "sonner";
 import SyncUser from "@/components/SyncUser";
@@ -17,8 +19,6 @@ import { GoogleAnalytics } from '@next/third-parties/google';
 // Providers (Contextos)
 import { CartProvider } from "@/contexts/CartContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
-
-const inter = Inter({ subsets: ["latin"] });
 
 // Configuración de la URL base para SEO
 // Prioriza tu dominio real en producción
@@ -106,7 +106,7 @@ export default function RootLayout({
   return (
     <ClerkProvider localization={esES}>
       <html lang="es">
-        <body className={`${inter.className} min-h-screen flex flex-col bg-gray-50`}>
+        <body className={`${GeistSans.variable} ${GeistMono.variable} font-sans min-h-screen flex flex-col bg-background`}>
           {/* Sincronización de Usuario (Invisible) */}
           <SyncUser />
 
@@ -126,9 +126,7 @@ export default function RootLayout({
                 </div>
 
                 {/* Contenido Principal */}
-                <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                  {children}
-                </main>
+                <MainWrapper>{children}</MainWrapper>
 
                 {/* Footer */}
                 <Footer />

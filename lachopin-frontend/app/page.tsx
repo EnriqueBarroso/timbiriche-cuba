@@ -1,40 +1,42 @@
-import { getProducts, getPromotedProducts, getGroupedSellers } from "@/lib/actions";
+import { getProducts } from "@/lib/actions";
 import { ProductCard } from "@/components/ProductCard";
-import { SellerProductsRow } from "@/components/SellerProductsRow";
 import Pagination from "@/components/Pagination";
-import FilterBar from "@/components/FilterBar";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { UtensilsCrossed, ChevronRight } from "lucide-react";
-import {
-  Smartphone,
-  Shirt,
-  Palette,
-  Wrench,
-  Pizza,
-  LayoutGrid,
-  Search,
-  Car,
-  Tv,
-  Sofa,
-  Package,
-  Zap
-} from "lucide-react";
+import { ArrowRight, UtensilsCrossed, Search } from "lucide-react";
 import HeroCarousel from "@/components/HeroCarousel";
-import { Suspense } from "react";
+import { CategoryCard } from "@/components/CategoryCard";
+import Newsletter from "@/components/Newsletter";
+import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 
 const CATEGORIES = [
-  { name: "Todo",       slug: "",           icon: LayoutGrid, color: "bg-gray-100 text-gray-800" },
-  { name: "Celulares",  slug: "cellphones", icon: Smartphone, color: "bg-blue-100 text-blue-600" },
-  { name: "Vehículos",  slug: "vehicles",   icon: Car,        color: "bg-red-100 text-red-600" },
-  { name: "Hogar",      slug: "home",       icon: Sofa,       color: "bg-amber-100 text-amber-600" },
-  { name: "Electro",    slug: "appliances", icon: Tv,         color: "bg-teal-100 text-teal-600" },
-  { name: "Ropa",       slug: "fashion",    icon: Shirt,      color: "bg-pink-100 text-pink-600" },
-  { name: "Alimentos",  slug: "food",       icon: Pizza,      color: "bg-orange-100 text-orange-600" },
-  { name: "Piezas",     slug: "parts",      icon: Wrench,     color: "bg-slate-100 text-slate-700" },
-  { name: "Artesanía",  slug: "crafts",     icon: Palette,    color: "bg-purple-100 text-purple-600" },
-  { name: "Otros",      slug: "others",     icon: Package,    color: "bg-gray-200 text-gray-700" },
+  { name: "Todo",       slug: "" },
+  { name: "Celulares",  slug: "cellphones" },
+  { name: "Vehículos",  slug: "vehicles" },
+  { name: "Hogar",      slug: "home" },
+  { name: "Electro",    slug: "appliances" },
+  { name: "Ropa",       slug: "fashion" },
+  { name: "Alimentos",  slug: "food" },
+  { name: "Piezas",     slug: "parts" },
+  { name: "Artesanía",  slug: "crafts" },
+  { name: "Otros",      slug: "others" },
 ];
+
+// Subconjunto destacado para la grilla de colecciones de la home
+const FEATURED_CATEGORIES = CATEGORIES.filter((c) => c.slug !== "");
+
+// Imágenes placeholder (Unsplash) por categoría — reemplazar por imágenes definitivas
+const CATEGORY_IMAGES: Record<string, string> = {
+  cellphones: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=80",
+  vehicles: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80",
+  home: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80",
+  appliances: "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800&q=80",
+  fashion: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&q=80",
+  food: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80",
+  parts: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=800&q=80",
+  crafts: "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?w=800&q=80",
+  others: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=800&q=80",
+};
 
 export const metadata: Metadata = {
   title: { absolute: "LaChopin | Tu Mercado Online en Cuba" },
@@ -76,22 +78,16 @@ export default async function Home({ searchParams }: Props) {
   const currentMaxPrice = maxPrice ? Number(maxPrice) : undefined;
 
   let productsData = { products: [] as Awaited<ReturnType<typeof getProducts>>["products"], total: 0, totalPages: 0, currentPage };
-  let promotedProducts: Awaited<ReturnType<typeof getPromotedProducts>> = [];
-  let groupedSellers: Awaited<ReturnType<typeof getGroupedSellers>> = [];
 
   try {
-    [productsData, promotedProducts, groupedSellers] = await Promise.all([
-      getProducts({
-        query: searchTerm,
-        category,
-        page: currentPage,
-        sort: currentSort,
-        minPrice: currentMinPrice,
-        maxPrice: currentMaxPrice,
-      }),
-      getPromotedProducts(),
-      getGroupedSellers(),
-    ]);
+    productsData = await getProducts({
+      query: searchTerm,
+      category,
+      page: currentPage,
+      sort: currentSort,
+      minPrice: currentMinPrice,
+      maxPrice: currentMaxPrice,
+    });
   } catch {
     // API caída — renderizar home vacío en lugar de 500
   }
@@ -100,7 +96,7 @@ export default async function Home({ searchParams }: Props) {
 
   const categoryName = CATEGORIES.find((c) => c.slug === category)?.name || category;
 
-  const pageTitle = category
+  const sectionTitle = category
     ? `Explorando: ${categoryName}`
     : searchTerm
     ? `Resultados para "${searchTerm}"`
@@ -115,141 +111,40 @@ export default async function Home({ searchParams }: Props) {
   };
 
   return (
-    <div className="min-h-screen pb-24 bg-gray-50/50">
+    <div className="min-h-screen pb-16 bg-background">
 
-      {/* HERO */}
-      <HeroCarousel />
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 pt-20 md:pt-24">
 
-      <div className="max-w-7xl mx-auto">
+        {/* HERO — dentro del contenedor, con esquinas redondeadas */}
+        <HeroCarousel />
 
-        {/* CARRUSEL DE CATEGORÍAS */}
-        <div className="sticky top-[56px] md:top-[64px] z-30 bg-gray-50/95 backdrop-blur-md py-4 border-b border-gray-200/50 mb-6 transition-all">
-          <div className="flex overflow-x-auto gap-4 px-4 pb-2 no-scrollbar snap-x items-start">
-            {CATEGORIES.map((cat) => {
-              const isActive = category === cat.slug || (!category && !cat.slug);
-              return (
-                <Link
-                  key={cat.name}
-                  href={cat.slug ? `/?category=${cat.slug}` : "/"}
-                  className="flex flex-col items-center gap-2 min-w-[72px] snap-center group select-none"
-                >
-                  <div className={`
-                    w-16 h-16 rounded-full flex items-center justify-center
-                    transition-all duration-300 shadow-sm group-hover:scale-105 group-active:scale-95
-                    border-[3px]
-                    ${isActive
-                      ? "border-blue-600 ring-2 ring-blue-100 scale-105"
-                      : "border-white hover:border-blue-200"
-                    }
-                    ${cat.color}
-                  `}>
-                    <cat.icon size={26} strokeWidth={2.5} />
-                  </div>
-                  <span className={`text-[11px] font-bold tracking-wide transition-colors ${isActive ? "text-blue-700" : "text-gray-500 group-hover:text-blue-600"}`}>
-                    {cat.name}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-
-        {/* ANUNCIOS PREMIUM */}
-        {!searchTerm && !category && currentPage === 1 && promotedProducts.length > 0 && (
-          <div className="mb-8 bg-gradient-to-b from-amber-50/50 to-transparent pt-4 pb-2 rounded-t-3xl border-t border-amber-100/50">
-            <div className="px-4 mb-4 flex items-center gap-2">
-              <div className="bg-gradient-to-tr from-amber-400 to-yellow-300 p-1.5 rounded-lg shadow-sm">
-                <span className="text-lg">👑</span>
+        {/* PRODUCTOS */}
+        <section id="productos" className="scroll-mt-24 md:scroll-mt-28 pt-10 md:pt-16 pb-10 md:pb-20">
+          <AnimateOnScroll direction="up">
+            <div className="flex items-baseline justify-between mb-6">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground">{sectionTitle}</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Descubre los productos más recientes de nuestras tiendas
+                </p>
               </div>
-              <h2 className="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-yellow-600 uppercase tracking-tight">
-                Anuncios Premium
-              </h2>
-            </div>
-            <div className="flex overflow-x-auto gap-4 px-4 pb-4 no-scrollbar snap-x">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {promotedProducts.map((product: any) => (
-                <div key={product.id} className="min-w-[160px] sm:min-w-[200px] md:min-w-[220px] snap-start">
-                  <ProductCard product={product} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* BANNER EATS */}
-        <div className="max-w-6xl mx-auto px-4 my-8">
-          <Link
-            href="/eats"
-            className="relative block w-full rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all group"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-500 via-red-500 to-rose-600" />
-            <div className="relative p-6 sm:p-8 flex items-center justify-between z-10">
-              <div className="flex items-center gap-4 sm:gap-6">
-                <div className="bg-white/20 p-3 sm:p-4 rounded-full backdrop-blur-sm">
-                  <UtensilsCrossed className="text-white w-8 h-8 sm:w-10 sm:h-10" />
-                </div>
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
-                    LaChopin <span className="bg-white text-red-600 px-2 py-0.5 rounded-md text-xl sm:text-2xl">Eats</span>
-                  </h2>
-                  <p className="text-red-50 text-sm sm:text-base mt-1 font-medium">
-                    Pide comida a los mejores restaurantes por WhatsApp
-                  </p>
-                </div>
-              </div>
-              <div className="hidden sm:flex bg-white/20 p-2 rounded-full backdrop-blur-sm group-hover:translate-x-2 transition-transform">
-                <ChevronRight className="text-white" size={24} />
-              </div>
-            </div>
-          </Link>
-        </div>
-
-        {/* POR TIENDA */}
-        {!searchTerm && !category && currentPage === 1 && groupedSellers.length > 0 && (
-          <div className="mb-8">
-            <div className="px-4 mb-5 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">Por Tienda</h2>
-              <Link
-                href="/tiendas"
-                className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-100 transition-colors hover:bg-blue-100"
-              >
-                Ver todas
+              <Link href="/" className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap ml-4">
+                Ver todos →
               </Link>
             </div>
-            <div className="divide-y divide-gray-100">
-              {groupedSellers.map((seller) => (
-                <div key={seller.id} className="pt-5 pb-1">
-                  <SellerProductsRow seller={seller} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+          </AnimateOnScroll>
 
-        {/* BARRA DE FILTROS + TÍTULO DE SECCIÓN */}
-        <div className="mb-2">
-          <div className="px-4 mb-3 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900">{pageTitle}</h2>
-            <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-              {total} productos
-            </span>
-          </div>
-
-          {/* FilterBar necesita Suspense porque usa useSearchParams */}
-          <Suspense fallback={null}>
-            <FilterBar />
-          </Suspense>
-        </div>
-
-        {/* GRID DE PRODUCTOS */}
-        <div className="px-4">
           {products.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {products.map((product: any) => (
-                  <ProductCard key={product.id} product={product} />
+                {products.map((product: any, index: number) => (
+                  <AnimateOnScroll key={product.id} direction="up" delay={(index % 4) * 0.1}>
+                    <ProductCard
+                      product={product}
+                      categoryLabel={CATEGORIES.find((c) => c.slug === product.category)?.name}
+                    />
+                  </AnimateOnScroll>
                 ))}
               </div>
 
@@ -261,11 +156,11 @@ export default async function Home({ searchParams }: Props) {
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="bg-gray-100 p-6 rounded-full mb-4">
-                <Search className="w-12 h-12 text-gray-400" />
+              <div className="bg-muted p-6 rounded-full mb-4">
+                <Search className="w-12 h-12 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-1">No hay productos aquí</h3>
-              <p className="text-gray-500 text-sm max-w-xs mx-auto mb-6">
+              <h3 className="text-lg font-bold text-foreground mb-1">No hay productos aquí</h3>
+              <p className="text-muted-foreground text-sm max-w-xs mx-auto mb-6">
                 {searchTerm
                   ? `No encontramos nada con "${searchTerm}".`
                   : `Sé el primero en publicar en la categoría ${categoryName}.`
@@ -273,13 +168,78 @@ export default async function Home({ searchParams }: Props) {
               </p>
               <Link
                 href="/vender"
-                className="bg-blue-600 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
+                className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-bold hover:bg-primary-hover transition-colors"
               >
                 Publicar Ahora
               </Link>
             </div>
           )}
-        </div>
+
+          {total > 0 && (
+            <p className="text-xs text-muted-foreground mt-4">{total} productos</p>
+          )}
+        </section>
+
+        {/* BANNER EATS */}
+        <section className="py-10 md:py-20">
+          <AnimateOnScroll direction="up">
+            <Link
+              href="/eats"
+              className="flex items-center justify-between gap-4 bg-card rounded-2xl p-6 md:p-8 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center gap-4 sm:gap-6">
+                <div className="bg-background p-3 sm:p-4 rounded-full">
+                  <UtensilsCrossed className="text-primary w-7 h-7 sm:w-8 sm:h-8" />
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-foreground">
+                    LaChopin Eats
+                  </h3>
+                  <p className="text-muted-foreground text-sm mt-0.5">
+                    Pide comida a los mejores restaurantes por WhatsApp
+                  </p>
+                </div>
+              </div>
+              <div className="flex bg-background p-2 rounded-full">
+                <ArrowRight className="text-foreground" size={20} />
+              </div>
+            </Link>
+          </AnimateOnScroll>
+        </section>
+
+        {/* CATEGORÍAS */}
+        <section className="py-10 md:py-20">
+          <AnimateOnScroll direction="up">
+            <div className="flex items-baseline justify-between mb-6">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground">Nuestras Categorías</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Encuentra lo que buscas en nuestras colecciones
+                </p>
+              </div>
+              <Link href="/categorias" className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap ml-4">
+                Ver todas →
+              </Link>
+            </div>
+          </AnimateOnScroll>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {FEATURED_CATEGORIES.slice(0, 6).map((cat, index) => (
+              <AnimateOnScroll key={cat.slug} direction="up" delay={(index % 3) * 0.1}>
+                <CategoryCard
+                  name={cat.name}
+                  href={`/?category=${cat.slug}#productos`}
+                  image={CATEGORY_IMAGES[cat.slug]}
+                />
+              </AnimateOnScroll>
+            ))}
+          </div>
+        </section>
+
+        {/* NEWSLETTER */}
+        <AnimateOnScroll direction="up">
+          <Newsletter />
+        </AnimateOnScroll>
 
       </div>
     </div>

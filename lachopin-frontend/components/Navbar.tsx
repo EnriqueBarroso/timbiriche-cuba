@@ -2,21 +2,36 @@
 
 import { useState, Suspense, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Search, Heart, ShoppingBag, Plus, User, Settings, ArrowLeft, X, Building2 } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { Search, Heart, ShoppingBag, Plus, User, Settings, X, Building2, Menu } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { formatPrice, optimizeImage } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
+
+const NAV_LINKS = [
+  { label: "Shop", href: "/" },
+  { label: "Tiendas", href: "/tiendas" },
+  { label: "Soporte", href: "/ayuda" },
+];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function SuggestionDropdown({ suggestions, onSelect }: { suggestions: any[]; onSelect: (id: string) => void }) {
   return (
-    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
+    <div className="mt-2 bg-card rounded-2xl shadow-lg border border-border overflow-hidden">
       {suggestions.map((item) => (
         <button
           key={item.id}
           onMouseDown={() => onSelect(item.id)}
-          className="flex items-center gap-3 w-full px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+          className="flex items-center gap-3 w-full px-4 py-3 hover:bg-muted transition-colors text-left"
         >
           {item.images[0]?.url && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -27,8 +42,8 @@ function SuggestionDropdown({ suggestions, onSelect }: { suggestions: any[]; onS
             />
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
-            <p className="text-xs text-blue-600 font-bold">{formatPrice(item.price, item.currency)}</p>
+            <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+            <p className="text-xs text-primary font-bold">{formatPrice(item.price, item.currency)}</p>
           </div>
         </button>
       ))}
@@ -36,18 +51,11 @@ function SuggestionDropdown({ suggestions, onSelect }: { suggestions: any[]; onS
   );
 }
 
-function NavbarContent() {
+function SearchOverlay({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const [query, setQuery] = useState(searchParams.get("query") || "");
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-
-  const { favorites } = useFavorites();
+  const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const desktopInputRef = useRef<HTMLInputElement>(null);
 
-  // Autocompletado
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -76,235 +84,261 @@ function NavbarContent() {
   };
 
   const selectSuggestion = (productId: string) => {
-    setShowSuggestions(false);
-    setSuggestions([]);
-    setQuery("");
-    setIsMobileSearchOpen(false);
+    onClose();
     router.push(`/product/${productId}`);
   };
 
-  useEffect(() => {
-    if (isMobileSearchOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isMobileSearchOpen]);
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setShowSuggestions(false);
-    setSuggestions([]);
     if (query.trim()) {
       router.push(`/?query=${encodeURIComponent(query)}`);
-      setIsMobileSearchOpen(false);
     } else {
       router.push("/");
     }
+    onClose();
   };
 
-  const closeMobileSearch = () => {
-    setIsMobileSearchOpen(false);
-    setShowSuggestions(false);
-    setSuggestions([]);
-    setQuery("");
-  };
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md transition-all duration-300">
-      <div className="mx-auto flex h-14 md:h-16 max-w-7xl items-center justify-between px-4">
+    <div
+      className="fixed inset-0 z-50 bg-foreground/60 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div className="mx-auto max-w-7xl px-4 py-4" onClick={(e) => e.stopPropagation()}>
+        <form onSubmit={handleSearch} className="relative">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="Buscar..."
+            value={query}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+            className="w-full pl-14 pr-14 py-3 rounded-full bg-background text-base text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary shadow-lg"
+          />
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted transition-colors"
+            aria-label="Cerrar búsqueda"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </form>
 
-        {/* ==============================================
-            MODO BÚSQUEDA MÓVIL
-           ============================================== */}
-        {isMobileSearchOpen ? (
-          <div className="relative flex w-full items-center gap-2 md:hidden animate-in fade-in slide-in-from-top-2 duration-200">
-            <button
-              type="button"
-              onClick={closeMobileSearch}
-              className="p-2 -ml-2 text-gray-500 hover:text-gray-900"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-
-            <form onSubmit={handleSearch} className="relative flex-1">
-              <input
-                ref={inputRef}
-                type="text"
-                placeholder="Buscar en LaChopin..."
-                value={query}
-                onChange={(e) => handleInputChange(e.target.value)}
-                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                className="w-full pl-4 pr-10 py-2 rounded-full border border-blue-100 bg-blue-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm text-gray-900 placeholder:text-gray-500"
-              />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => { setQuery(""); setSuggestions([]); setShowSuggestions(false); }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-
-              {/* Sugerencias móvil */}
-              {showSuggestions && (
-                <SuggestionDropdown suggestions={suggestions} onSelect={selectSuggestion} />
-              )}
-            </form>
-
-            <button
-              type="button"
-              onClick={(e) => { e.preventDefault(); handleSearch(e as unknown as React.FormEvent); }}
-              className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 shadow-sm"
-            >
-              <Search className="h-4 w-4" />
-            </button>
-          </div>
-        ) : (
-          /* ==============================================
-             MODO NORMAL
-             ============================================== */
-          <>
-            {/* IZQUIERDA: Logo */}
-            <div className="flex items-center gap-3">
-              <Link href="/" className="flex items-center gap-2 group">
-                <div className="bg-blue-600 text-white p-1.5 rounded-lg transform group-hover:rotate-3 transition-transform">
-                  <ShoppingBag className="h-5 w-5" />
-                </div>
-                <span className="text-xl font-black tracking-tighter text-gray-900 md:text-2xl">
-                  La<span className="text-blue-600">Chopin</span>
-                </span>
-              </Link>
-            </div>
-
-            {/* CENTRO: Barra de Búsqueda (SOLO PC) */}
-            <form
-              onSubmit={handleSearch}
-              className="hidden md:flex relative flex-1 max-w-md mx-4"
-            >
-              <input
-                ref={desktopInputRef}
-                type="text"
-                placeholder="¿Qué buscas hoy?"
-                value={query}
-                onChange={(e) => handleInputChange(e.target.value)}
-                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                className="w-full pl-4 pr-10 py-2 rounded-full border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm text-gray-900 placeholder:text-gray-500"
-              />
-              <button
-                type="submit"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 p-1"
-              >
-                <Search className="h-4 w-4" />
-              </button>
-
-              {/* Sugerencias desktop */}
-              {showSuggestions && (
-                <SuggestionDropdown suggestions={suggestions} onSelect={selectSuggestion} />
-              )}
-            </form>
-
-            {/* DERECHA: Iconos */}
-            <div className="flex items-center gap-1 md:gap-3">
-
-              {/* Botón búsqueda móvil */}
-              <button
-                onClick={() => setIsMobileSearchOpen(true)}
-                className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-                aria-label="Buscar"
-              >
-                <Search className="h-5 w-5" />
-              </button>
-
-              {/* Botón Empresas MÓVIL */}
-              <Link
-                href="/mayoristas"
-                className="md:hidden p-2 text-amber-600 hover:bg-amber-50 rounded-full transition-colors"
-                aria-label="Empresas B2B"
-              >
-                <Building2 className="h-5 w-5" />
-              </Link>
-
-              {/* Elementos SOLO PC */}
-              <div className="hidden md:flex items-center gap-3">
-                {/* Botón Empresas PC */}
-                <Link
-                  href="/mayoristas"
-                  className="flex items-center gap-2 bg-amber-50 text-amber-700 border border-amber-200 px-4 py-2 rounded-full text-sm font-bold hover:bg-amber-100 transition-colors shadow-sm active:scale-95"
-                >
-                  <Building2 className="h-4 w-4" /> Empresas
-                </Link>
-
-                <Link
-                  href="/vender"
-                  className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-blue-600 transition-colors shadow-sm active:scale-95"
-                >
-                  <Plus className="h-4 w-4" /> Vender
-                </Link>
-
-                <Link
-                  href="/favoritos"
-                  className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors relative"
-                >
-                  <Heart className={`h-6 w-6 ${favorites.length > 0 ? "fill-red-500 text-red-500" : ""}`} />
-                </Link>
-              </div>
-
-              {/* MI TIENDA */}
-              <SignedIn>
-                <Link
-                  href="/mis-publicaciones"
-                  className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors relative group"
-                  title="Mi Tienda"
-                >
-                  <ShoppingBag className="h-5 w-5 md:h-6 md:w-6" />
-                </Link>
-              </SignedIn>
-
-              {/* Usuario */}
-              <div className="ml-1">
-                <SignedIn>
-                  <UserButton afterSignOutUrl="/">
-                    <UserButton.MenuItems>
-                      <UserButton.Action
-                        label="Mi Perfil"
-                        labelIcon={<User className="w-4 h-4" />}
-                        onClick={() => router.push("/perfil")}
-                      />
-                      <UserButton.Action
-                        label="Configurar Negocio"
-                        labelIcon={<Settings className="w-4 h-4" />}
-                        onClick={() => router.push("/vendedor/dashboard")}
-                      />
-                      <UserButton.Action
-                        label="Ver mi Restaurante"
-                        labelIcon={<Building2 className="w-4 h-4" />}
-                        onClick={() => router.push("/eats")}
-                      />
-                    </UserButton.MenuItems>
-                  </UserButton>
-                </SignedIn>
-
-                <SignedOut>
-                  <SignInButton mode="modal" forceRedirectUrl="/mis-publicaciones">
-                    <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm cursor-pointer">
-                      <User className="h-4 w-4" /> <span className="hidden md:inline">Entrar</span>
-                    </button>
-                  </SignInButton>
-                </SignedOut>
-              </div>
-            </div>
-          </>
+        {showSuggestions && (
+          <SuggestionDropdown suggestions={suggestions} onSelect={selectSuggestion} />
         )}
       </div>
+    </div>
+  );
+}
+
+function NavbarContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { favorites } = useFavorites();
+
+  const isHome = pathname === "/";
+  const [scrolled, setScrolled] = useState(!isHome);
+
+  useEffect(() => {
+    if (!isHome) {
+      setScrolled(true);
+      return;
+    }
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    onScroll();
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHome]);
+
+  const transparent = isHome && !scrolled;
+
+  return (
+    <header
+      className={`fixed top-0 z-40 w-full transition-all duration-300 ${
+        transparent
+          ? "bg-transparent"
+          : "bg-background/95 backdrop-blur-md border-b border-border"
+      }`}
+    >
+      <div className="mx-auto flex items-center justify-between gap-4 max-w-7xl px-4 py-4">
+
+        {/* IZQUIERDA: Logo */}
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="bg-primary text-primary-foreground p-1.5 rounded-lg transform group-hover:rotate-3 transition-transform">
+            <ShoppingBag className="h-5 w-5" />
+          </div>
+          <span className="text-xl font-bold tracking-tight md:text-2xl text-foreground">
+            La<span className="text-primary">Chopin</span>
+          </span>
+        </Link>
+
+        {/* CENTRO: Links principales (SOLO PC) */}
+        <nav className="hidden md:flex items-center gap-6">
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* DERECHA: Acciones */}
+        <div className="flex items-center gap-2 md:gap-4">
+
+          {/* Búsqueda */}
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="p-2 rounded-full transition-colors bg-card hover:bg-border text-foreground"
+            aria-label="Buscar"
+          >
+            <Search className="h-5 w-5" />
+          </button>
+
+          {/* Elementos SOLO PC */}
+          <div className="hidden md:flex items-center gap-4">
+            {/* Favoritos */}
+            <Link
+              href="/favoritos"
+              className="p-2 rounded-full transition-colors relative bg-card hover:bg-border"
+              aria-label="Favoritos"
+            >
+              <Heart className={`h-5 w-5 ${favorites.length > 0 ? "fill-primary text-primary" : "text-foreground"}`} />
+            </Link>
+
+            {/* Vender (CTA) */}
+            <Button asChild variant="default">
+              <Link href="/vender">
+                <Plus className="h-4 w-4" /> Vender
+              </Link>
+            </Button>
+          </div>
+
+          {/* Menú móvil (hamburguesa) */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <button
+                className="md:hidden p-2 rounded-full transition-colors bg-card hover:bg-border text-foreground"
+                aria-label="Abrir menú"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="right" className="flex flex-col gap-1">
+              <SheetHeader>
+                <SheetTitle>Menú</SheetTitle>
+              </SheetHeader>
+
+              {NAV_LINKS.map((link) => (
+                <SheetClose key={link.href} asChild>
+                  <Link
+                    href={link.href}
+                    className="flex items-center px-3 py-3 rounded-2xl text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </SheetClose>
+              ))}
+
+              <SheetClose asChild>
+                <Link
+                  href="/favoritos"
+                  className="flex items-center gap-3 px-3 py-3 rounded-2xl text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                >
+                  <Heart className={`h-5 w-5 ${favorites.length > 0 ? "fill-primary text-primary" : "text-muted-foreground"}`} /> Favoritos
+                </Link>
+              </SheetClose>
+
+              <SheetClose asChild>
+                <Link
+                  href="/vender"
+                  className="flex items-center gap-3 px-3 py-3 rounded-2xl text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                >
+                  <Plus className="h-5 w-5 text-muted-foreground" /> Vender
+                </Link>
+              </SheetClose>
+
+              <SignedOut>
+                <SheetClose asChild>
+                  <SignInButton mode="modal" forceRedirectUrl="/mis-publicaciones">
+                    <Button variant="default" className="w-full mt-2">
+                      <User className="h-4 w-4" /> Entrar
+                    </Button>
+                  </SignInButton>
+                </SheetClose>
+              </SignedOut>
+            </SheetContent>
+          </Sheet>
+
+          {/* Usuario */}
+          <SignedIn>
+            <UserButton afterSignOutUrl="/">
+              <UserButton.MenuItems>
+                <UserButton.Action
+                  label="Mi Perfil"
+                  labelIcon={<User className="w-4 h-4" />}
+                  onClick={() => router.push("/perfil")}
+                />
+                <UserButton.Action
+                  label="Mi Tienda"
+                  labelIcon={<ShoppingBag className="w-4 h-4" />}
+                  onClick={() => router.push("/mis-publicaciones")}
+                />
+                <UserButton.Action
+                  label="Empresas"
+                  labelIcon={<Building2 className="w-4 h-4" />}
+                  onClick={() => router.push("/mayoristas")}
+                />
+                <UserButton.Action
+                  label="Configurar Negocio"
+                  labelIcon={<Settings className="w-4 h-4" />}
+                  onClick={() => router.push("/vendedor/dashboard")}
+                />
+                <UserButton.Action
+                  label="Ver mi Restaurante"
+                  labelIcon={<Building2 className="w-4 h-4" />}
+                  onClick={() => router.push("/eats")}
+                />
+              </UserButton.MenuItems>
+            </UserButton>
+          </SignedIn>
+
+          <SignedOut>
+            <SignInButton mode="modal" forceRedirectUrl="/mis-publicaciones">
+              <Button variant="default" className="hidden md:inline-flex">
+                <User className="h-4 w-4" /> Entrar
+              </Button>
+            </SignInButton>
+          </SignedOut>
+        </div>
+      </div>
+
+      {isSearchOpen && <SearchOverlay onClose={() => setIsSearchOpen(false)} />}
     </header>
   );
 }
 
 export default function Navbar() {
   return (
-    <Suspense fallback={<div className="h-14 bg-white border-b" />}>
+    <Suspense fallback={<div className="h-16 bg-background border-b border-border" />}>
       <NavbarContent />
     </Suspense>
   );

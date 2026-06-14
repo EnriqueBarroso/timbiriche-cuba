@@ -1,9 +1,12 @@
 "use client";
 
-import { MessageCircle, Ban, Zap, Wallet, Utensils, MapPin, BadgeCheck, Clock } from "lucide-react";
+import { useState } from "react";
+import { MessageCircle, Ban, Zap, Wallet, ImageIcon, MapPin, BadgeCheck, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import FavoriteButton from "@/components/FavoriteButton";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { formatPrice, BLUR_PLACEHOLDER, optimizeImage } from "@/lib/utils";
 
@@ -11,6 +14,7 @@ interface ProductCardProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   product: any;
   compact?: boolean;
+  categoryLabel?: string;
 }
 
 function timeAgo(date: string | Date): string {
@@ -30,11 +34,14 @@ function timeAgo(date: string | Date): string {
   return `hace ${Math.floor(diffDays / 30)} mes`;
 }
 
-export function ProductCard({ product, compact = false }: ProductCardProps) {
+export function ProductCard({ product, compact = false, categoryLabel }: ProductCardProps) {
+  const [imgError, setImgError] = useState(false);
+
   const rawImageUrl = product.images?.[0]?.url;
   const hasValidImage =
     typeof rawImageUrl === "string" &&
-    (rawImageUrl.startsWith("http") || rawImageUrl.startsWith("/"));
+    (rawImageUrl.startsWith("http") || rawImageUrl.startsWith("/")) &&
+    !imgError;
 
   const mainImage = hasValidImage ? rawImageUrl : "/placeholder.png";
   const title = product.title || "Producto sin nombre";
@@ -73,36 +80,29 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
   };
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-200 transition-all duration-300 hover:shadow-xl hover:shadow-gray-200/60 hover:-translate-y-1">
+    <Card className="group relative flex flex-col overflow-hidden transition-shadow duration-200 hover:shadow-md">
 
       {/* ── IMAGEN ─────────────────────────────────────────── */}
-      <div className={`relative aspect-[3/4] overflow-hidden bg-gray-50 ${isSold ? "grayscale opacity-70" : ""}`}>
-        <Link href={`/product/${product.id}`} className="block h-full w-full">
+      <div className={`relative aspect-[4/3] bg-muted ${isSold ? "grayscale opacity-70" : ""}`}>
+        <Link href={`/product/${product.id}`} className="relative block h-full w-full">
           {hasValidImage ? (
             <Image
               src={optimizeImage(rawImageUrl, 400)}
               alt={title}
               fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               placeholder="blur"
               blurDataURL={BLUR_PLACEHOLDER}
               quality={75}
+              onError={() => setImgError(true)}
             />
           ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50">
-              <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100">
-                <Utensils className="w-7 h-7 text-gray-300" />
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-300 mt-3">Sin Foto</span>
+            <div className="absolute inset-0 flex items-center justify-center bg-muted">
+              <ImageIcon className="w-10 h-10 text-muted-foreground" />
             </div>
           )}
         </Link>
-
-        {/* Gradiente inferior para legibilidad de badges */}
-        {!isSold && (
-          <div className="absolute bottom-0 inset-x-0 h-14 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
-        )}
 
         {/* Badge Flash — arriba izquierda */}
         {!isSold && isFlashOffer && (
@@ -118,7 +118,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
           <FavoriteButton product={favoriteData} />
         </div>
 
-        {/* Timestamp + Zelle — abajo izquierda, sobre el gradiente */}
+        {/* Timestamp + Zelle — abajo izquierda */}
         {!isSold && (
           <div className="absolute bottom-2 left-2 z-20 flex items-center gap-1.5">
             {acceptsZelle && (
@@ -145,32 +145,18 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
       </div>
 
       {/* ── CONTENIDO ──────────────────────────────────────── */}
-      <div className="flex flex-1 flex-col p-3">
+      <div className="flex flex-1 flex-col p-4">
 
-        {/* Precio — primero, es el dato más decisivo */}
-        <div className="mb-1.5">
-          {price === 0 ? (
-            <span className="text-xs font-black text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
-              🏷️ Varios Precios
-            </span>
-          ) : (
-            <div className="flex items-baseline gap-1.5 flex-wrap">
-              <span className={`text-xl font-black leading-none ${isSold ? "text-gray-400 line-through" : "text-gray-900"}`}>
-                {displayPrice}
-              </span>
-              {!isSold && isFlashOffer && (
-                <span className="flex items-center text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md text-[10px] font-black uppercase leading-none h-5">
-                  Rebajado
-                </span>
-              )}
-            </div>
-          )}
-        </div>
+        {categoryLabel && (
+          <Badge variant="outline" className="text-xs w-fit mb-2">
+            {categoryLabel}
+          </Badge>
+        )}
 
         {/* Título */}
         <Link href={`/product/${product.id}`}>
-          <h3 className={`line-clamp-2 min-h-[2.4em] text-[12px] font-semibold leading-[1.35] mb-2 break-words transition-colors ${
-            isSold ? "text-gray-400" : "text-gray-700 hover:text-blue-600"
+          <h3 className={`text-sm md:text-base font-medium line-clamp-2 mb-1 transition-colors ${
+            isSold ? "text-muted-foreground" : "text-foreground hover:text-primary"
           }`}>
             {title}
           </h3>
@@ -180,28 +166,19 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
         {!compact && product.sellerId && (
           <Link
             href={`/vendedor/${seller?.slug || product.sellerId}`}
-            className="flex items-center gap-1.5 mb-2.5 group/seller"
+            className="flex items-center gap-1 mb-2 group/seller min-w-0"
           >
-            <div className="shrink-0 h-5 w-5 rounded-full overflow-hidden bg-blue-50 flex items-center justify-center border border-blue-100">
-              {seller?.avatar ? (
-                <Image src={seller.avatar} alt={sellerName} width={20} height={20} className="object-cover w-full h-full" />
-              ) : (
-                <span className="text-[9px] font-black text-blue-600">{sellerName.charAt(0).toUpperCase()}</span>
-              )}
-            </div>
-            <div className="flex items-center gap-1 min-w-0">
-              <span className="text-[11px] text-gray-500 font-medium truncate group-hover/seller:text-blue-600 transition-colors">
-                {sellerName}
+            <span className="text-xs text-muted-foreground truncate group-hover/seller:text-foreground transition-colors">
+              {sellerName}
+            </span>
+            {isVerified && <BadgeCheck size={12} className="text-primary shrink-0" />}
+            {isRestaurant && (
+              <span className="text-[8px] font-bold text-orange-500 bg-orange-50 px-1 rounded-full border border-orange-100 shrink-0">
+                Resto
               </span>
-              {isVerified && <BadgeCheck size={11} className="text-blue-500 shrink-0" />}
-              {isRestaurant && (
-                <span className="text-[8px] font-bold text-orange-500 bg-orange-50 px-1 rounded-full border border-orange-100 shrink-0">
-                  Resto
-                </span>
-              )}
-            </div>
+            )}
             {sellerAddress && (
-              <span className="hidden sm:flex items-center gap-0.5 text-[10px] text-gray-400 truncate shrink-0">
+              <span className="hidden sm:flex items-center gap-0.5 text-[10px] text-muted-foreground/70 truncate shrink-0">
                 <MapPin size={8} className="shrink-0" />
                 {sellerAddress.split(",")[0]}
               </span>
@@ -209,10 +186,29 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
           </Link>
         )}
 
-        {/* CTA */}
+        {/* Precio + CTA — al fondo de la card */}
         <div className="mt-auto">
+          <div className="mb-3">
+            {price === 0 ? (
+              <span className="text-xs font-black text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
+                🏷️ Varios Precios
+              </span>
+            ) : (
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className={`text-lg font-bold ${isSold ? "text-muted-foreground line-through" : "text-primary"}`}>
+                  {displayPrice}
+                </span>
+                {!isSold && isFlashOffer && (
+                  <span className="flex items-center text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md text-[10px] font-black uppercase leading-none h-5">
+                    Rebajado
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
           {isSold ? (
-            <button disabled className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-100 text-gray-400 text-xs font-semibold cursor-not-allowed py-2.5">
+            <button disabled className="flex w-full items-center justify-center gap-2 rounded-xl bg-muted text-muted-foreground text-xs font-semibold cursor-not-allowed py-2.5">
               <Ban size={14} /> No disponible
             </button>
           ) : hasValidPhone ? (
@@ -221,7 +217,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleContactClick}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#25D366] py-2.5 text-xs font-bold text-white transition-all hover:bg-[#20bd5a] active:scale-95 shadow-sm shadow-green-200"
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-xs font-bold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground active:scale-95"
             >
               <MessageCircle size={14} className="shrink-0" />
               Contactar
@@ -229,13 +225,13 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
           ) : (
             <button
               onClick={handleContactClick}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-gray-100 text-gray-400 text-xs font-semibold cursor-not-allowed py-2.5"
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-muted text-muted-foreground text-xs font-semibold cursor-not-allowed py-2.5"
             >
               Sin WhatsApp
             </button>
           )}
         </div>
       </div>
-    </article>
+    </Card>
   );
 }

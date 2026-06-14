@@ -5,7 +5,9 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { ChevronRight, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // 📝 Datos de tus banners
 const BANNERS = [
@@ -15,8 +17,7 @@ const BANNERS = [
     subtitle: "Digitaliza tu catálogo gratis y recibe pedidos por WhatsApp.",
     cta: "Crear mi tienda",
     href: "/vender",
-    image: "/banners/banner-b2b.webp", 
-    color: "from-blue-900/90 to-blue-900/40",
+    image: "/banners/banner-b2b.webp",
   },
   {
     id: "premium",
@@ -25,7 +26,6 @@ const BANNERS = [
     cta: "Ver ofertas",
     href: "/premium",
     image: "/banners/banner-premium.webp",
-    color: "from-amber-900/90 to-amber-900/40",
   },
   {
     id: "mayoristas",
@@ -34,7 +34,6 @@ const BANNERS = [
     cta: "Explorar", // Acorté ligeramente el CTA para móvil
     href: "/mayoristas",
     image: "/banners/banner-mayorista.webp",
-    color: "from-emerald-900/90 to-emerald-900/40",
   },
 ];
 
@@ -58,14 +57,18 @@ export default function HeroCarousel() {
   }, [emblaApi, onSelect]);
 
   return (
-    // Reduje mb-8 a mb-6 para dar más aire general en móvil
-    <div className="relative w-full max-w-7xl mx-auto mb-6 md:mb-8 px-4 sm:px-6 lg:px-8">
-      <div className="overflow-hidden rounded-2xl shadow-lg" ref={emblaRef}>
+    <motion.div
+      className="relative w-full"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+    >
+      <div className="overflow-hidden rounded-2xl md:rounded-3xl shadow-lg" ref={emblaRef}>
         <div className="flex touch-pan-y">
           {BANNERS.map((banner, index) => (
             <div
               key={banner.id}
-              className="relative flex-[0_0_100%] min-w-0 aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/7]" // Hice el aspecto móvil ligeramente más alto [16/10] para dar aire
+              className="relative flex-[0_0_100%] min-w-0 min-h-[450px] md:min-h-[500px] aspect-[16/7]"
             >
               <Image
                 src={banner.image}
@@ -73,58 +76,58 @@ export default function HeroCarousel() {
                 fill
                 priority={index === 0}
                 style={{ objectFit: 'cover' }}
-                sizes="(max-width: 768px) 100vw, 1200px"
+                sizes="100vw"
               />
-              
-              <div className={`absolute inset-0 bg-gradient-to-r ${banner.color}`} />
 
-              {/* 👇 AJUSTES DE CONTENIDO PARA MÓVIL 👇 */}
-              <div className="absolute inset-0 flex flex-col justify-start pt-6 px-6 pb-12 md:pt-0 md:justify-center md:px-16 md:pb-0 z-10">
-                {/* justify-start pt-6 px-6 pb-12 -> Móvil: Contenido arriba con padding top/bottom
-                  md:pt-0 md:justify-center md:px-16 md:pb-0 -> Escritorio: Centrado vertical y padding lateral original
-                */}
-                
-                <h2 className="text-2xl xs:text-3xl md:text-5xl font-bold text-white mb-1.5 md:mb-4 drop-shadow-md leading-tight">
-                  {/* Reduje text-3xl a text-2xl y mb-2 a mb-1.5 en móvil */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/5 to-transparent" />
+
+              {/* Texto superpuesto, inferior izquierda */}
+              <div className="absolute inset-x-0 bottom-0 flex flex-col items-start p-8 md:p-12 z-10">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 md:mb-4 drop-shadow-md leading-tight max-w-lg">
                   {banner.title}
                 </h2>
-                
-                <p className="text-sm md:text-lg text-gray-200 mb-4 md:mb-6 max-w-sm md:max-w-md drop-shadow">
-                  {/* Reduje mb-6 a mb-4 y max-w en móvil */}
+
+                <p className="text-sm md:text-base text-white/80 mb-5 md:mb-6 max-w-sm md:max-w-md drop-shadow">
                   {banner.subtitle}
                 </p>
-                
-                <Link
-                  href={banner.href}
-                  // Reduje padding y text size en móvil
-                  className="inline-flex items-center w-fit px-4 py-2 md:px-5 md:py-2.5 bg-white text-gray-900 text-sm md:text-base font-semibold rounded-full hover:bg-gray-100 transition-colors shadow-md"
-                >
-                  {banner.cta}
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Link>
+
+                <Button asChild variant="default" className="w-fit">
+                  <Link href={banner.href}>
+                    {banner.cta}
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </Button>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* 👇 AJUSTE DE DOTS PARA MÓVIL 👇 */}
-      <div className="absolute bottom-3 md:bottom-4 left-0 right-0 flex justify-center gap-1.5 md:gap-2 z-20">
-        {/* Bajé bottom-4 a bottom-3 y gap-2 a gap-1.5 en móvil */}
-        {BANNERS.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => emblaApi?.scrollTo(index)}
-            // Dots ligeramente más pequeños en móvil (w-1.5 h-1.5)
-            className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-all duration-300 ${
-              index === selectedIndex
-                ? "bg-white w-5 md:w-6"
-                : "bg-white/50 hover:bg-white/80"
-            }`}
-            aria-label={`Ir a la diapositiva ${index + 1}`}
-          />
-        ))}
+      {/* Flecha siguiente + dots, esquina inferior derecha */}
+      <div className="absolute bottom-5 md:bottom-8 right-5 md:right-8 flex items-center gap-3 z-20">
+        <div className="flex items-center gap-1.5">
+          {BANNERS.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => emblaApi?.scrollTo(index)}
+              className={`rounded-full transition-all duration-300 ${
+                index === selectedIndex
+                  ? "bg-white w-5 h-1.5 md:w-6 md:h-2"
+                  : "bg-white/50 hover:bg-white/70 w-1.5 h-1.5 md:w-2 md:h-2"
+              }`}
+              aria-label={`Ir a la diapositiva ${index + 1}`}
+            />
+          ))}
+        </div>
+        <button
+          onClick={() => emblaApi?.scrollNext()}
+          className="flex items-center justify-center w-9 h-9 md:w-11 md:h-11 rounded-full border border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors"
+          aria-label="Siguiente diapositiva"
+        >
+          <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
+        </button>
       </div>
-    </div>
+    </motion.div>
   );
 }

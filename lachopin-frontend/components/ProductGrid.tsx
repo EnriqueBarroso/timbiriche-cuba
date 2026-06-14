@@ -51,7 +51,7 @@ export default function ProductGrid({ products, title, searchQuery }: ProductGri
 
         {/* 3. Grid Responsivo (El Core) */}
         {/* Móvil: 2 columnas | Tablet: 3 | Laptop: 4 | Pantallas Gigantes: 5 */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
           {displayProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
