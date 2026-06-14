@@ -51,8 +51,14 @@ async function checkLimit(
   ip: string
 ): Promise<boolean> {
   if (!limiter) return true; // Sin Redis → permitir siempre
-  const { success } = await limiter.limit(ip);
-  return success;
+  try {
+    const { success } = await limiter.limit(ip);
+    return success;
+  } catch (error) {
+    // Si Redis no responde, no bloqueamos auth/navegación por esto.
+    console.error("⚠️ Rate limiter no disponible, permitiendo solicitud:", error);
+    return true;
+  }
 }
 
 function getClientIp(req: NextRequest): string {
