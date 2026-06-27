@@ -7,6 +7,7 @@ import { Check, Trash2, ShieldAlert, Store, Star } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import { isAdmin, formatPrice } from "@/lib/utils";
 import PromoteButton from "@/components/PromoteButton";
+import CreateProductForm from "@/app/admin/components/CreateProductForm";
 
 export default async function AdminPage() {
   const user = await currentUser();
@@ -17,10 +18,11 @@ export default async function AdminPage() {
     return redirect("/");
   }
 
-  const [pendingSellers, verifiedSellers, allProducts] = await Promise.all([
+  const [pendingSellers, verifiedSellers, allProducts, allSellers] = await Promise.all([
     getSellers({ isVerified: false }).catch(() => []),
     getSellers({ isVerified: true }).catch(() => []),
     getProducts({ limit: 20 }).catch(() => []),
+    getSellers().catch(() => []),
   ]);
 
   return (
@@ -164,6 +166,8 @@ export default async function AdminPage() {
             ))}
           </div>
         </section>
+
+        <CreateProductForm sellers={allSellers.map((s) => ({ id: s.id, storeName: s.storeName }))} />
 
       </div>
     </div>

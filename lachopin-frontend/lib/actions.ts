@@ -339,6 +339,37 @@ export async function injectMenuHacker(jsonData: string) {
   return { success: true, message: `¡Magia pura! ${count} platos inyectados correctamente.` };
 }
 
+export async function createProductAdmin(data: {
+  sellerId: string;
+  title: string;
+  price: number;
+  category: string;
+  imageUrl: string;
+  description?: string;
+}) {
+  const user = await currentUser();
+  if (!user || user.emailAddresses[0]?.emailAddress !== process.env.ADMIN_EMAIL) {
+    throw new Error("Acceso denegado: Solo el admin puede crear productos desde este panel");
+  }
+
+  const token = await getToken();
+  await apiCreateProduct({
+    title: data.title,
+    price: data.price,
+    currency: "USD",
+    category: data.category,
+    description: data.description ?? "",
+    sellerId: data.sellerId,
+    type: "MARKETPLACE",
+    isFlashOffer: false,
+    images: [data.imageUrl],
+  }, token ?? undefined);
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  return { success: true, message: "Producto creado correctamente." };
+}
+
 export async function getGroupedSellers() {
   try {
     const sellers = await getSellers({ isFeatured: true });
