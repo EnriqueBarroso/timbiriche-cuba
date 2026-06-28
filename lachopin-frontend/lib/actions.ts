@@ -354,17 +354,20 @@ export async function createProductAdmin(data: {
   }
 
   const token = await getToken();
-  await apiCreateProduct({
+  const body: any = {
     title: data.title,
     price: data.price,
     currency: "USD",
     category: data.category,
-    description: data.description || undefined,
     sellerId: data.sellerId,
     type: "MARKETPLACE",
     isFlashOffer: false,
     images: [data.imageUrl],
-  }, token ?? undefined);
+  };
+  if (data.description) {
+    body.description = data.description;
+  }
+  await apiCreateProduct(body, token ?? undefined);
 
   revalidatePath("/admin");
   revalidatePath("/admin/products");
