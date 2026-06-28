@@ -384,13 +384,14 @@ export async function createSellerAdmin(data: {
   }
 
   const token = await getToken();
-  await apiCreateSeller({
+  const { seller } = await apiCreateSeller({
     storeName: data.storeName,
     email: data.email,
     phoneNumber: data.phoneNumber || undefined,
     description: data.description || undefined,
-    isVerified: true,
   }, token ?? undefined);
+
+  await updateSeller(seller.id, { isVerified: true }, token ?? undefined);
 
   revalidatePath("/admin");
   revalidatePath("/admin/sellers");
