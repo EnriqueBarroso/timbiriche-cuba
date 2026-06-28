@@ -265,7 +265,7 @@ export async function deleteProduct(id: string, token?: string): Promise<void> {
 export async function createProduct(
   data: {
     title: string;
-    description: string;
+    description?: string;
     price: number;
     currency?: string;
     category: string;
@@ -299,6 +299,8 @@ export interface CreateSellerPayload {
   avatar?: string;
   phoneNumber?: string;
   isRestaurant?: boolean;
+  description?: string;
+  isVerified?: boolean;
 }
 
 export async function createSeller(

@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import { isAdmin, formatPrice } from "@/lib/utils";
 import PromoteButton from "@/components/PromoteButton";
 import CreateProductForm from "@/app/admin/components/CreateProductForm";
+import CreateSellerForm from "@/app/admin/components/CreateSellerForm";
 
 export default async function AdminPage() {
   const user = await currentUser();
@@ -166,6 +167,8 @@ export default async function AdminPage() {
             ))}
           </div>
         </section>
+
+        <CreateSellerForm />
 
         <CreateProductForm sellers={allSellers.map((s) => ({ id: s.id, storeName: s.storeName }))} />
 

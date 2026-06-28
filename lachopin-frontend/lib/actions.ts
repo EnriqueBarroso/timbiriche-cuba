@@ -17,6 +17,7 @@ import {
   updateProduct as apiUpdateProduct,
   deleteProduct as apiDeleteProduct,
   createProduct as apiCreateProduct,
+  createSeller as apiCreateSeller,
   updateSeller,
   toggleFollow as apiToggleFollow,
   checkIfFollowing as apiCheckIfFollowing,
@@ -358,7 +359,7 @@ export async function createProductAdmin(data: {
     price: data.price,
     currency: "USD",
     category: data.category,
-    description: data.description ?? "",
+    description: data.description || undefined,
     sellerId: data.sellerId,
     type: "MARKETPLACE",
     isFlashOffer: false,
@@ -368,6 +369,30 @@ export async function createProductAdmin(data: {
   revalidatePath("/admin");
   revalidatePath("/");
   return { success: true, message: "Producto creado correctamente." };
+}
+
+export async function createSellerAdmin(data: {
+  storeName: string;
+  email: string;
+  phoneNumber?: string;
+  description?: string;
+}) {
+  const user = await currentUser();
+  if (!user || user.emailAddresses[0]?.emailAddress !== process.env.ADMIN_EMAIL) {
+    throw new Error("Acceso denegado: Solo el admin puede crear vendedores desde este panel");
+  }
+
+  const token = await getToken();
+  await apiCreateSeller({
+    storeName: data.storeName,
+    email: data.email,
+    phoneNumber: data.phoneNumber || undefined,
+    description: data.description || undefined,
+    isVerified: true,
+  }, token ?? undefined);
+
+  revalidatePath("/admin");
+  return { success: true, message: "Vendedor creado correctamente." };
 }
 
 export async function getGroupedSellers() {
