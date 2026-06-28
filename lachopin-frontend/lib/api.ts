@@ -61,6 +61,7 @@ export interface ProductInSeller {
 export interface ApiSeller {
   id: string;
   storeName: string;
+  email: string;
   slug: string | null;
   avatar: string | null;
   coverImage: string | null;
@@ -127,6 +128,7 @@ export interface ProductFilters {
   maxPrice?: number;
   limit?: number;
   page?: number;
+  sellerId?: string;
 }
 
 export interface UpdateProductPayload {
@@ -144,6 +146,7 @@ export interface UpdateProductPayload {
 
 export interface UpdateSellerPayload {
   storeName?: string;
+  email?: string;
   phoneNumber?: string;
   avatar?: string;
   coverImage?: string;

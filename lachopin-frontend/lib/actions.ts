@@ -367,6 +367,7 @@ export async function createProductAdmin(data: {
   }, token ?? undefined);
 
   revalidatePath("/admin");
+  revalidatePath("/admin/products");
   revalidatePath("/");
   return { success: true, message: "Producto creado correctamente." };
 }
@@ -392,6 +393,8 @@ export async function createSellerAdmin(data: {
   }, token ?? undefined);
 
   revalidatePath("/admin");
+  revalidatePath("/admin/sellers");
+  revalidatePath("/admin/products");
   return { success: true, message: "Vendedor creado correctamente." };
 }
 
