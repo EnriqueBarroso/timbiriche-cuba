@@ -20,6 +20,7 @@ import {
 const NAV_LINKS = [
   { label: "Shop", href: "/" },
   { label: "Tiendas", href: "/tiendas" },
+  { label: "Empresas", href: "/mayoristas" },
   { label: "Soporte", href: "/ayuda" },
 ];
 
@@ -301,11 +302,6 @@ function NavbarContent() {
                   label="Mi Tienda"
                   labelIcon={<ShoppingBag className="w-4 h-4" />}
                   onClick={() => router.push("/mis-publicaciones")}
-                />
-                <UserButton.Action
-                  label="Empresas"
-                  labelIcon={<Building2 className="w-4 h-4" />}
-                  onClick={() => router.push("/mayoristas")}
                 />
                 <UserButton.Action
                   label="Configurar Negocio"

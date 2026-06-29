@@ -5,9 +5,10 @@ import {
   Armchair, 
   Bike, 
   Smartphone, 
-  Shirt, 
+  Shirt,
   LayoutGrid,
-  Sparkles
+  Sparkles,
+  Building2
 } from "lucide-react";
 
 export const CATEGORIES = [
@@ -73,5 +74,14 @@ export const CATEGORIES = [
     image: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&q=80",
     description: "Ropa para mujer, hombre y niños.",
     subcategories: ["Mujer", "Hombre", "Niños", "Zapatos"]
+  },
+  {
+    id: "wholesale",
+    label: "🏢 Venta Mayorista",
+    shortLabel: "Mayorista",
+    icon: Building2,
+    image: "https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80",
+    description: "Lotes, contenedores y precios por volumen para negocios.",
+    subcategories: []
   },
 ] as const;
