@@ -377,6 +377,7 @@ export async function createSellerAdmin(data: {
   email: string;
   phoneNumber?: string;
   description?: string;
+  isRestaurant?: boolean;
 }) {
   const user = await currentUser();
   if (!user || user.emailAddresses[0]?.emailAddress !== process.env.ADMIN_EMAIL) {
@@ -391,7 +392,10 @@ export async function createSellerAdmin(data: {
     description: data.description || undefined,
   }, token ?? undefined);
 
-  await updateSeller(seller.id, { isVerified: true }, token ?? undefined);
+  await updateSeller(seller.id, {
+    isVerified: true,
+    ...(data.isRestaurant && { isRestaurant: true }),
+  }, token ?? undefined);
 
   revalidatePath("/admin");
   revalidatePath("/admin/sellers");

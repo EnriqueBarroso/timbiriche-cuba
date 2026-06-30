@@ -2,15 +2,24 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Store, Loader2 } from "lucide-react";
+import { Store, Loader2, Info } from "lucide-react";
 import { createSellerAdmin } from "@/lib/actions";
+
+type SellerType = "store" | "wholesale" | "restaurant";
 
 const EMPTY_FORM = {
   storeName: "",
   email: "",
   phoneNumber: "",
   description: "",
+  sellerType: "store" as SellerType,
 };
+
+const TYPE_OPTIONS: { value: SellerType; label: string }[] = [
+  { value: "store", label: "🏪 Tienda" },
+  { value: "wholesale", label: "🏢 Mayorista" },
+  { value: "restaurant", label: "🍽️ Chopin Eat (Comida)" },
+];
 
 export default function CreateSellerForm() {
   const [form, setForm] = useState(EMPTY_FORM);
@@ -31,6 +40,7 @@ export default function CreateSellerForm() {
         email: form.email,
         phoneNumber: form.phoneNumber,
         description: form.description,
+        isRestaurant: form.sellerType === "restaurant",
       });
       toast.success(res.message);
       setForm(EMPTY_FORM);
@@ -80,6 +90,32 @@ export default function CreateSellerForm() {
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de vendedor</label>
+          <select
+            value={form.sellerType}
+            onChange={(e) => setForm({ ...form, sellerType: e.target.value as SellerType })}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            {TYPE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {form.sellerType === "wholesale" && (
+          <div className="sm:col-span-2 flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-800">
+            <Info size={16} className="mt-0.5 shrink-0" />
+            <span>
+              Este vendedor es mayorista. Los productos que le crees deben tener la categoría{" "}
+              <strong>🏢 Venta Mayorista</strong> para que aparezcan en <code>/mayoristas</code>.
+              No hay un campo especial en la base de datos todavía.
+            </span>
+          </div>
+        )}
 
         <div className="sm:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">

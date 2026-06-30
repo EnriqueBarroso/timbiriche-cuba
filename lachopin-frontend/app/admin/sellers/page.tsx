@@ -1,8 +1,19 @@
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { getSellers, updateSeller } from "@/lib/api";
+import { getSellers, updateSeller, type ApiSeller } from "@/lib/api";
 import { Check, X, Star, Search } from "lucide-react";
 import CreateSellerForm from "@/app/admin/components/CreateSellerForm";
+
+function SellerTypeBadge({ seller }: { seller: ApiSeller }) {
+  if (seller.isRestaurant) {
+    return <span className="text-xs font-bold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">🍽️ Restaurante</span>;
+  }
+  const isWholesale = seller.products?.some((p) => p.category === "wholesale");
+  if (isWholesale) {
+    return <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">🏢 Mayorista</span>;
+  }
+  return <span className="text-xs font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🏪 Tienda</span>;
+}
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +64,10 @@ export default async function AdminSellersPage({ searchParams }: Props) {
                       className="w-10 h-10 rounded-full border border-gray-200 object-cover"
                     />
                     <div>
-                      <p className="font-bold text-sm line-clamp-1">{seller.storeName}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-bold text-sm line-clamp-1">{seller.storeName}</p>
+                        <SellerTypeBadge seller={seller} />
+                      </div>
                       <p className="text-xs text-gray-500">{seller.email}</p>
                       <p className="text-xs text-gray-400">{seller._count.products} productos • {seller._count.followers} seguidores</p>
                     </div>
