@@ -8,9 +8,8 @@ function SellerTypeBadge({ seller }: { seller: ApiSeller }) {
   if (seller.isRestaurant) {
     return <span className="text-xs font-bold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">🍽️ Restaurante</span>;
   }
-  const isWholesale = seller.products?.some((p) => p.category === "wholesale");
-  if (isWholesale) {
-    return <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">🏢 Mayorista</span>;
+  if (seller.isWholesale) {
+    return <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">🏢 Mayorista</span>;
   }
   return <span className="text-xs font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🏪 Tienda</span>;
 }

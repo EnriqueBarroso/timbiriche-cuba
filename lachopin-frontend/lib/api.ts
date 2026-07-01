@@ -63,6 +63,7 @@ export interface ApiSeller {
   storeName: string;
   email: string;
   slug: string | null;
+  isWholesale: boolean;
   avatar: string | null;
   coverImage: string | null;
   phoneNumber: string;
@@ -148,6 +149,7 @@ export interface UpdateSellerPayload {
   storeName?: string;
   email?: string;
   phoneNumber?: string;
+  isWholesale?: boolean;
   avatar?: string;
   coverImage?: string;
   address?: string;

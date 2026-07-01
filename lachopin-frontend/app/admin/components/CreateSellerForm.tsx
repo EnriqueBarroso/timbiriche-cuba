@@ -41,6 +41,7 @@ export default function CreateSellerForm() {
         phoneNumber: form.phoneNumber,
         description: form.description,
         isRestaurant: form.sellerType === "restaurant",
+        isWholesale: form.sellerType === "wholesale",
       });
       toast.success(res.message);
       setForm(EMPTY_FORM);
