@@ -1,27 +1,28 @@
 import { notFound, redirect } from "next/navigation";
-import { getSellerBySlug, getSellerByEmail, updateSeller } from "@/lib/api";
-import { Save, ArrowLeft, Clock, MapPin, Image as ImageIcon, Store } from "lucide-react";
+import { getBusinessBySlug, getBusinessByOwnerId, updateBusiness as apiUpdateBusiness } from "@/lib/api";
+import { Save, ArrowLeft, Clock, MapPin, Store } from "lucide-react";
 import Link from "next/link";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { isAdmin } from "@/lib/utils";
+import ImageOrUrlField from "./ImageOrUrlField";
 
 export default async function EditBusinessPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const user = await currentUser();
   const userEmail = user?.emailAddresses[0]?.emailAddress;
 
-  const [seller, currentSeller] = await Promise.all([
-    getSellerBySlug(slug).catch(() => null),
-    userEmail ? getSellerByEmail(userEmail) : Promise.resolve(null),
+  const [business, currentBusiness] = await Promise.all([
+    getBusinessBySlug(slug).catch(() => null),
+    user ? getBusinessByOwnerId(user.id) : Promise.resolve(null),
   ]);
 
-  if (!seller) notFound();
+  if (!business) notFound();
 
-  if (!isAdmin(userEmail) && currentSeller?.id !== seller.id) {
+  if (!isAdmin(userEmail) && currentBusiness?.id !== business.id) {
     redirect("/");
   }
 
-  const sellerId = seller.id;
+  const businessId = business.id;
 
   async function updateBusiness(formData: FormData) {
     "use server";
@@ -38,7 +39,7 @@ export default async function EditBusinessPage({ params }: { params: Promise<{ s
 
     const { getToken } = await auth();
     const token = await getToken();
-    await updateSeller(sellerId, data, token ?? undefined);
+    await apiUpdateBusiness(businessId, data, token ?? undefined);
     redirect(`/vendedor/${slug}`);
   }
 
@@ -64,24 +65,22 @@ export default async function EditBusinessPage({ params }: { params: Promise<{ s
             <div className="space-y-4">
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Nombre del Local</label>
-                <input name="storeName" defaultValue={seller.storeName} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl font-bold focus:ring-2 focus:ring-red-500 outline-none" />
+                <input name="storeName" defaultValue={business.storeName} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl font-bold focus:ring-2 focus:ring-red-500 outline-none" />
               </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1 text-blue-500">URL Imagen de Portada (Banner)</label>
-                <div className="relative">
-                  <ImageIcon className="absolute left-3 top-3.5 text-gray-300" size={18} />
-                  <input name="coverImage" defaultValue={seller.coverImage || ""} placeholder="https://images.unsplash.com/..." className="w-full p-3 pl-10 bg-gray-50 border border-gray-200 rounded-2xl text-sm" />
-                </div>
-              </div>
+              <ImageOrUrlField
+                fieldName="coverImage"
+                label="Imagen de Portada (Banner)"
+                initialValue={business.coverImage || ""}
+                placeholder="https://images.unsplash.com/..."
+              />
 
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1 text-blue-500">URL Logo (Circular)</label>
-                <div className="relative">
-                  <Store className="absolute left-3 top-3.5 text-gray-300" size={18} />
-                  <input name="avatar" defaultValue={seller.avatar || ""} placeholder="https://..." className="w-full p-3 pl-10 bg-gray-50 border border-gray-200 rounded-2xl text-sm" />
-                </div>
-              </div>
+              <ImageOrUrlField
+                fieldName="avatar"
+                label="Logo (Circular)"
+                initialValue={business.avatar || ""}
+                placeholder="https://..."
+              />
             </div>
           </section>
 
@@ -94,11 +93,11 @@ export default async function EditBusinessPage({ params }: { params: Promise<{ s
             <div className="space-y-4">
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Dirección Exacta</label>
-                <input name="address" defaultValue={seller.address || ""} placeholder="Calle 23 e/ L y M, Vedado" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-medium" />
+                <input name="address" defaultValue={business.address || ""} placeholder="Calle 23 e/ L y M, Vedado" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-medium" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">WhatsApp de Pedidos</label>
-                <input name="phoneNumber" defaultValue={seller.phoneNumber || ""} placeholder="535..." className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl font-bold" />
+                <input name="phoneNumber" defaultValue={business.phoneNumber || ""} placeholder="535..." className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl font-bold" />
               </div>
             </div>
           </section>
@@ -112,11 +111,11 @@ export default async function EditBusinessPage({ params }: { params: Promise<{ s
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Apertura</label>
-                <input name="openTime" type="time" defaultValue={seller.openTime || "10:00"} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl font-bold" />
+                <input name="openTime" type="time" defaultValue={business.openTime || "10:00"} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl font-bold" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Cierre</label>
-                <input name="closeTime" type="time" defaultValue={seller.closeTime || "23:00"} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl font-bold" />
+                <input name="closeTime" type="time" defaultValue={business.closeTime || "23:00"} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl font-bold" />
               </div>
             </div>
           </section>
