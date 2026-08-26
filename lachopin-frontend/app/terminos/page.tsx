@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Términos y Condiciones",
   description:
-    "Términos y condiciones de uso de LaChopin, tu mercado online en Cuba.",
+    "Términos y condiciones de uso de LaChopin, la plataforma de tiendas y negocios de Cuba.",
 };
 
 export default function TerminosPage() {

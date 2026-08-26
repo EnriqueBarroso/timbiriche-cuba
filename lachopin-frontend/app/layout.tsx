@@ -39,11 +39,11 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "LaChopin | Tu Mercado Online en Cuba",
+    default: "LaChopin | Tiendas y Negocios de Cuba con Pedidos por WhatsApp",
     template: "%s | LaChopin",
   },
   description:
-    "La forma más fácil de comprar y vender en Cuba. Ropa, celulares, electrodomésticos y más. LaChopin conecta a vendedores y compradores de forma segura.",
+    "Encuentra tiendas, restaurantes y mayoristas en Cuba. Pide directo por WhatsApp, sin intermediarios.",
   keywords: [
     "cuba",
     "compras online",
@@ -51,9 +51,11 @@ export const metadata: Metadata = {
     "lachopin",
     "celulares",
     "ropa",
-    "marketplace",
-    "revolico", // Palabra clave estratégica para SEO en Cuba
-    "clasificados",
+    "tiendas cuba",
+    "negocios cuba",
+    "pedidos whatsapp cuba",
+    "restaurantes cuba",
+    "mayoristas cuba",
   ],
   authors: [{ name: "LaChopin Team" }],
   creator: "LaChopin",
@@ -68,7 +70,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "LaChopin 🇨🇺 - Lo que buscas, lo tienes",
-    description: "Descubre miles de productos cerca de ti en Cuba. Compra seguro, rápido y fácil.",
+    description: "Encuentra tiendas, restaurantes y mayoristas en Cuba. Pide directo por WhatsApp, sin intermediarios.",
     url: "https://www.lachopin.com",
     siteName: "LaChopin",
     locale: "es_ES",
@@ -78,14 +80,14 @@ export const metadata: Metadata = {
         url: "/opengraph-image.png", // ¡Recuerda actualizar esta imagen en la carpeta public!
         width: 1200,
         height: 630,
-        alt: "LaChopin Cuba Marketplace",
+        alt: "LaChopin - Tiendas y negocios de Cuba",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "LaChopin Cuba",
-    description: "Tu nuevo marketplace favorito en Cuba.",
+    title: "LaChopin | Tiendas y Negocios de Cuba",
+    description: "Encuentra tiendas, restaurantes y mayoristas en Cuba. Pide directo por WhatsApp, sin intermediarios.",
     images: ["/opengraph-image.png"],
   },
   robots: {

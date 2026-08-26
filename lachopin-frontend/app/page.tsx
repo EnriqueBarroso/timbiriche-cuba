@@ -73,16 +73,16 @@ const CATEGORIES = [
 // búsqueda) mostrando la vista de productos filtrados por categoría.
 
 export const metadata: Metadata = {
-  title: { absolute: "LaChopin | Tu Mercado Online en Cuba" },
+  title: { absolute: "LaChopin | Tiendas y Negocios de Cuba con Pedidos por WhatsApp" },
   description:
-    "La forma más fácil de comprar y vender en Cuba. Ropa, celulares, electrodomésticos y más. Conecta directamente con vendedores verificados.",
+    "Encuentra tiendas, restaurantes y mayoristas en Cuba. Pide directo por WhatsApp, sin intermediarios.",
   alternates: { canonical: "https://www.lachopin.com" },
   openGraph: {
-    title: "LaChopin | Tu Mercado Online en Cuba",
-    description: "Descubre miles de productos cerca de ti en Cuba. Compra seguro, vende rápido.",
+    title: "LaChopin | Tiendas y Negocios de Cuba con Pedidos por WhatsApp",
+    description: "Encuentra tiendas, restaurantes y mayoristas en Cuba. Pide directo por WhatsApp, sin intermediarios.",
     url: "https://www.lachopin.com",
     siteName: "LaChopin",
-    images: [{ url: "/opengraph-image.png", width: 1200, height: 630, alt: "LaChopin - Tu Mercado Online en Cuba" }],
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630, alt: "LaChopin - Tiendas y negocios de Cuba" }],
     locale: "es_ES",
     type: "website",
   },
