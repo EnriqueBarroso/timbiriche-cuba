@@ -4,9 +4,10 @@ import { useState, Suspense, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Search, Heart, ShoppingBag, Plus, User, Settings, X, Building2, Menu } from "lucide-react";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { formatPrice, optimizeImage } from "@/lib/utils";
+import { getBusinessByOwnerId } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -18,10 +19,10 @@ import {
 } from "@/components/ui/sheet";
 
 const NAV_LINKS = [
-  { label: "Shop", href: "/" },
   { label: "Tiendas", href: "/tiendas" },
-  { label: "Empresas", href: "/mayoristas" },
-  { label: "Soporte", href: "/ayuda" },
+  { label: "Eats", href: "/eats" },
+  { label: "Mayoristas", href: "/mayoristas" },
+  { label: "Cómo funciona", href: "/como-funciona" },
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -153,6 +154,49 @@ function NavbarContent() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { favorites } = useFavorites();
 
+  // "Mis Productos" y "Ver mi Restaurante" necesitan el slug del negocio
+  // del usuario autenticado para llevarlo directo a su propia página
+  // (mismo mecanismo de resolución que se usaba antes por separado).
+  const { user } = useUser();
+  const [businessSlug, setBusinessSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function checkBusiness() {
+      if (!user) {
+        if (!cancelled) setBusinessSlug(null);
+        return;
+      }
+      try {
+        const business = await getBusinessByOwnerId(user.id);
+        if (!cancelled) setBusinessSlug(business?.slug ?? null);
+      } catch {
+        if (!cancelled) setBusinessSlug(null);
+      }
+    }
+
+    checkBusiness();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  // Sin negocio todavía: mandamos a /perfil, mismo fallback que ya usaba
+  // /mis-publicaciones cuando el perfil estaba incompleto.
+  const goToMyProducts = () => {
+    router.push(businessSlug ? `/vendedor/${businessSlug}/productos` : "/perfil");
+  };
+
+  // Escaparate público real del negocio (no el directorio genérico /eats).
+  const goToMyStorefront = () => {
+    router.push(businessSlug ? `/vendedor/${businessSlug}` : "/perfil");
+  };
+
+  // Resalta el ítem del menú cuya ruta coincide con la página actual
+  // (o alguna subruta suya, ej. /tiendas/algo también resalta "Tiendas").
+  const isActiveLink = (href: string) => pathname === href || pathname?.startsWith(`${href}/`);
+
   const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(!isHome);
 
@@ -195,7 +239,11 @@ function NavbarContent() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+              className={`text-sm transition-colors ${
+                isActiveLink(link.href)
+                  ? "font-bold text-foreground underline underline-offset-4 decoration-2"
+                  : "font-medium text-muted-foreground hover:text-foreground"
+              }`}
             >
               {link.label}
             </Link>
@@ -252,7 +300,11 @@ function NavbarContent() {
                 <SheetClose key={link.href} asChild>
                   <Link
                     href={link.href}
-                    className="flex items-center px-3 py-3 rounded-2xl text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                    className={`flex items-center px-3 py-3 rounded-2xl text-sm transition-colors ${
+                      isActiveLink(link.href)
+                        ? "font-bold text-foreground bg-muted"
+                        : "font-medium text-foreground hover:bg-muted"
+                    }`}
                   >
                     {link.label}
                   </Link>
@@ -294,14 +346,9 @@ function NavbarContent() {
             <UserButton afterSignOutUrl="/">
               <UserButton.MenuItems>
                 <UserButton.Action
-                  label="Mi Perfil"
-                  labelIcon={<User className="w-4 h-4" />}
-                  onClick={() => router.push("/perfil")}
-                />
-                <UserButton.Action
-                  label="Mi Tienda"
+                  label="Mis Productos"
                   labelIcon={<ShoppingBag className="w-4 h-4" />}
-                  onClick={() => router.push("/mis-publicaciones")}
+                  onClick={goToMyProducts}
                 />
                 <UserButton.Action
                   label="Configurar Negocio"
@@ -311,7 +358,7 @@ function NavbarContent() {
                 <UserButton.Action
                   label="Ver mi Restaurante"
                   labelIcon={<Building2 className="w-4 h-4" />}
-                  onClick={() => router.push("/eats")}
+                  onClick={goToMyStorefront}
                 />
               </UserButton.MenuItems>
             </UserButton>

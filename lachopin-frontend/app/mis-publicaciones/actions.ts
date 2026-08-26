@@ -11,6 +11,9 @@ export async function toggleProductAvailability(id: string, wantToBeAvailable: b
     const token = await getToken();
     await updateProduct(String(id), { isSold: newSoldStatus }, token ?? undefined);
     revalidatePath("/mis-publicaciones");
+    // También usado desde /vendedor/[slug]/productos (AvailabilityToggle) —
+    // sin esto esa página quedaba con datos viejos en caché tras la mutación.
+    revalidatePath("/vendedor/[slug]/productos", "page");
     return { success: true };
   } catch (error) {
     console.error("ERROR CRÍTICO EN ACCIÓN:", error);
