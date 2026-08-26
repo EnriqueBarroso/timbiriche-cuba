@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { PackagePlus, Loader2 } from "lucide-react";
 import { createProductAdmin } from "@/lib/actions";
@@ -8,13 +9,13 @@ import { CATEGORIES } from "@/lib/categories";
 
 const PRODUCT_CATEGORIES = CATEGORIES.filter((c) => c.id !== "all");
 
-interface SellerOption {
+interface BusinessOption {
   id: string;
   storeName: string;
 }
 
 const EMPTY_FORM = {
-  sellerId: "",
+  businessId: "",
   title: "",
   price: "",
   category: "",
@@ -22,33 +23,55 @@ const EMPTY_FORM = {
   description: "",
 };
 
-export default function CreateProductForm({ sellers }: { sellers: SellerOption[] }) {
+export default function CreateProductForm({ businesses }: { businesses: BusinessOption[] }) {
+  const router = useRouter();
   const [form, setForm] = useState(EMPTY_FORM);
   const [isLoading, setIsLoading] = useState(false);
+  // Guard con ref (no state) para bloquear dobles envíos sin depender del
+  // timing de re-render de `isLoading`.
+  const isSubmittingRef = useRef(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmittingRef.current) return;
 
-    if (!form.sellerId || !form.title || !form.price || !form.category || !form.imageUrl) {
+    if (!form.businessId || !form.title || !form.price || !form.category || !form.imageUrl) {
       toast.error("Completa todos los campos requeridos");
       return;
     }
 
+    const payload = {
+      businessId: form.businessId,
+      title: form.title,
+      price: Number(form.price),
+      category: form.category,
+      imageUrl: form.imageUrl,
+      description: form.description,
+    };
+
+    isSubmittingRef.current = true;
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      const res = await createProductAdmin({
-        sellerId: form.sellerId,
-        title: form.title,
-        price: Number(form.price),
-        category: form.category,
-        imageUrl: form.imageUrl,
-        description: form.description,
-      });
+      let res;
+      try {
+        res = await createProductAdmin(payload);
+      } catch (firstError) {
+        // Reintento automático y transparente: cubre el caso conocido de
+        // Next.js/Turbopack en dev donde la primera invocación de una
+        // Server Action puede fallar justo tras una recompilación, y un
+        // segundo intento funciona sin más. Así el usuario nunca ve un
+        // fallo silencioso — si de verdad falla dos veces, sí se lo avisamos.
+        console.warn("Primer intento de crear producto falló, reintentando:", firstError);
+        res = await createProductAdmin(payload);
+      }
       toast.success(res.message);
       setForm(EMPTY_FORM);
-    } catch (error: any) {
-      toast.error(error.message || "Error al crear el producto");
+      router.refresh();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Error al crear el producto. Intenta de nuevo.";
+      toast.error(message);
     } finally {
+      isSubmittingRef.current = false;
       setIsLoading(false);
     }
   };
@@ -63,14 +86,14 @@ export default function CreateProductForm({ sellers }: { sellers: SellerOption[]
         <div className="sm:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">Vendedor</label>
           <select
-            value={form.sellerId}
-            onChange={(e) => setForm({ ...form, sellerId: e.target.value })}
+            value={form.businessId}
+            onChange={(e) => setForm({ ...form, businessId: e.target.value })}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="">Selecciona un vendedor</option>
-            {sellers.map((seller) => (
-              <option key={seller.id} value={seller.id}>
-                {seller.storeName}
+            {businesses.map((business) => (
+              <option key={business.id} value={business.id}>
+                {business.storeName}
               </option>
             ))}
           </select>
