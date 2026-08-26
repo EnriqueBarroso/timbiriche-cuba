@@ -1,13 +1,58 @@
 import { getProducts } from "@/lib/actions";
+import { getBusinesses, type ApiBusiness } from "@/lib/api";
 import { ProductCard } from "@/components/ProductCard";
 import Pagination from "@/components/Pagination";
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
-import { ArrowRight, UtensilsCrossed, Search } from "lucide-react";
+import { Search, Compass, MessageCircle, Package } from "lucide-react";
 import HeroCarousel from "@/components/HeroCarousel";
-import { CategoryCard } from "@/components/CategoryCard";
-import Newsletter from "@/components/Newsletter";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
+
+const TERRACOTTA = "#B84C24";
+const CREAM = "#FBF3EA";
+
+// Mismas imágenes ya verificadas/usadas en otras partes del proyecto
+// (CATEGORY_IMAGES de esta misma página, avatar de Distribuidora El Puerto
+// en seed-demo.js), recicladas aquí en vez de inventar fotos nuevas.
+const VERTICALS = [
+  {
+    title: "Tiendas",
+    description: "Encuentra comercios y tiendas locales",
+    href: "/tiendas",
+    image: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=800&q=80",
+  },
+  {
+    title: "Eats",
+    description: "Pide comida a domicilio por WhatsApp",
+    href: "/eats",
+    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80",
+  },
+  {
+    title: "Mayoristas",
+    description: "Compra por volumen para tu negocio",
+    href: "/mayoristas",
+    image: "https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80",
+  },
+];
+
+const HOW_IT_WORKS_STEPS = [
+  {
+    icon: Compass,
+    title: "Explora los negocios",
+    description: "Encuentra tiendas, restaurantes y mayoristas cerca de ti.",
+  },
+  {
+    icon: MessageCircle,
+    title: "Contacta por WhatsApp",
+    description: "Habla directo con el negocio, sin registros ni intermediarios.",
+  },
+  {
+    icon: Package,
+    title: "Recibe tu pedido",
+    description: "Coordina la entrega directamente con el negocio.",
+  },
+];
 
 const CATEGORIES = [
   { name: "Todo",       slug: "" },
@@ -22,21 +67,10 @@ const CATEGORIES = [
   { name: "Otros",      slug: "others" },
 ];
 
-// Subconjunto destacado para la grilla de colecciones de la home
-const FEATURED_CATEGORIES = CATEGORIES.filter((c) => c.slug !== "");
-
-// Imágenes placeholder (Unsplash) por categoría — reemplazar por imágenes definitivas
-const CATEGORY_IMAGES: Record<string, string> = {
-  cellphones: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=80",
-  vehicles: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80",
-  home: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80",
-  appliances: "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800&q=80",
-  fashion: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&q=80",
-  food: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80",
-  parts: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=800&q=80",
-  crafts: "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?w=800&q=80",
-  others: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=800&q=80",
-};
+// Nota: la fila visual de categorías (íconos circulares) se movió a /tiendas
+// como filtro de negocios. CATEGORIES se mantiene aquí porque este mismo
+// home sigue resolviendo /?category=xxx (usado por esos chips y por la
+// búsqueda) mostrando la vista de productos filtrados por categoría.
 
 export const metadata: Metadata = {
   title: { absolute: "LaChopin | Tu Mercado Online en Cuba" },
@@ -55,6 +89,55 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+
+// Mismo patrón que BusinessStorefront.tsx para el badge de tipo de negocio.
+function businessTypeLabel(business: ApiBusiness) {
+  if (business.isRestaurant) return "Paladar";
+  if (business.isWholesale) return "Mayorista";
+  return "Tienda";
+}
+
+function BusinessGridCard({ business }: { business: ApiBusiness }) {
+  const cover =
+    business.coverImage ||
+    business.avatar ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(business.storeName)}&background=B84C24&color=fff`;
+  const avatar =
+    business.avatar ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(business.storeName)}&background=B84C24&color=fff`;
+
+  return (
+    <Link
+      href={`/vendedor/${business.slug}`}
+      className="group relative block overflow-hidden rounded-2xl aspect-[4/3] border border-black/5 shadow-sm hover:shadow-md transition-shadow"
+    >
+      <Image
+        src={cover}
+        alt={business.storeName}
+        fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+        className="object-cover transition-transform duration-500 group-hover:scale-105"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+
+      <span
+        className="absolute top-2 right-2 text-[10px] font-black uppercase tracking-wide text-white px-2 py-1 rounded-full"
+        style={{ backgroundColor: TERRACOTTA }}
+      >
+        {businessTypeLabel(business)}
+      </span>
+
+      <div className="absolute bottom-0 left-0 right-0 p-3 flex items-center gap-2">
+        <div className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-white shadow shrink-0 bg-white">
+          <Image src={avatar} alt="" fill sizes="36px" className="object-cover" />
+        </div>
+        <h3 className="text-white font-bold text-sm leading-tight drop-shadow line-clamp-1">
+          {business.storeName}
+        </h3>
+      </div>
+    </Link>
+  );
+}
 
 interface Props {
   searchParams: Promise<{
@@ -77,19 +160,34 @@ export default async function Home({ searchParams }: Props) {
   const currentMinPrice = minPrice ? Number(minPrice) : undefined;
   const currentMaxPrice = maxPrice ? Number(maxPrice) : undefined;
 
-  let productsData = { products: [] as Awaited<ReturnType<typeof getProducts>>["products"], total: 0, totalPages: 0, currentPage };
+  // Sin búsqueda ni categoría activa: es la vista por defecto del home, que
+  // ahora muestra negocios en vez de "Novedades Recientes". Si hay búsqueda
+  // o filtro de categoría (ej. desde los chips de Categorías o el buscador
+  // del Navbar), se mantiene la vista de productos filtrados de siempre.
+  const isDefaultView = !category && !searchTerm;
 
-  try {
-    productsData = await getProducts({
-      query: searchTerm,
-      category,
-      page: currentPage,
-      sort: currentSort,
-      minPrice: currentMinPrice,
-      maxPrice: currentMaxPrice,
-    });
-  } catch {
-    // API caída — renderizar home vacío en lugar de 500
+  let productsData = { products: [] as Awaited<ReturnType<typeof getProducts>>["products"], total: 0, totalPages: 0, currentPage };
+  let businesses: ApiBusiness[] = [];
+
+  if (isDefaultView) {
+    try {
+      businesses = await getBusinesses();
+    } catch {
+      // API caída — renderizar home vacío en lugar de 500
+    }
+  } else {
+    try {
+      productsData = await getProducts({
+        query: searchTerm,
+        category,
+        page: currentPage,
+        sort: currentSort,
+        minPrice: currentMinPrice,
+        maxPrice: currentMaxPrice,
+      });
+    } catch {
+      // API caída — renderizar home vacío en lugar de 500
+    }
   }
 
   const { products, total, totalPages } = productsData;
@@ -118,23 +216,126 @@ export default async function Home({ searchParams }: Props) {
         {/* HERO — dentro del contenedor, con esquinas redondeadas */}
         <HeroCarousel />
 
-        {/* PRODUCTOS */}
+        {/* VERTICALES — Tiendas / Eats / Mayoristas */}
+        <section className="pt-6 md:pt-8">
+          <AnimateOnScroll direction="up">
+            <div className="rounded-3xl p-5 md:p-8" style={{ backgroundColor: CREAM }}>
+              <h2 className="text-sm font-black uppercase tracking-widest mb-4" style={{ color: TERRACOTTA }}>
+                Explora por tipo de negocio
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                {VERTICALS.map((v) => (
+                  <Link
+                    key={v.href}
+                    href={v.href}
+                    className="group relative block overflow-hidden rounded-2xl aspect-[4/3]"
+                  >
+                    <Image
+                      src={v.image}
+                      alt={v.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <h3 className="text-white text-xl font-black mb-1">{v.title}</h3>
+                      <p className="text-white/85 text-sm">{v.description}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </AnimateOnScroll>
+        </section>
+
+        {/* CÓMO FUNCIONA — 3 pasos */}
+        <section className="pt-8 md:pt-10">
+          <AnimateOnScroll direction="up">
+            <div className="rounded-3xl p-5 md:p-8" style={{ backgroundColor: CREAM }}>
+              <div className="flex items-baseline justify-between mb-6">
+                <h2 className="text-sm font-black uppercase tracking-widest" style={{ color: TERRACOTTA }}>
+                  Cómo funciona
+                </h2>
+                <Link
+                  href="/como-funciona"
+                  className="text-xs font-medium hover:underline"
+                  style={{ color: TERRACOTTA }}
+                >
+                  Saber más →
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
+                {HOW_IT_WORKS_STEPS.map((step, index) => (
+                  <div key={step.title} className="flex flex-col items-start">
+                    <div className="relative mb-4">
+                      <div
+                        className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                        style={{ backgroundColor: `${TERRACOTTA}1A`, color: TERRACOTTA }}
+                      >
+                        <step.icon size={26} />
+                      </div>
+                      <span
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black text-white"
+                        style={{ backgroundColor: TERRACOTTA }}
+                      >
+                        {index + 1}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-gray-900 text-base mb-1">{step.title}</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed">{step.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </AnimateOnScroll>
+        </section>
+
+        {/* NEGOCIOS (vista por defecto) o PRODUCTOS (búsqueda/categoría activa) */}
         <section id="productos" className="scroll-mt-24 md:scroll-mt-28 pt-10 md:pt-16 pb-10 md:pb-20">
           <AnimateOnScroll direction="up">
             <div className="flex items-baseline justify-between mb-6">
               <div>
-                <h2 className="text-2xl md:text-3xl font-bold text-foreground">{sectionTitle}</h2>
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                  {isDefaultView ? "Negocios en LaChopin" : sectionTitle}
+                </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Descubre los productos más recientes de nuestras tiendas
+                  {isDefaultView
+                    ? "Descubre las tiendas, paladares y mayoristas de nuestra comunidad"
+                    : "Descubre los productos más recientes de nuestras tiendas"}
                 </p>
               </div>
-              <Link href="/" className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap ml-4">
+              <Link
+                href={isDefaultView ? "/tiendas" : "/"}
+                className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap ml-4"
+              >
                 Ver todos →
               </Link>
             </div>
           </AnimateOnScroll>
 
-          {products.length > 0 ? (
+          {isDefaultView ? (
+            businesses.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                {businesses.map((business, index) => (
+                  <AnimateOnScroll key={business.id} direction="up" delay={(index % 4) * 0.1}>
+                    <BusinessGridCard business={business} />
+                  </AnimateOnScroll>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <div className="bg-muted p-6 rounded-full mb-4">
+                  <Search className="w-12 h-12 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-1">Aún no hay negocios</h3>
+                <p className="text-muted-foreground text-sm max-w-xs mx-auto">
+                  Vuelve pronto para descubrir los negocios de LaChopin.
+                </p>
+              </div>
+            )
+          ) : products.length > 0 ? (
             <>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -175,71 +376,10 @@ export default async function Home({ searchParams }: Props) {
             </div>
           )}
 
-          {total > 0 && (
+          {!isDefaultView && total > 0 && (
             <p className="text-xs text-muted-foreground mt-4">{total} productos</p>
           )}
         </section>
-
-        {/* BANNER EATS */}
-        <section className="py-10 md:py-20">
-          <AnimateOnScroll direction="up">
-            <Link
-              href="/eats"
-              className="flex items-center justify-between gap-4 bg-card rounded-2xl p-6 md:p-8 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center gap-4 sm:gap-6">
-                <div className="bg-background p-3 sm:p-4 rounded-full">
-                  <UtensilsCrossed className="text-primary w-7 h-7 sm:w-8 sm:h-8" />
-                </div>
-                <div>
-                  <h3 className="text-lg sm:text-xl font-bold text-foreground">
-                    LaChopin Eats
-                  </h3>
-                  <p className="text-muted-foreground text-sm mt-0.5">
-                    Pide comida a los mejores restaurantes por WhatsApp
-                  </p>
-                </div>
-              </div>
-              <div className="flex bg-background p-2 rounded-full">
-                <ArrowRight className="text-foreground" size={20} />
-              </div>
-            </Link>
-          </AnimateOnScroll>
-        </section>
-
-        {/* CATEGORÍAS */}
-        <section className="py-10 md:py-20">
-          <AnimateOnScroll direction="up">
-            <div className="flex items-baseline justify-between mb-6">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-bold text-foreground">Nuestras Categorías</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Encuentra lo que buscas en nuestras colecciones
-                </p>
-              </div>
-              <Link href="/categorias" className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap ml-4">
-                Ver todas →
-              </Link>
-            </div>
-          </AnimateOnScroll>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {FEATURED_CATEGORIES.slice(0, 6).map((cat, index) => (
-              <AnimateOnScroll key={cat.slug} direction="up" delay={(index % 3) * 0.1}>
-                <CategoryCard
-                  name={cat.name}
-                  href={`/?category=${cat.slug}#productos`}
-                  image={CATEGORY_IMAGES[cat.slug]}
-                />
-              </AnimateOnScroll>
-            ))}
-          </div>
-        </section>
-
-        {/* NEWSLETTER */}
-        <AnimateOnScroll direction="up">
-          <Newsletter />
-        </AnimateOnScroll>
 
       </div>
     </div>

@@ -74,7 +74,9 @@ function getClientIp(req: NextRequest): string {
 // 🛡️ RUTAS (CLERK + RATE LIMIT)
 // ============================================
 const isProtectedRoute = createRouteMatcher([
-  '/vender(.*)',
+  // /vender en sí es una landing pública ("solicita tu tienda"); solo sus
+  // subrutas (crear anuncio/plato) requieren sesión.
+  '/vender/(.*)',
   '/perfil(.*)',
   '/api/upload(.*)',
   '/editar(.*)',
@@ -83,11 +85,12 @@ const isProtectedRoute = createRouteMatcher([
 const isPublicRoute = createRouteMatcher([
   '/vendedor(.*)',
   '/product(.*)',
+  '/vender',
 ]);
 
 const isWriteRoute = createRouteMatcher([
   '/api/upload(.*)',
-  '/vender(.*)',
+  '/vender/(.*)',
   '/editar(.*)',
 ]);
 

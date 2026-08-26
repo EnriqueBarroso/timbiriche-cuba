@@ -1,100 +1,87 @@
-import Link from "next/link";
-import { Zap, Wallet, Users, ArrowRight, Store, ShieldCheck, Utensils } from "lucide-react";
-import { currentUser } from "@clerk/nextjs/server";
-import { getSellerByEmail } from "@/lib/api";
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { MessageCircle, Store, Smartphone, Sparkles } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+const TERRACOTTA = "#B84C24";
+const CREAM = "#FBF3EA";
 
-export default async function VenderLandingPage() {
-  const user = await currentUser();
+const WHATSAPP_MESSAGE = encodeURIComponent(
+  "¡Hola! Quiero solicitar mi tienda en LaChopin.",
+);
+const WHATSAPP_URL = `https://wa.me/5350000000?text=${WHATSAPP_MESSAGE}`;
 
-  // 1. Si no hay usuario logueado, lo mandamos a iniciar sesión
-  if (!user) {
-    redirect("/sign-in");
-  }
+export const metadata: Metadata = {
+  title: "Solicita tu tienda",
+  description:
+    "Tu negocio con tienda online personalizada y pedidos por WhatsApp en LaChopin.",
+};
 
-  const seller = await getSellerByEmail(user.emailAddresses[0].emailAddress).catch(() => null);
-  if (!seller) redirect("/perfil");
+const FEATURES = [
+  {
+    icon: Store,
+    title: "Tu tienda, tu marca",
+    description: "Página propia con tu logo, tu catálogo y tu horario.",
+  },
+  {
+    icon: Smartphone,
+    title: "Pedidos por WhatsApp",
+    description: "Tus clientes piden directo por WhatsApp, sin intermediarios.",
+  },
+  {
+    icon: Sparkles,
+    title: "Sin complicaciones",
+    description: "Nosotros configuramos tu tienda por ti, listo para empezar.",
+  },
+];
 
-  // Si el código llega hasta aquí, significa que SÍ tiene tienda.
-  // Ya podemos saber con seguridad si es restaurante o no.
-  const isRestaurant = seller.isRestaurant;
-
-  // Variables dinámicas para el botón principal
-  const ctaLink = isRestaurant ? "/vender/nuevo-plato" : "/vender/nuevo";
-  const ctaText = isRestaurant ? "Añadir plato al menú" : "Publicar mi primer anuncio";
-  const ctaIcon = isRestaurant ? <Utensils size={24} /> : <ArrowRight />;
-  const ctaColor = isRestaurant 
-    ? "bg-[#D32F2F] hover:bg-red-700 shadow-red-200" 
-    : "bg-blue-600 hover:bg-blue-700 shadow-blue-200";
-
+export default function VenderLandingPage() {
   return (
-    <div className="min-h-screen bg-white pb-20">
-      {/* Hero: La Promesa */}
-      <section className="py-16 px-4 text-center bg-gradient-to-b from-blue-50 to-white">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-xs font-bold mb-6">
-          <Store size={14} /> ÚNETE A LOS +25 VENDEDORES
-        </div>
-        <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 leading-tight">
-          Tu negocio merece una <br />
-          <span className={isRestaurant ? "text-[#D32F2F]" : "text-blue-600"}>
-            {isRestaurant ? "Carta Digital." : "Tienda Profesional."}
-          </span>
+    <div className="min-h-screen" style={{ backgroundColor: CREAM }}>
+      <div className="max-w-2xl mx-auto px-4 py-16 md:py-24 text-center">
+        <span
+          className="inline-block text-[11px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-6"
+          style={{ color: TERRACOTTA, backgroundColor: `${TERRACOTTA}1A` }}
+        >
+          Para negocios
+        </span>
+
+        <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-5 leading-tight">
+          Lleva tu negocio a LaChopin
         </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed">
-          {isRestaurant 
-            ? "Olvídate de los PDFs. Sube tus platos, recibe pedidos por WhatsApp y haz crecer tu restaurante." 
-            : "Deja de depender de grupos caóticos. Crea tu catálogo, gestiona tus seguidores y acepta pagos por Zelle en una sola plataforma."}
+
+        <p className="text-lg text-gray-600 leading-relaxed mb-10 max-w-xl mx-auto">
+          Creamos tu tienda online personalizada, con tu catálogo y tus datos de contacto,
+          para que tus clientes te encuentren y pidan directo por WhatsApp.
         </p>
-        
-        {/* BOTÓN MÁGICO QUE CAMBIA SEGÚN EL ROL */}
-        <Link href={ctaLink} className={`inline-flex items-center gap-3 text-white px-10 py-5 rounded-2xl font-black text-xl transition-all shadow-2xl active:scale-95 ${ctaColor}`}>
-          {ctaText} {ctaIcon}
-        </Link>
-      </section>
 
-      {/* Supply Hacking: ¿Por qué nosotros? */}
-      <section className="max-w-6xl mx-auto py-12 px-4 grid md:grid-cols-3 gap-6">
-        <div className="p-8 rounded-3xl bg-gray-50 border border-gray-100 group hover:border-blue-200 transition-all">
-          <div className="p-3 bg-purple-100 rounded-2xl w-fit mb-6">
-            <Wallet className="w-8 h-8 text-purple-600" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-3">Zelle Friendly</h3>
-          <p className="text-gray-600 text-sm leading-relaxed">Configura tu cobro por Zelle y atrae clientes con familiares en el exterior. ¡Seguro y rápido!</p>
+        <div className="grid sm:grid-cols-3 gap-4 mb-12 text-left">
+          {FEATURES.map(({ icon: Icon, title, description }) => (
+            <div key={title} className="bg-white rounded-2xl border border-black/5 p-5 shadow-sm">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center mb-3"
+                style={{ backgroundColor: `${TERRACOTTA}1A`, color: TERRACOTTA }}
+              >
+                <Icon size={20} />
+              </div>
+              <h3 className="font-bold text-gray-900 text-sm mb-1">{title}</h3>
+              <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
+            </div>
+          ))}
         </div>
 
-        <div className="p-8 rounded-3xl bg-gray-50 border border-gray-100 group hover:border-blue-200 transition-all">
-          <div className="p-3 bg-blue-100 rounded-2xl w-fit mb-6">
-            <Users className="w-8 h-8 text-blue-600" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-3">Sistema de Seguidores</h3>
-          <p className="text-gray-600 text-sm leading-relaxed">No eres un anuncio más. Crea tu comunidad: cada vez que publiques, tus seguidores lo sabrán.</p>
-        </div>
+        <a
+          href={WHATSAPP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-3 text-white px-10 py-5 rounded-2xl font-black text-lg shadow-2xl active:scale-95 transition-all hover:brightness-105"
+          style={{ backgroundColor: "#25D366" }}
+        >
+          <MessageCircle size={24} /> Solicitar mi tienda por WhatsApp
+        </a>
 
-        <div className="p-8 rounded-3xl bg-gray-50 border border-gray-100 group hover:border-blue-200 transition-all">
-          <div className="p-3 bg-amber-100 rounded-2xl w-fit mb-6">
-            <Zap className="w-8 h-8 text-amber-600" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-3">{isRestaurant ? "Pedidos Inmediatos" : "Rellenado Mágico"}</h3>
-          <p className="text-gray-600 text-sm leading-relaxed">
-            {isRestaurant ? "Recibe la orden detallada con totales y productos directamente en tu WhatsApp." : "¿Ya tienes el anuncio en Revolico? Cópialo y pégalo. Nosotros rellenamos todo por ti en segundos."}
-          </p>
-        </div>
-      </section>
-
-      {/* Trust & Stats */}
-      <section className="max-w-4xl mx-auto mt-10 p-10 bg-gray-900 rounded-[40px] text-center text-white relative overflow-hidden">
-        <div className="relative z-10">
-          <ShieldCheck className="w-12 h-12 text-blue-400 mx-auto mb-6" />
-          <h2 className="text-3xl font-bold mb-4">Potencia tu marca personal</h2>
-          <p className="text-gray-400 mb-10 max-w-md mx-auto">Más de 500 eventos registrados esta semana. No te quedes fuera del mercado digital más moderno de Cuba.</p>
-          <Link href="/perfil" className="text-blue-400 font-bold hover:text-blue-300 flex items-center justify-center gap-2">
-            Configurar mi perfil profesional <ArrowRight size={16} />
-          </Link>
-        </div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
-      </section>
+        <p className="text-sm text-gray-400 mt-4">
+          Te contactamos en menos de 24 horas para configurar tu tienda.
+        </p>
+      </div>
     </div>
   );
 }

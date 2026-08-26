@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Heart, Plus, Zap, User } from "lucide-react";
+import { Home, Heart, Plus, Store, User } from "lucide-react";
 import { useFavorites } from "@/contexts/FavoritesContext";
 
 export default function BottomNav() {
@@ -70,16 +70,16 @@ export default function BottomNav() {
             <span className="text-[10px] font-medium mt-8 text-blue-600 opacity-0">Vender</span>
         </div>
 
-        {/* 4. OFERTAS */}
+        {/* 4. TIENDAS */}
         <Link
-          href="/ofertas"
-          aria-label="Ver ofertas" 
+          href="/tiendas"
+          aria-label="Ver tiendas"
           className={`inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 group ${
-            isActive("/ofertas") ? "text-yellow-500" : "text-gray-500"
+            isActive("/tiendas") ? "text-blue-600" : "text-gray-500"
           }`}
         >
-          <Zap className={`w-6 h-6 mb-1 ${isActive("/ofertas") ? "fill-yellow-500 text-yellow-500" : ""}`} />
-          <span className="text-[10px] font-medium">Ofertas</span>
+          <Store className={`w-6 h-6 mb-1 ${isActive("/tiendas") ? "fill-current" : ""}`} />
+          <span className="text-[10px] font-medium">Tiendas</span>
         </Link>
 
         {/* 5. PERFIL */}

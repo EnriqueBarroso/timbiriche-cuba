@@ -1,56 +1,114 @@
-import { MessageCircle, Mail, HelpCircle, Package, Shield, CreditCard, Truck, FileQuestion } from "lucide-react";
+import { MessageCircle, Mail, HelpCircle, FileQuestion } from "lucide-react";
 import Link from "next/link";
 
+const WHATSAPP_SUPPORT = "https://wa.me/34666953174";
+
+const faqs = [
+  {
+    question: "¿Cómo pido a un negocio?",
+    answer: (
+      <>
+        Entra a la tienda del negocio que te interesa y contáctalo directo por WhatsApp
+        desde ahí — no necesitas registrarte ni crear una cuenta.
+      </>
+    ),
+  },
+  {
+    question: "¿Cómo consigo mi propia tienda?",
+    answer: (
+      <>
+        <a
+          href={WHATSAPP_SUPPORT}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 font-bold hover:underline"
+        >
+          Contáctanos directamente por WhatsApp
+        </a>{" "}
+        y nosotros nos encargamos de armar tu tienda por ti, sin trámites ni registro.
+      </>
+    ),
+  },
+  {
+    question: "¿Cómo se paga?",
+    answer: (
+      <>
+        El pago y la entrega se coordinan directamente entre el comprador y el negocio.
+      </>
+    ),
+  },
+  {
+    question: "¿Cuánto cuesta tener una tienda?",
+    answer: (
+      <>
+        Cobramos una cuota mensual de mantenimiento por gestionar tu tienda.{" "}
+        <a
+          href={WHATSAPP_SUPPORT}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 font-bold hover:underline"
+        >
+          Contáctanos
+        </a>{" "}
+        para más detalles sobre precios.
+      </>
+    ),
+  },
+  {
+    question: "Tengo un problema con mi pedido",
+    answer: (
+      <>
+        Contacta directamente al negocio por WhatsApp para resolverlo. Si necesitas ayuda
+        adicional,{" "}
+        <a
+          href={WHATSAPP_SUPPORT}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 font-bold hover:underline"
+        >
+          contáctanos
+        </a>
+        .
+      </>
+    ),
+  },
+  {
+    question: "¿Cómo edito mi catálogo?",
+    answer: (
+      <>
+        Sigue la{" "}
+        <Link href="/como-funciona#guia" className="text-blue-600 font-bold hover:underline">
+          guía para dueños de negocio
+        </Link>{" "}
+        con los pasos para agregar productos, editarlos y mantener tu tienda al día.
+      </>
+    ),
+  },
+];
+
+const contactMethods = [
+  {
+    icon: <MessageCircle className="w-6 h-6" />,
+    title: "WhatsApp",
+    description: "Respuesta en menos de 24h",
+    action: "Chatear ahora",
+    href: WHATSAPP_SUPPORT,
+    color: "green",
+  },
+  {
+    icon: <Mail className="w-6 h-6" />,
+    title: "Email",
+    description: "soporte@lachopin.com",
+    action: "Enviar email",
+    href: "mailto:soporte@lachopin.com",
+    color: "blue",
+  },
+];
+
 export default function AyudaPage() {
-  const faqs = [
-    {
-      question: "¿Cómo compro un producto?",
-      answer: "Navega por el catálogo, selecciona el producto que te interesa y haz clic en 'Contactar Vendedor'. Te redirigirá a WhatsApp para coordinar la compra directamente con el vendedor."
-    },
-    {
-      question: "¿Puedo vender en LaChopin?",
-      answer: "¡Claro! Haz clic en 'Vender' en el menú principal, completa el formulario con los datos de tu producto y publícalo. Es gratis y toma menos de 2 minutos."
-    },
-    {
-      question: "¿Cómo funciona el pago?",
-      answer: "LaChopin conecta compradores y vendedores. El pago y entrega se coordinan directamente entre ambas partes a través de WhatsApp. Puedes pagar en efectivo, transferencia bancaria o la modalidad que acuerden."
-    },
-    {
-      question: "¿LaChopin cobra comisión?",
-      answer: "No. LaChopin es completamente gratuito tanto para compradores como vendedores. Nuestro objetivo es facilitar el comercio en Cuba."
-    },
-    {
-      question: "¿Qué hago si hay un problema con mi compra?",
-      answer: "Intenta resolver directamente con el vendedor a través de WhatsApp. Si el problema persiste, contáctanos y haremos lo posible por mediar."
-    },
-    {
-      question: "¿Cómo elimino o edito mi publicación?",
-      answer: "Ve a 'Mis Publicaciones' en tu perfil. Desde ahí puedes editar o eliminar cualquiera de tus productos activos."
-    }
-  ];
-
-  const contactMethods = [
-    {
-      icon: <MessageCircle className="w-6 h-6" />,
-      title: "WhatsApp",
-      description: "Respuesta en menos de 24h",
-      action: "Chatear ahora",
-      href: "https://wa.me/1234567890", // Reemplaza con tu número
-      color: "green"
-    },
-    {
-      icon: <Mail className="w-6 h-6" />,
-      title: "Email",
-      description: "soporte@lachopin.com",
-      action: "Enviar email",
-      href: "mailto:soporte@lachopin.com",
-      color: "blue"
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      
+
       {/* Hero */}
       <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
@@ -79,10 +137,10 @@ export default function AyudaPage() {
                   <FileQuestion className="w-5 h-5 text-blue-600 flex-shrink-0" />
                   {faq.question}
                 </span>
-                <svg 
-                  className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" 
-                  fill="none" 
-                  stroke="currentColor" 
+                <svg
+                  className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180"
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -95,39 +153,14 @@ export default function AyudaPage() {
           ))}
         </div>
 
-        {/* Temas de Ayuda */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Explorar por Tema</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { icon: <Package className="w-6 h-6" />, title: "Comprar productos", desc: "Guías para compradores" },
-              { icon: <Shield className="w-6 h-6" />, title: "Seguridad", desc: "Compra y vende seguro" },
-              { icon: <CreditCard className="w-6 h-6" />, title: "Pagos", desc: "Métodos de pago aceptados" },
-              { icon: <Truck className="w-6 h-6" />, title: "Entregas", desc: "Cómo coordinar envíos" }
-            ].map((topic, i) => (
-              <div key={i} className="bg-white rounded-xl p-6 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all cursor-pointer">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-blue-50 rounded-lg text-blue-600">
-                    {topic.icon}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 mb-1">{topic.title}</h3>
-                    <p className="text-sm text-gray-600">{topic.desc}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Métodos de Contacto */}
         <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 border border-gray-100">
           <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">¿Aún necesitas ayuda?</h2>
           <p className="text-gray-600 text-center mb-8">Nuestro equipo está disponible para asistirte</p>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
             {contactMethods.map((method, i) => (
-              <a 
+              <a
                 key={i}
                 href={method.href}
                 target="_blank"

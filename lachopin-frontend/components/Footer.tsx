@@ -1,28 +1,95 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Facebook, Instagram, Twitter, ShoppingBag } from "lucide-react";
+import { getBusinessBySlug } from "@/lib/api";
+
+// Pendiente: rellenar con las URLs reales de las redes sociales.
+const SOCIAL_LINKS = {
+  facebook: "",
+  twitter: "",
+  instagram: "",
+};
+
+function SocialIcons({ compact = false }: { compact?: boolean }) {
+  const size = compact ? 20 : 18;
+  const className = compact
+    ? "hover:text-blue-600 transition-colors"
+    : "bg-background rounded-full p-2 text-foreground hover:bg-primary hover:text-white transition-colors";
+
+  return (
+    <div className={compact ? "flex items-center gap-4 text-gray-400" : "flex items-center gap-3"}>
+      <a href={SOCIAL_LINKS.facebook} className={compact ? className : className} aria-label="Facebook">
+        <Facebook size={size} />
+      </a>
+      <a
+        href={SOCIAL_LINKS.twitter}
+        className={compact ? "hover:text-blue-400 transition-colors" : className}
+        aria-label="X (Twitter)"
+      >
+        <Twitter size={size} />
+      </a>
+      <a
+        href={SOCIAL_LINKS.instagram}
+        className={compact ? "hover:text-pink-600 transition-colors" : className}
+        aria-label="Instagram"
+      >
+        <Instagram size={size} />
+      </a>
+    </div>
+  );
+}
 
 export default function Footer() {
   const pathname = usePathname();
 
-  // 1. Detectamos si estamos en una página que necesita el footer resumido
-  const isProductPage = pathname?.startsWith("/product/");
+  // 1. La versión completa (4 columnas) solo aplica al home; cualquier
+  // otra página usa el footer resumido.
+  const isHomePage = pathname === "/";
 
   // 👇 Detectamos si estamos en el perfil o menú de un restaurante/vendedor
-  const isSellerPage = pathname?.startsWith("/vendedor/");
+  const isBusinessPage = pathname?.startsWith("/vendedor/");
+  const businessSlug = isBusinessPage ? pathname?.split("/")[2] : null;
+
+  // El badge "LaChopin Eats" solo aplica a negocios de tipo restaurante —
+  // Business.isRestaurant, mismo campo que ya usa el resto del proyecto
+  // (BusinessStorefront.tsx, /perfil, etc.) para distinguir el tipo de negocio.
+  const [isRestaurant, setIsRestaurant] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function checkBusinessType() {
+      if (!businessSlug) {
+        if (!cancelled) setIsRestaurant(false);
+        return;
+      }
+      try {
+        const business = await getBusinessBySlug(businessSlug);
+        if (!cancelled) setIsRestaurant(!!business.isRestaurant);
+      } catch {
+        if (!cancelled) setIsRestaurant(false);
+      }
+    }
+
+    checkBusinessType();
+    return () => {
+      cancelled = true;
+    };
+  }, [businessSlug]);
 
   // ------------------------------------------------------------------
-  // 2. VERSIÓN MINIMALISTA (Para producto y para el restaurante)
+  // 2. VERSIÓN MINIMALISTA (cualquier página que no sea el home)
   // ------------------------------------------------------------------
-  if (isProductPage || isSellerPage) {
+  if (!isHomePage) {
     return (
       <footer className="bg-gray-50 border-t border-gray-200 pt-6 pb-28 md:pb-6 mt-10">
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-4 px-4">
 
-          {/* Si es restaurante, le damos el toque de LaChopin Eats */}
-          {isSellerPage ? (
+          {/* Solo negocios de tipo restaurante llevan el toque de LaChopin Eats */}
+          {isBusinessPage && isRestaurant ? (
             <div className="text-center mb-2">
                <span className="text-2xl mb-1 opacity-40 grayscale block">🍔</span>
                <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
@@ -30,11 +97,7 @@ export default function Footer() {
                </p>
             </div>
           ) : (
-            <div className="flex items-center gap-4 text-gray-400">
-              <a href="#" className="hover:text-blue-600 transition-colors"><Facebook size={20} /></a>
-              <a href="#" className="hover:text-pink-600 transition-colors"><Instagram size={20} /></a>
-              <a href="#" className="hover:text-blue-400 transition-colors"><Twitter size={20} /></a>
-            </div>
+            <SocialIcons compact />
           )}
 
           <div className="text-center">
@@ -53,7 +116,7 @@ export default function Footer() {
   }
 
   // ------------------------------------------------------------------
-  // 3. VERSIÓN COMPLETA (Newsletter + Footer)
+  // 3. VERSIÓN COMPLETA (solo home)
   // ------------------------------------------------------------------
   return (
       <footer className="bg-card border-t border-border py-12 md:py-16">
@@ -73,31 +136,10 @@ export default function Footer() {
                 </span>
               </Link>
               <p className="text-sm text-muted-foreground mb-6">
-                Tu marketplace de confianza para encontrar productos de comerciantes locales en Cuba.
+                La plataforma de negocios cubanos: tiendas y restaurantes con pedidos
+                directos por WhatsApp.
               </p>
-              <div className="flex items-center gap-3">
-                <a
-                  href="#"
-                  className="bg-background rounded-full p-2 text-foreground hover:bg-primary hover:text-white transition-colors"
-                  aria-label="Facebook"
-                >
-                  <Facebook size={18} />
-                </a>
-                <a
-                  href="#"
-                  className="bg-background rounded-full p-2 text-foreground hover:bg-primary hover:text-white transition-colors"
-                  aria-label="X (Twitter)"
-                >
-                  <Twitter size={18} />
-                </a>
-                <a
-                  href="#"
-                  className="bg-background rounded-full p-2 text-foreground hover:bg-primary hover:text-white transition-colors"
-                  aria-label="Instagram"
-                >
-                  <Instagram size={18} />
-                </a>
-              </div>
+              <SocialIcons />
             </div>
 
             {/* Columna 2: Páginas */}
@@ -106,8 +148,11 @@ export default function Footer() {
                 Páginas
               </h3>
               <div className="flex flex-col gap-2">
-                <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Shop</Link>
+                <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Inicio</Link>
                 <Link href="/tiendas" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Tiendas</Link>
+                <Link href="/eats" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Eats</Link>
+                <Link href="/mayoristas" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Mayoristas</Link>
+                <Link href="/como-funciona" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Cómo funciona</Link>
                 <Link href="/ayuda" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Soporte</Link>
               </div>
             </div>
@@ -120,7 +165,6 @@ export default function Footer() {
               <div className="flex flex-col gap-2">
                 <Link href="/terminos" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Términos y condiciones</Link>
                 <Link href="/privacidad" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Política de privacidad</Link>
-                <Link href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Política de reembolso</Link>
               </div>
             </div>
 
@@ -138,12 +182,12 @@ export default function Footer() {
                 </div>
                 <div>
                   <span className="block text-muted-foreground">WhatsApp</span>
-                  <a href="https://wa.me/5350000000" className="text-foreground hover:text-primary transition-colors">
-                    +53 5000 0000
+                  <a href="https://wa.me/34666953174" className="text-foreground hover:text-primary transition-colors">
+                    +34 666 95 31 74
                   </a>
                 </div>
                 <Link href="/mayoristas" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Empresas
+                  Mayoristas
                 </Link>
               </div>
             </div>

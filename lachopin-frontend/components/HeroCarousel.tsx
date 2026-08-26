@@ -12,28 +12,20 @@ import { Button } from "@/components/ui/button";
 // 📝 Datos de tus banners
 const BANNERS = [
   {
-    id: "captacion",
-    title: "Vende con nosotros",
-    subtitle: "Digitaliza tu catálogo gratis y recibe pedidos por WhatsApp.",
-    cta: "Crear mi tienda",
-    href: "/vender",
-    image: "/banners/banner-b2b.webp",
+    id: "categorias",
+    title: "Todo lo que necesitas, cerca de ti",
+    subtitle: "Comida, tiendas, hogar y más — cada negocio con su propio catálogo.",
+    cta: "Ver tiendas",
+    href: "/tiendas",
+    image: "/banners/banner-categorias.webp",
   },
   {
-    id: "premium",
-    title: "Ofertas Premium",
-    subtitle: "Descubre los productos más destacados.", // Acorté ligeramente para móvil
-    cta: "Ver ofertas",
-    href: "/premium",
-    image: "/banners/banner-premium.webp",
-  },
-  {
-    id: "mayoristas",
-    title: "Ventas Mayoristas",
-    subtitle: "Compra por volumen y maximiza las ganancias de tu negocio.",
-    cta: "Explorar", // Acorté ligeramente el CTA para móvil
-    href: "/mayoristas",
-    image: "/banners/banner-mayorista.webp",
+    id: "whatsapp",
+    title: "Pedidos directos, sin intermediarios",
+    subtitle: "Habla directo con cada negocio por WhatsApp.",
+    cta: "Explorar tiendas",
+    href: "/tiendas",
+    image: "/banners/banner-whatsapp.webp",
   },
 ];
 

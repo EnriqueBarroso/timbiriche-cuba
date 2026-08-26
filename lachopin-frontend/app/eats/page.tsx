@@ -1,13 +1,14 @@
-import { getSellers } from "@/lib/api";
+import { getBusinesses } from "@/lib/api";
 import Link from "next/link";
 import { UtensilsCrossed, Star, MapPin, Clock, ChevronRight } from "lucide-react";
 import { optimizeImage } from "@/lib/utils";
+import JoinLaChopinFloatingCTA from "@/components/JoinLaChopinFloatingCTA";
 
 export const dynamic = "force-dynamic";
 
 export default async function EatsHubPage() {
-    const allSellers = await getSellers().catch(() => []);
-    const restaurants = allSellers.filter(s => s.isRestaurant);
+    const allBusinesses = await getBusinesses().catch(() => []);
+    const restaurants = allBusinesses.filter(s => s.isRestaurant);
 
     return (
         <main className="min-h-screen bg-gray-50 pb-20">
@@ -105,6 +106,8 @@ export default async function EatsHubPage() {
                     </div>
                 )}
             </div>
+
+            <JoinLaChopinFloatingCTA label="¿Tienes un restaurante? Únete a LaChopin" />
         </main>
     );
 }
