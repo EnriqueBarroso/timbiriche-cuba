@@ -10,10 +10,10 @@ export interface CartItem {
 
 interface CartState {
   items: CartItem[];
-  sellerId: string | null;
+  businessId: string | null;
   
   // Acciones
-  addItem: (item: Omit<CartItem, 'quantity'>, newSellerId: string) => void;
+  addItem: (item: Omit<CartItem, 'quantity'>, newBusinessId: string) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -25,12 +25,12 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
-      sellerId: null,
+      businessId: null,
 
-      addItem: (item, newSellerId) => set((state) => {
+      addItem: (item, newBusinessId) => set((state) => {
         // Si el cliente intenta pedir de otro restaurante, vaciamos el carrito anterior
-        if (state.sellerId && state.sellerId !== newSellerId) {
-           return { items: [{ ...item, quantity: 1 }], sellerId: newSellerId };
+        if (state.businessId && state.businessId !== newBusinessId) {
+           return { items: [{ ...item, quantity: 1 }], businessId: newBusinessId };
         }
 
         const existingItem = state.items.find((i) => i.id === item.id);
@@ -39,23 +39,23 @@ export const useCartStore = create<CartState>()(
             items: state.items.map((i) =>
               i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
             ),
-            sellerId: newSellerId,
+            businessId: newBusinessId,
           };
         }
-        return { items: [...state.items, { ...item, quantity: 1 }], sellerId: newSellerId };
+        return { items: [...state.items, { ...item, quantity: 1 }], businessId: newBusinessId };
       }),
 
       removeItem: (id) => set((state) => ({
         items: state.items.filter((i) => i.id !== id),
-        // Si el carrito se queda vacío, limpiamos el sellerId
-        sellerId: state.items.length === 1 ? null : state.sellerId 
+        // Si el carrito se queda vacío, limpiamos el businessId
+        businessId: state.items.length === 1 ? null : state.businessId 
       })),
 
       updateQuantity: (id, quantity) => set((state) => {
         if (quantity <= 0) {
           return {
             items: state.items.filter((i) => i.id !== id),
-            sellerId: state.items.length === 1 ? null : state.sellerId
+            businessId: state.items.length === 1 ? null : state.businessId
           };
         }
         return {
@@ -65,7 +65,7 @@ export const useCartStore = create<CartState>()(
         };
       }),
 
-      clearCart: () => set({ items: [], sellerId: null }),
+      clearCart: () => set({ items: [], businessId: null }),
 
       getTotalItems: () => get().items.reduce((total, item) => total + item.quantity, 0),
       

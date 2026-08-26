@@ -17,8 +17,8 @@ export default function CartPage() {
     let message = "Hola! 👋 Quiero realizar el siguiente pedido en LaChopin:\n\n";
     
     items.forEach((item) => {
-      const sellerInfo = item.sellerName ? ` (Tienda: ${item.sellerName})` : "";
-      message += `▪️ ${item.quantity}x *${item.title}* ${sellerInfo} - $${(item.price * item.quantity).toFixed(2)}\n`;
+      const businessInfo = item.businessName ? ` (Tienda: ${item.businessName})` : "";
+      message += `▪️ ${item.quantity}x *${item.title}* ${businessInfo} - $${(item.price * item.quantity).toFixed(2)}\n`;
     });
 
     message += `\n💰 *TOTAL ESTIMADO: $${safeTotal.toFixed(2)}*`;
@@ -84,8 +84,8 @@ export default function CartPage() {
                 <div className="flex flex-1 flex-col justify-between">
                   <div>
                     <h3 className="font-semibold text-gray-900 line-clamp-2">{item.title}</h3>
-                    {item.sellerName && (
-                       <p className="text-xs text-gray-400 mt-1">Vendedor: {item.sellerName}</p>
+                    {item.businessName && (
+                       <p className="text-xs text-gray-400 mt-1">Vendedor: {item.businessName}</p>
                     )}
                   </div>
                   

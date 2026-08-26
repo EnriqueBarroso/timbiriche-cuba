@@ -6,9 +6,9 @@ import { useFavorites } from "@/contexts/FavoritesContext";
 import { ProductCard } from "@/components/ProductCard";
 
 // Definimos el tipo de datos para los vendedores que vienen del servidor
-interface SellerFollowed {
+interface BusinessFollowed {
     id: string;
-    seller: {
+    business: {
         storeName: string | null;
         avatar: string | null;
         _count: {
@@ -17,7 +17,7 @@ interface SellerFollowed {
     };
 }
 
-export default function FavoritesClient({ following }: { following: SellerFollowed[] }) {
+export default function FavoritesClient({ following }: { following: BusinessFollowed[] }) {
     const { favorites } = useFavorites();
 
     const hasFavorites = favorites.length > 0;
@@ -71,9 +71,9 @@ export default function FavoritesClient({ following }: { following: SellerFollow
                                 <div key={follow.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
                                     {/* Avatar */}
                                     <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100">
-                                        {follow.seller.avatar ? (
+                                        {follow.business.avatar ? (
                                             // eslint-disable-next-line @next/next/no-img-element
-                                            <img src={follow.seller.avatar} alt={follow.seller.storeName || "Vendedor"} className="w-full h-full object-cover" />
+                                            <img src={follow.business.avatar} alt={follow.business.storeName || "Vendedor"} className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-500">
                                                 <User size={20} />
@@ -84,16 +84,16 @@ export default function FavoritesClient({ following }: { following: SellerFollow
                                     {/* Info */}
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-bold text-gray-900 truncate text-sm">
-                                            {follow.seller.storeName || "Vendedor"}
+                                            {follow.business.storeName || "Vendedor"}
                                         </h3>
                                         <p className="text-xs text-gray-500">
-                                            {follow.seller._count.products} productos
+                                            {follow.business._count.products} productos
                                         </p>
                                     </div>
 
                                     {/* Botón Ver */}
                                     <Link
-                                        href={`/vendedor/${(follow as any).seller?.slug || (follow as any).sellerId}`}
+                                        href={`/vendedor/${(follow as any).business?.slug || (follow as any).businessId}`}
                                         className="px-3 py-1.5 bg-gray-50 text-gray-600 text-xs font-bold rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
                                     >
                                         Ver Tienda
@@ -120,10 +120,10 @@ export default function FavoritesClient({ following }: { following: SellerFollow
                                     price: item.price,
                                     currency: item.currency || "USD",
                                     images: [{ url: item.image }],
-                                    seller: {
-                                        storeName: item.seller?.name || "Vendedor",
-                                        phoneNumber: item.seller?.phone || "",
-                                        avatar: item.seller?.avatar || undefined,
+                                    business: {
+                                        storeName: item.business?.name || "Vendedor",
+                                        phoneNumber: item.business?.phone || "",
+                                        avatar: item.business?.avatar || undefined,
                                     }
                                 };
 

@@ -5,18 +5,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { BadgeCheck, ChevronRight, ChevronDown, ChevronUp, Store, Package, MapPin, Users } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
-import type { ApiSeller } from "@/lib/api";
+import type { ApiBusiness } from "@/lib/api";
 
-interface SellerProductsRowProps {
-  seller: ApiSeller;
+interface BusinessProductsRowProps {
+  business: ApiBusiness;
 }
 
 const MAX_VISIBLE = 5;
 
-export function SellerProductsRow({ seller }: SellerProductsRowProps) {
+export function BusinessProductsRow({ business }: BusinessProductsRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const sortedProducts = [...seller.products].sort(
+  const sortedProducts = [...business.products].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
@@ -32,14 +32,14 @@ export function SellerProductsRow({ seller }: SellerProductsRowProps) {
       {/* ── Header de la tienda ──────────────────────────── */}
       <div className="px-4 mb-3 flex items-center justify-between gap-3">
         <Link
-          href={`/vendedor/${seller.slug}`}
+          href={`/vendedor/${business.slug}`}
           className="flex items-center gap-3 group min-w-0"
         >
           <div className="w-11 h-11 rounded-full overflow-hidden bg-blue-50 border-2 border-white shadow shrink-0 group-hover:scale-105 transition-transform">
-            {seller.avatar ? (
+            {business.avatar ? (
               <Image
-                src={seller.avatar}
-                alt={seller.storeName}
+                src={business.avatar}
+                alt={business.storeName}
                 width={44}
                 height={44}
                 className="object-cover w-full h-full"
@@ -54,12 +54,12 @@ export function SellerProductsRow({ seller }: SellerProductsRowProps) {
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <h3 className="font-black text-gray-900 text-[15px] leading-none group-hover:text-blue-600 transition-colors truncate">
-                {seller.storeName}
+                {business.storeName}
               </h3>
-              {seller.isVerified && (
+              {business.isVerified && (
                 <BadgeCheck size={15} className="text-blue-500 shrink-0" />
               )}
-              {seller.isRestaurant && (
+              {business.isRestaurant && (
                 <span className="text-[9px] font-bold text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded-md border border-orange-100 shrink-0 leading-none">
                   Restaurante
                 </span>
@@ -68,18 +68,18 @@ export function SellerProductsRow({ seller }: SellerProductsRowProps) {
             <div className="flex items-center gap-2.5 mt-1 flex-wrap">
               <span className="text-[11px] text-gray-400 flex items-center gap-1 font-medium">
                 <Package size={10} />
-                {seller._count.products} {seller._count.products === 1 ? "producto" : "productos"}
+                {business._count.products} {business._count.products === 1 ? "producto" : "productos"}
               </span>
-              {seller._count.followers > 0 && (
+              {business._count.followers > 0 && (
                 <span className="text-[11px] text-gray-400 flex items-center gap-1 font-medium">
                   <Users size={10} />
-                  {seller._count.followers} {seller._count.followers === 1 ? "seguidor" : "seguidores"}
+                  {business._count.followers} {business._count.followers === 1 ? "seguidor" : "seguidores"}
                 </span>
               )}
-              {seller.address && (
+              {business.address && (
                 <span className="text-[11px] text-gray-400 flex items-center gap-1 font-medium truncate max-w-[120px]">
                   <MapPin size={10} className="shrink-0" />
-                  {seller.address.split(",")[0]}
+                  {business.address.split(",")[0]}
                 </span>
               )}
             </div>
@@ -87,7 +87,7 @@ export function SellerProductsRow({ seller }: SellerProductsRowProps) {
         </Link>
 
         <Link
-          href={`/vendedor/${seller.slug}`}
+          href={`/vendedor/${business.slug}`}
           className="shrink-0 flex items-center gap-1 text-[11px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full border border-blue-100 transition-colors"
         >
           Ver tienda <ChevronRight size={11} />
@@ -105,7 +105,7 @@ export function SellerProductsRow({ seller }: SellerProductsRowProps) {
                 : ""
             }`}
           >
-            <ProductCard product={{ ...product, seller }} compact />
+            <ProductCard product={{ ...product, business }} compact />
           </div>
         ))}
       </div>

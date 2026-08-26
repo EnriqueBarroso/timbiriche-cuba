@@ -1,14 +1,14 @@
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { getSellers, updateSeller, type ApiSeller } from "@/lib/api";
+import { getBusinesses, updateBusiness, type ApiBusiness } from "@/lib/api";
 import { Check, X, Star, Search } from "lucide-react";
-import CreateSellerForm from "@/app/admin/components/CreateSellerForm";
+import CreateBusinessForm from "@/app/admin/components/CreateBusinessForm";
 
-function SellerTypeBadge({ seller }: { seller: ApiSeller }) {
-  if (seller.isRestaurant) {
+function BusinessTypeBadge({ business }: { business: ApiBusiness }) {
+  if (business.isRestaurant) {
     return <span className="text-xs font-bold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">🍽️ Restaurante</span>;
   }
-  if (seller.isWholesale) {
+  if (business.isWholesale) {
     return <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">🏢 Mayorista</span>;
   }
   return <span className="text-xs font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🏪 Tienda</span>;
@@ -20,25 +20,25 @@ interface Props {
   searchParams: Promise<{ q?: string }>;
 }
 
-export default async function AdminSellersPage({ searchParams }: Props) {
+export default async function AdminBusinessesPage({ searchParams }: Props) {
   const { q } = await searchParams;
 
-  const allSellers = await getSellers().catch(() => []);
+  const allBusinesses = await getBusinesses().catch(() => []);
 
-  const sellers = q
-    ? allSellers.filter((s) => s.storeName.toLowerCase().includes(q.toLowerCase()))
-    : allSellers;
+  const businesses = q
+    ? allBusinesses.filter((s) => s.storeName.toLowerCase().includes(q.toLowerCase()))
+    : allBusinesses;
 
   return (
     <div>
-      <CreateSellerForm />
+      <CreateBusinessForm />
 
       <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mt-8">
         <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800">
-          <Star className="w-5 h-5 text-amber-500" /> Vendedores ({sellers.length})
+          <Star className="w-5 h-5 text-amber-500" /> Vendedores ({businesses.length})
         </h2>
 
-        <form action="/admin/sellers" method="get" className="mb-4 relative">
+        <form action="/admin/businesses" method="get" className="mb-4 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
           <input
             type="text"
@@ -49,26 +49,26 @@ export default async function AdminSellersPage({ searchParams }: Props) {
           />
         </form>
 
-        {sellers.length === 0 ? (
+        {businesses.length === 0 ? (
           <p className="text-sm text-gray-400 py-4">No se encontraron vendedores.</p>
         ) : (
           <div className="space-y-3">
-            {sellers.map((seller) => (
-              <div key={seller.id} className="border border-gray-200 rounded-xl p-4">
+            {businesses.map((business) => (
+              <div key={business.id} className="border border-gray-200 rounded-xl p-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <img
-                      src={seller.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(seller.storeName)}&background=random&color=fff`}
-                      alt={seller.storeName}
+                      src={business.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(business.storeName)}&background=random&color=fff`}
+                      alt={business.storeName}
                       className="w-10 h-10 rounded-full border border-gray-200 object-cover"
                     />
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-bold text-sm line-clamp-1">{seller.storeName}</p>
-                        <SellerTypeBadge seller={seller} />
+                        <p className="font-bold text-sm line-clamp-1">{business.storeName}</p>
+                        <BusinessTypeBadge business={business} />
                       </div>
-                      <p className="text-xs text-gray-500">{seller.email}</p>
-                      <p className="text-xs text-gray-400">{seller._count.products} productos • {seller._count.followers} seguidores</p>
+                      <p className="text-xs text-gray-500">{business.email}</p>
+                      <p className="text-xs text-gray-400">{business._count.products} productos • {business._count.followers} seguidores</p>
                     </div>
                   </div>
 
@@ -77,19 +77,19 @@ export default async function AdminSellersPage({ searchParams }: Props) {
                       "use server";
                       const { getToken } = await auth();
                       const token = await getToken();
-                      await updateSeller(seller.id, { isVerified: !seller.isVerified }, token ?? undefined);
-                      revalidatePath("/admin/sellers");
+                      await updateBusiness(business.id, { isVerified: !business.isVerified }, token ?? undefined);
+                      revalidatePath("/admin/businesses");
                     }}>
                       <button
                         className={`px-3 py-2 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-colors ${
-                          seller.isVerified
+                          business.isVerified
                             ? "bg-green-100 text-green-700 hover:bg-green-200"
                             : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                         }`}
-                        title={seller.isVerified ? "Quitar verificación" : "Verificar vendedor"}
+                        title={business.isVerified ? "Quitar verificación" : "Verificar vendedor"}
                       >
-                        {seller.isVerified ? <Check size={14} /> : <X size={14} />}
-                        {seller.isVerified ? "Verificado" : "No verificado"}
+                        {business.isVerified ? <Check size={14} /> : <X size={14} />}
+                        {business.isVerified ? "Verificado" : "No verificado"}
                       </button>
                     </form>
 
@@ -97,19 +97,19 @@ export default async function AdminSellersPage({ searchParams }: Props) {
                       "use server";
                       const { getToken } = await auth();
                       const token = await getToken();
-                      await updateSeller(seller.id, { isFeatured: !seller.isFeatured }, token ?? undefined);
-                      revalidatePath("/admin/sellers");
+                      await updateBusiness(business.id, { isFeatured: !business.isFeatured }, token ?? undefined);
+                      revalidatePath("/admin/businesses");
                       revalidatePath("/");
                     }}>
                       <button
                         className={`p-2 rounded-lg flex items-center justify-center transition-colors ${
-                          seller.isFeatured
+                          business.isFeatured
                             ? "bg-amber-100 text-amber-700 hover:bg-amber-200"
                             : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                         }`}
-                        title={seller.isFeatured ? "Quitar de la portada" : "Destacar en la portada"}
+                        title={business.isFeatured ? "Quitar de la portada" : "Destacar en la portada"}
                       >
-                        <Star size={16} className={seller.isFeatured ? "fill-amber-500 text-amber-500" : ""} />
+                        <Star size={16} className={business.isFeatured ? "fill-amber-500 text-amber-500" : ""} />
                       </button>
                     </form>
                   </div>
@@ -126,15 +126,15 @@ export default async function AdminSellersPage({ searchParams }: Props) {
                       if (!email) return;
                       const { getToken } = await auth();
                       const token = await getToken();
-                      await updateSeller(seller.id, { email }, token ?? undefined);
-                      revalidatePath("/admin/sellers");
+                      await updateBusiness(business.id, { email }, token ?? undefined);
+                      revalidatePath("/admin/businesses");
                     }}
                     className="flex items-center gap-2 mt-2"
                   >
                     <input
                       type="email"
                       name="email"
-                      defaultValue={seller.email}
+                      defaultValue={business.email}
                       className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                     <button

@@ -13,7 +13,7 @@ export type CartItem = {
   image: string;
   quantity: number;
   currency: string;
-  sellerName?: string;
+  businessName?: string;
 };
 
 interface CartContextType {
@@ -80,7 +80,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         image: mainImage,
         quantity: 1,
         currency: product.currency || "USD",
-        sellerName: product.seller?.storeName || "Vendedor"
+        businessName: product.business?.storeName || "Vendedor"
       };
       
       // ❌ AQUÍ TAMBIÉN BORRAMOS EL TOAST.SUCCESS

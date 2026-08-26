@@ -1,21 +1,21 @@
-import { getSellers, getProducts, getProductsPage } from "@/lib/api";
+import { getBusinesses, getProducts, getProductsPage } from "@/lib/api";
 import { formatPrice } from "@/lib/utils";
 import { Store, PackagePlus, ShieldAlert, Package } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  const [allSellers, pendingSellers, recentProducts, productsPage] = await Promise.all([
-    getSellers().catch(() => []),
-    getSellers({ isVerified: false }).catch(() => []),
+  const [allBusinesses, pendingBusinesses, recentProducts, productsPage] = await Promise.all([
+    getBusinesses().catch(() => []),
+    getBusinesses({ isVerified: false }).catch(() => []),
     getProducts({ limit: 5 }).catch(() => []),
     getProductsPage({ page: 1, limit: 1 }).catch(() => ({ total: 0, products: [], totalPages: 0, currentPage: 1 })),
   ]);
 
   const stats = [
-    { label: "Vendedores", value: allSellers.length, icon: Store, color: "text-blue-600" },
+    { label: "Vendedores", value: allBusinesses.length, icon: Store, color: "text-blue-600" },
     { label: "Productos", value: productsPage.total, icon: Package, color: "text-emerald-600" },
-    { label: "Pendientes de verificar", value: pendingSellers.length, icon: ShieldAlert, color: "text-amber-600" },
+    { label: "Pendientes de verificar", value: pendingBusinesses.length, icon: ShieldAlert, color: "text-amber-600" },
   ];
 
   return (
@@ -60,7 +60,7 @@ export default async function AdminDashboardPage() {
                       {product.title}
                     </a>
                     <p className="text-xs text-gray-400">
-                      {product.seller?.storeName || "Vendedor desconocido"} • {formatPrice(product.price, product.currency)}
+                      {product.business?.storeName || "Vendedor desconocido"} • {formatPrice(product.price, product.currency)}
                     </p>
                   </div>
                 </div>

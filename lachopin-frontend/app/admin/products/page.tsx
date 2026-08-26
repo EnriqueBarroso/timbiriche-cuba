@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { getSellers, getProductsPage, deleteProduct, updateProduct } from "@/lib/api";
+import { getBusinesses, getProductsPage, deleteProduct, updateProduct } from "@/lib/api";
 import { formatPrice } from "@/lib/utils";
 import { CATEGORIES } from "@/lib/categories";
 import { Trash2, PackagePlus, ChevronLeft, ChevronRight } from "lucide-react";
@@ -13,16 +13,16 @@ const PRODUCT_CATEGORIES = CATEGORIES.filter((c) => c.id !== "all");
 const PAGE_SIZE = 20;
 
 interface Props {
-  searchParams: Promise<{ sellerId?: string; page?: string }>;
+  searchParams: Promise<{ businessId?: string; page?: string }>;
 }
 
 export default async function AdminProductsPage({ searchParams }: Props) {
-  const { sellerId, page } = await searchParams;
+  const { businessId, page } = await searchParams;
   const currentPage = Math.max(1, Number(page) || 1);
 
-  const [allSellers, productsPage] = await Promise.all([
-    getSellers().catch(() => []),
-    getProductsPage({ page: currentPage, limit: PAGE_SIZE, sellerId: sellerId || undefined }).catch(() => ({
+  const [allBusinesses, productsPage] = await Promise.all([
+    getBusinesses().catch(() => []),
+    getProductsPage({ page: currentPage, limit: PAGE_SIZE, businessId: businessId || undefined }).catch(() => ({
       products: [],
       total: 0,
       totalPages: 0,
@@ -30,11 +30,11 @@ export default async function AdminProductsPage({ searchParams }: Props) {
     })),
   ]);
 
-  const sellerOptions = allSellers.map((s) => ({ id: s.id, storeName: s.storeName }));
+  const businessOptions = allBusinesses.map((s) => ({ id: s.id, storeName: s.storeName }));
 
   return (
     <div>
-      <CreateProductForm sellers={sellerOptions} />
+      <CreateProductForm businesses={businessOptions} />
 
       <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mt-8">
         <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800">
@@ -43,12 +43,12 @@ export default async function AdminProductsPage({ searchParams }: Props) {
 
         <form action="/admin/products" method="get" className="flex items-center gap-2 mb-4">
           <select
-            name="sellerId"
-            defaultValue={sellerId || ""}
+            name="businessId"
+            defaultValue={businessId || ""}
             className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="">Todos los vendedores</option>
-            {sellerOptions.map((s) => (
+            {businessOptions.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.storeName}
               </option>
@@ -85,7 +85,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
                         {product.title}
                       </a>
                       <p className="text-xs text-gray-400">
-                        {product.seller?.storeName || "Vendedor desconocido"} • {formatPrice(product.price, product.currency)}
+                        {product.business?.storeName || "Vendedor desconocido"} • {formatPrice(product.price, product.currency)}
                       </p>
                     </div>
                   </div>
@@ -169,7 +169,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
         {productsPage.totalPages > 1 && (
           <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
             <a
-              href={`/admin/products?${new URLSearchParams({ ...(sellerId && { sellerId }), page: String(currentPage - 1) })}`}
+              href={`/admin/products?${new URLSearchParams({ ...(businessId && { businessId }), page: String(currentPage - 1) })}`}
               className={`flex items-center gap-1 text-sm font-medium px-3 py-2 rounded-lg ${
                 currentPage <= 1 ? "text-gray-300 pointer-events-none" : "text-gray-700 hover:bg-gray-100"
               }`}
@@ -180,7 +180,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
               Página {productsPage.currentPage} de {productsPage.totalPages}
             </p>
             <a
-              href={`/admin/products?${new URLSearchParams({ ...(sellerId && { sellerId }), page: String(currentPage + 1) })}`}
+              href={`/admin/products?${new URLSearchParams({ ...(businessId && { businessId }), page: String(currentPage + 1) })}`}
               className={`flex items-center gap-1 text-sm font-medium px-3 py-2 rounded-lg ${
                 currentPage >= productsPage.totalPages ? "text-gray-300 pointer-events-none" : "text-gray-700 hover:bg-gray-100"
               }`}

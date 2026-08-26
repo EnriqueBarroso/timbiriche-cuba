@@ -1,4 +1,4 @@
-import { getProductById, getSellerProducts, getProducts, recordProductView } from '@/lib/api'
+import { getProductById, getBusinessProducts, getProducts, recordProductView } from '@/lib/api'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, MessageCircle, Edit, Trash2, MapPin, Wallet, Info, Eye } from 'lucide-react' // Añadimos Eye
@@ -74,31 +74,31 @@ export default async function ProductPage({ params }: Props) {
   const product = await getProductById(id).catch(() => null);
   if (!product) return notFound();
 
-  const isOwner = user?.emailAddresses[0]?.emailAddress === product.seller?.storeName;
+  const isOwner = user?.emailAddresses[0]?.emailAddress === product.business?.storeName;
 
-  const [sellerProducts, categoryProducts] = await Promise.all([
-    product.sellerId ? getSellerProducts(product.sellerId) : Promise.resolve([]),
+  const [businessProducts, categoryProducts] = await Promise.all([
+    product.businessId ? getBusinessProducts(product.businessId) : Promise.resolve([]),
     getProducts({ category: product.category }),
     isOwner ? Promise.resolve(null) : recordProductView(id).catch(() => null),
   ]);
 
-  const moreBySeller = sellerProducts
+  const moreByBusiness = businessProducts
     .filter(p => p.id !== product.id && !p.isSold)
     .slice(0, 4);
 
   const relatedProducts = categoryProducts
-    .filter(p => p.sellerId !== product.sellerId && p.id !== product.id)
+    .filter(p => p.businessId !== product.businessId && p.id !== product.id)
     .slice(0, 4);
 
-  const rawPhone = product.seller?.phoneNumber || '';
+  const rawPhone = product.business?.phoneNumber || '';
   const phone = rawPhone.replace(/\D/g, '');
   const hasPhone = phone.length >= 8;
   const whatsappUrl = hasPhone
     ? `https://wa.me/${phone}?text=${encodeURIComponent(`Hola, vi *${product.title}* en LaChopin. Me interesa comprarlo.`)}`
     : '#';
 
-  const sellerName = product.seller?.storeName || 'Vendedor LaChopin';
-  const avatarUrl = product.seller?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(sellerName)}&background=random`;
+  const businessName = product.business?.storeName || 'Vendedor LaChopin';
+  const avatarUrl = product.business?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(businessName)}&background=random`;
 
   const currency = product.currency || "USD";
 
@@ -108,20 +108,20 @@ export default async function ProductPage({ params }: Props) {
     price: product.price,
     image: optimizeImage(product.images[0]?.url || "/opengraph-image.png", 800),
     currency: currency,
-    seller: product.seller ? {
-      name: sellerName,
+    business: product.business ? {
+      name: businessName,
       phone: rawPhone,
       avatar: avatarUrl
     } : undefined
   };
 
-  const isFollowing = await checkIfFollowing(product.sellerId || "");
+  const isFollowing = await checkIfFollowing(product.businessId || "");
   const isLoggedIn = !!user;
   const currentUserId = user?.id;
 
   // Datos de Zelle
-  const acceptsZelle = product.seller?.acceptsZelle || false;
-  const zelleEmail = product.seller?.zelleEmail || '';
+  const acceptsZelle = product.business?.acceptsZelle || false;
+  const zelleEmail = product.business?.zelleEmail || '';
 
   return (
     <div className="min-h-screen pb-32 bg-gray-50">
@@ -134,7 +134,7 @@ export default async function ProductPage({ params }: Props) {
         currency={currency}
         imageUrl={optimizeImage(product.images[0]?.url || "/opengraph-image.png", 800)}
         url={`https://www.lachopin.com/product/${product.id}`}
-        sellerName={sellerName}
+        businessName={businessName}
         isSold={product.isSold}
       />
 
@@ -191,11 +191,11 @@ export default async function ProductPage({ params }: Props) {
           {/* 3. Sección Vendedor */}
           <div className="p-5 mb-4 bg-white border border-gray-100 shadow-sm rounded-2xl">
             <div className="flex items-center gap-4">
-              <Link href={`/vendedor/${product.seller?.slug || product.sellerId}`} className="flex items-center flex-1 gap-4 group">
+              <Link href={`/vendedor/${product.business?.slug || product.businessId}`} className="flex items-center flex-1 gap-4 group">
                 <div className="relative shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={avatarUrl} alt={sellerName} className="object-cover border border-gray-200 rounded-full w-14 h-14 group-hover:ring-2 group-hover:ring-blue-100 transition-all" />
-                  {product.seller?.isVerified && (
+                  <img src={avatarUrl} alt={businessName} className="object-cover border border-gray-200 rounded-full w-14 h-14 group-hover:ring-2 group-hover:ring-blue-100 transition-all" />
+                  {product.business?.isVerified && (
                     <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-0.5 rounded-full border-2 border-white">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                     </div>
@@ -203,17 +203,17 @@ export default async function ProductPage({ params }: Props) {
                 </div>
 
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{sellerName}</h3>
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{businessName}</h3>
                   <p className="text-xs text-gray-500">Ver perfil de la tienda</p>
                 </div>
               </Link>
 
-              {!isOwner && product.sellerId && (
+              {!isOwner && product.businessId && (
                 <div className="shrink-0">
                   <FollowButton
-                    sellerId={product.sellerId}
+                    businessId={product.businessId}
                     isFollowingInitial={isFollowing}
-                    isMe={currentUserId === product.sellerId}
+                    isMe={currentUserId === product.businessId}
                     isLoggedIn={isLoggedIn}
                   />
                 </div>
@@ -256,11 +256,11 @@ export default async function ProductPage({ params }: Props) {
         </div>
 
         {/* Más de este vendedor */}
-        {moreBySeller.length > 0 && (
+        {moreByBusiness.length > 0 && (
           <div className="px-4 md:px-0 mt-8">
             <h2 className="text-lg font-bold text-gray-900 mb-4">Más de este vendedor</h2>
             <div className="grid grid-cols-2 gap-3">
-              {moreBySeller.map((p) => (
+              {moreByBusiness.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>

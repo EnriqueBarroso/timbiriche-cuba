@@ -1,6 +1,6 @@
 "use server";
 
-import { getSellerByEmail, createProduct } from "@/lib/api";
+import { getBusinessByOwnerId, createProduct } from "@/lib/api";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -16,9 +16,8 @@ export async function createFoodProduct(formData: FormData) {
   const user = await currentUser();
   if (!user) throw new Error("No autorizado");
 
-  const email = user.emailAddresses[0].emailAddress;
-  const seller = await getSellerByEmail(email);
-  if (!seller) throw new Error("Vendedor no encontrado");
+  const business = await getBusinessByOwnerId(user.id);
+  if (!business) throw new Error("Vendedor no encontrado");
 
   let finalImageUrl = "/placeholder.png";
   const file = formData.get("file") as File;
@@ -50,7 +49,7 @@ export async function createFoodProduct(formData: FormData) {
       price: parseFloat(formData.get("price") as string) || 0,
       category: formData.get("category") as string,
       description: formData.get("description") as string,
-      sellerId: seller.id,
+      businessId: business.id,
       type: "EATS",
       images: [finalImageUrl],
     }, token ?? undefined);

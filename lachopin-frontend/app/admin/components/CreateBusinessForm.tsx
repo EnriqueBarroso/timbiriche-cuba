@@ -3,25 +3,25 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Store, Loader2, Info } from "lucide-react";
-import { createSellerAdmin } from "@/lib/actions";
+import { createBusinessAdmin } from "@/lib/actions";
 
-type SellerType = "store" | "wholesale" | "restaurant";
+type BusinessType = "store" | "wholesale" | "restaurant";
 
 const EMPTY_FORM = {
   storeName: "",
   email: "",
   phoneNumber: "",
   description: "",
-  sellerType: "store" as SellerType,
+  businessType: "store" as BusinessType,
 };
 
-const TYPE_OPTIONS: { value: SellerType; label: string }[] = [
+const TYPE_OPTIONS: { value: BusinessType; label: string }[] = [
   { value: "store", label: "🏪 Tienda" },
   { value: "wholesale", label: "🏢 Mayorista" },
   { value: "restaurant", label: "🍽️ Chopin Eat (Comida)" },
 ];
 
-export default function CreateSellerForm() {
+export default function CreateBusinessForm() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,13 +35,13 @@ export default function CreateSellerForm() {
 
     try {
       setIsLoading(true);
-      const res = await createSellerAdmin({
+      const res = await createBusinessAdmin({
         storeName: form.storeName,
         email: form.email,
         phoneNumber: form.phoneNumber,
         description: form.description,
-        isRestaurant: form.sellerType === "restaurant",
-        isWholesale: form.sellerType === "wholesale",
+        isRestaurant: form.businessType === "restaurant",
+        isWholesale: form.businessType === "wholesale",
       });
       toast.success(res.message);
       setForm(EMPTY_FORM);
@@ -95,8 +95,8 @@ export default function CreateSellerForm() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de vendedor</label>
           <select
-            value={form.sellerType}
-            onChange={(e) => setForm({ ...form, sellerType: e.target.value as SellerType })}
+            value={form.businessType}
+            onChange={(e) => setForm({ ...form, businessType: e.target.value as BusinessType })}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             {TYPE_OPTIONS.map((opt) => (
@@ -107,7 +107,7 @@ export default function CreateSellerForm() {
           </select>
         </div>
 
-        {form.sellerType === "wholesale" && (
+        {form.businessType === "wholesale" && (
           <div className="sm:col-span-2 flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-800">
             <Info size={16} className="mt-0.5 shrink-0" />
             <span>

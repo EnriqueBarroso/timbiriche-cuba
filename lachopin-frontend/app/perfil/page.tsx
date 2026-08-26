@@ -1,5 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
-import { getSellerByEmail } from "@/lib/api";
+import { getBusinessByOwnerId } from "@/lib/api";
 import ProfileForm from "@/components/ProfileForm";
 import { Settings, Store, UtensilsCrossed, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -14,15 +14,13 @@ export default async function ProfilePage({ searchParams }: Props) {
   const user = await currentUser();
   if (!user) return null;
 
-  const email = user.emailAddresses[0].emailAddress;
-
-  const seller = await getSellerByEmail(email).catch(() => null);
+  const business = await getBusinessByOwnerId(user.id).catch(() => null);
 
   const resolvedSearchParams = await searchParams;
   const role = resolvedSearchParams.role;
 
   // 🛑 LA MAGIA AQUÍ: Si es un usuario nuevo y no ha elegido rol, mostramos las tarjetas
-  if ((!seller || !seller.phoneNumber) && !role) {
+  if ((!business || !business.phoneNumber) && !role) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-12 px-4">
         <div className="max-w-4xl w-full">
@@ -78,15 +76,15 @@ export default async function ProfilePage({ searchParams }: Props) {
   }
 
   // Si ya es vendedor, o ya eligió su rol, preparamos la variable
- const isRestaurant = role === "restaurant" || (seller?.isRestaurant ?? false);
+ const isRestaurant = role === "restaurant" || (business?.isRestaurant ?? false);
 
   // Añadimos el nuevo dato a initialData
   const initialData = {
-    storeName: seller?.storeName || user.firstName || "",
-    phoneNumber: seller?.phoneNumber || "",
-    avatar: seller?.avatar || user.imageUrl || "",
-    acceptsZelle: seller?.acceptsZelle || false,
-    zelleEmail: seller?.zelleEmail || "",
+    storeName: business?.storeName || user.firstName || "",
+    phoneNumber: business?.phoneNumber || "",
+    avatar: business?.avatar || user.imageUrl || "",
+    acceptsZelle: business?.acceptsZelle || false,
+    zelleEmail: business?.zelleEmail || "",
     // 👇 ¡Aquí le pasamos el rol al formulario!
     isRestaurant: isRestaurant, 
   };

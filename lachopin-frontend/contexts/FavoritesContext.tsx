@@ -10,7 +10,7 @@ export type FavoriteItem = {
   price: number;
   image: string;
   currency: string;
-  seller?: {
+  business?: {
     name: string;
     phone?: string;
     avatar?: string;
@@ -71,7 +71,7 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       currency: (product as any).currency || "USD",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      seller: (product as any).seller
+      business: (product as any).business
     };
 
     if (!isFavorite(newItem.id)) {

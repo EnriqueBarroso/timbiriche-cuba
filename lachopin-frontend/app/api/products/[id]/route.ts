@@ -1,7 +1,7 @@
 // Thin proxy to the NestJS DELETE /products/:id endpoint.
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { getSellerByEmail, getProductById, deleteProduct } from "@/lib/api";
+import { getBusinessByOwnerId, getProductById, deleteProduct } from "@/lib/api";
 
 export async function DELETE(
   _request: Request,
@@ -12,15 +12,14 @@ export async function DELETE(
     if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const { id } = await params;
-    const email = user.emailAddresses[0].emailAddress;
 
-    const [product, seller] = await Promise.all([
+    const [product, business] = await Promise.all([
       getProductById(id).catch(() => null),
-      getSellerByEmail(email),
+      getBusinessByOwnerId(user.id),
     ]);
 
     if (!product) return NextResponse.json({ error: "Producto no encontrado" }, { status: 404 });
-    if (!seller || product.sellerId !== seller.id) {
+    if (!business || product.businessId !== business.id) {
       return NextResponse.json({ error: "No tienes permiso" }, { status: 403 });
     }
 

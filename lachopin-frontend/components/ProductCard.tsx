@@ -49,23 +49,23 @@ export function ProductCard({ product, compact = false, categoryLabel }: Product
   const displayPrice = formatPrice(price, product.currency);
   const currency = product.currency || "USD";
 
-  const seller = product.seller;
-  const sellerName = seller?.storeName || seller?.name || "Vendedor";
-  const sellerPhone = seller?.phoneNumber || "";
-  const isVerified = seller?.isVerified || false;
-  const isRestaurant = seller?.isRestaurant || false;
-  const sellerAddress = seller?.address || "";
+  const business = product.business;
+  const businessName = business?.storeName || business?.name || "Vendedor";
+  const businessPhone = business?.phoneNumber || "";
+  const isVerified = business?.isVerified || false;
+  const isRestaurant = business?.isRestaurant || false;
+  const businessAddress = business?.address || "";
 
-  let cleanPhone = sellerPhone.replace(/\D/g, "");
+  let cleanPhone = businessPhone.replace(/\D/g, "");
   if (cleanPhone.length === 8) cleanPhone = `53${cleanPhone}`;
   const hasValidPhone = cleanPhone.length >= 8;
 
   const isSold = product.isSold || false;
   const isFlashOffer = product.isFlashOffer || false;
-  const acceptsZelle = seller?.acceptsZelle || false;
+  const acceptsZelle = business?.acceptsZelle || false;
   const createdAt = product.createdAt;
 
-  const favoriteData = { id: product.id, title, price, image: mainImage, currency, seller };
+  const favoriteData = { id: product.id, title, price, image: mainImage, currency, business };
 
   const whatsappMessage = `Hola, vi tu anuncio en LaChopin: *${title}*. ¿Sigue disponible?`;
   const whatsappLink = hasValidPhone
@@ -73,7 +73,7 @@ export function ProductCard({ product, compact = false, categoryLabel }: Product
     : "#";
 
   const handleContactClick = (e: React.MouseEvent) => {
-    if (!sellerPhone) {
+    if (!businessPhone) {
       e.preventDefault();
       toast.error("Este vendedor no tiene WhatsApp configurado");
     }
@@ -162,14 +162,14 @@ export function ProductCard({ product, compact = false, categoryLabel }: Product
           </h3>
         </Link>
 
-        {/* Seller — oculto en modo compact */}
-        {!compact && product.sellerId && (
+        {/* Business — oculto en modo compact */}
+        {!compact && product.businessId && (
           <Link
-            href={`/vendedor/${seller?.slug || product.sellerId}`}
-            className="flex items-center gap-1 mb-2 group/seller min-w-0"
+            href={`/vendedor/${business?.slug || product.businessId}`}
+            className="flex items-center gap-1 mb-2 group/business min-w-0"
           >
-            <span className="text-xs text-muted-foreground truncate group-hover/seller:text-foreground transition-colors">
-              {sellerName}
+            <span className="text-xs text-muted-foreground truncate group-hover/business:text-foreground transition-colors">
+              {businessName}
             </span>
             {isVerified && <BadgeCheck size={12} className="text-primary shrink-0" />}
             {isRestaurant && (
@@ -177,10 +177,10 @@ export function ProductCard({ product, compact = false, categoryLabel }: Product
                 Resto
               </span>
             )}
-            {sellerAddress && (
+            {businessAddress && (
               <span className="hidden sm:flex items-center gap-0.5 text-[10px] text-muted-foreground/70 truncate shrink-0">
                 <MapPin size={8} className="shrink-0" />
-                {sellerAddress.split(",")[0]}
+                {businessAddress.split(",")[0]}
               </span>
             )}
           </Link>

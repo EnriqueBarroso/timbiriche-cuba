@@ -2,23 +2,35 @@
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { isAdmin } from "@/lib/utils";
 
 async function getToken(): Promise<string | null> {
   const { getToken: clerkGetToken } = await auth();
   return clerkGetToken();
 }
+
+// Centraliza el check de admin usado por las acciones de /admin.
+// Lanza si el usuario actual no es el administrador (mismo criterio que isAdmin).
+async function requireAdmin(): Promise<void> {
+  const user = await currentUser();
+  const email = user?.emailAddresses[0]?.emailAddress;
+  if (!isAdmin(email)) {
+    throw new Error("Acceso denegado: Solo el administrador puede realizar esta acción.");
+  }
+}
 import {
   getProductsPage,
   getPromotedProducts as apiGetPromotedProducts,
   getFlashOffers as apiGetFlashOffers,
-  getSellers,
-  getSellerByEmail,
-  getSellerProducts,
+  getBusinesses,
+  getBusinessByEmail,
+  getBusinessByOwnerId,
+  getBusinessProducts,
   updateProduct as apiUpdateProduct,
   deleteProduct as apiDeleteProduct,
   createProduct as apiCreateProduct,
-  createSeller as apiCreateSeller,
-  updateSeller,
+  createBusiness as apiCreateBusiness,
+  updateBusiness,
   toggleFollow as apiToggleFollow,
   checkIfFollowing as apiCheckIfFollowing,
   type ProductFilters,
@@ -62,13 +74,13 @@ export async function getProducts({
       const rawData = await getProductsPage({ ...filters, page: 1, limit: 50 });
       const rawProducts = rawData.products;
 
-      const sellerCounts: Record<string, number> = {};
+      const businessCounts: Record<string, number> = {};
       const mixedProducts: typeof rawProducts = [];
 
       for (const product of rawProducts) {
-        const sId = product.sellerId ?? "unknown";
-        sellerCounts[sId] = (sellerCounts[sId] || 0) + 1;
-        if (sellerCounts[sId] <= 2) mixedProducts.push(product);
+        const sId = product.businessId ?? "unknown";
+        businessCounts[sId] = (businessCounts[sId] || 0) + 1;
+        if (businessCounts[sId] <= 2) mixedProducts.push(product);
         if (mixedProducts.length === ITEMS_PER_PAGE) break;
       }
 
@@ -108,23 +120,21 @@ export async function getProducts({
 export async function getMyProducts() {
   const user = await currentUser();
   if (!user) return [];
-  const email = user.emailAddresses[0].emailAddress;
-  const seller = await getSellerByEmail(email);
-  if (!seller) return [];
-  return getSellerProducts(seller.id);
+  const business = await getBusinessByOwnerId(user.id);
+  if (!business) return [];
+  return getBusinessProducts(business.id);
 }
 
 // 3. BORRAR PRODUCTO
 export async function deleteProduct(productId: string) {
   const user = await currentUser();
   if (!user) return { error: "No autorizado" };
-  const email = user.emailAddresses[0].emailAddress;
 
-  const seller = await getSellerByEmail(email);
-  if (!seller) return { error: "No se encontró perfil de vendedor" };
+  const business = await getBusinessByOwnerId(user.id);
+  if (!business) return { error: "No se encontró perfil de vendedor" };
 
   const product = await import("@/lib/api").then((m) => m.getProductById(productId)).catch(() => null);
-  if (!product || product.sellerId !== seller.id) {
+  if (!product || product.businessId !== business.id) {
     return { error: "No tienes permiso para borrar este producto" };
   }
 
@@ -132,6 +142,7 @@ export async function deleteProduct(productId: string) {
   await apiDeleteProduct(productId, token ?? undefined);
   revalidatePath("/");
   revalidatePath("/mis-publicaciones");
+  revalidatePath(`/vendedor/${business.slug}/productos`);
   return { success: true };
 }
 
@@ -146,12 +157,11 @@ export async function createProduct(data: {
   isFlashOffer: boolean;
 }) {
   const user = await currentUser();
-  if (!user || !user.emailAddresses[0]) throw new Error("Debes iniciar sesión");
+  if (!user) throw new Error("Debes iniciar sesión");
 
-  const email = user.emailAddresses[0].emailAddress;
-  const seller = await getSellerByEmail(email);
+  const business = await getBusinessByOwnerId(user.id);
 
-  if (!seller) throw new Error("Debes configurar tu perfil antes de publicar");
+  if (!business) throw new Error("Debes configurar tu perfil antes de publicar");
 
   const token = await getToken();
   await apiCreateProduct({
@@ -160,12 +170,13 @@ export async function createProduct(data: {
     currency: data.currency,
     description: data.description,
     category: data.category,
-    sellerId: seller.id,
+    businessId: business.id,
     isFlashOffer: data.isFlashOffer,
     images: data.images,
   }, token ?? undefined);
 
   revalidatePath("/");
+  revalidatePath(`/vendedor/${business.slug}/productos`);
   return { success: true };
 }
 
@@ -181,13 +192,12 @@ export async function updateProduct(productId: string, data: {
 }) {
   const user = await currentUser();
   if (!user) throw new Error("No autorizado");
-  const email = user.emailAddresses[0].emailAddress;
 
-  const seller = await getSellerByEmail(email);
-  if (!seller) throw new Error("No se encontró perfil de vendedor");
+  const business = await getBusinessByOwnerId(user.id);
+  if (!business) throw new Error("No se encontró perfil de vendedor");
 
   const product = await import("@/lib/api").then((m) => m.getProductById(productId)).catch(() => null);
-  if (!product || product.sellerId !== seller.id) throw new Error("No tienes permiso");
+  if (!product || product.businessId !== business.id) throw new Error("No tienes permiso");
 
   const token = await getToken();
   await apiUpdateProduct(productId, data, token ?? undefined);
@@ -195,6 +205,7 @@ export async function updateProduct(productId: string, data: {
   revalidatePath("/mis-publicaciones");
   revalidatePath(`/product/${productId}`);
   revalidatePath("/");
+  revalidatePath(`/vendedor/${business.slug}/productos`);
 }
 
 // 6. ACTUALIZAR PERFIL
@@ -208,38 +219,35 @@ export async function updateProfile(data: {
 }) {
   const user = await currentUser();
   if (!user) throw new Error("No autorizado");
-  const email = user.emailAddresses[0].emailAddress;
 
-  const seller = await getSellerByEmail(email);
-  if (!seller) throw new Error("No se encontró perfil de vendedor");
+  const business = await getBusinessByOwnerId(user.id);
+  if (!business) throw new Error("No se encontró perfil de vendedor");
 
   const token = await getToken();
-  await updateSeller(seller.id, data, token ?? undefined);
+  await updateBusiness(business.id, data, token ?? undefined);
   revalidatePath("/perfil");
-  revalidatePath(`/vendedor/${seller.slug}`);
+  revalidatePath(`/vendedor/${business.slug}`);
 }
 
 export async function syncUserAction() {
   const user = await currentUser();
   if (!user) return;
-  const email = user.emailAddresses[0].emailAddress;
-  const seller = await getSellerByEmail(email);
-  if (seller) {
+  const business = await getBusinessByOwnerId(user.id);
+  if (business) {
     const token = await getToken();
-    await updateSeller(seller.id, { avatar: user.imageUrl }, token ?? undefined);
+    await updateBusiness(business.id, { avatar: user.imageUrl }, token ?? undefined);
   }
 }
 
 export async function toggleProductStatus(productId: string) {
   const user = await currentUser();
   if (!user) throw new Error("No autorizado");
-  const email = user.emailAddresses[0].emailAddress;
 
-  const seller = await getSellerByEmail(email);
-  if (!seller) throw new Error("No se encontró perfil de vendedor");
+  const business = await getBusinessByOwnerId(user.id);
+  if (!business) throw new Error("No se encontró perfil de vendedor");
 
   const product = await import("@/lib/api").then((m) => m.getProductById(productId)).catch(() => null);
-  if (!product || product.sellerId !== seller.id) throw new Error("No tienes permiso");
+  if (!product || product.businessId !== business.id) throw new Error("No tienes permiso");
 
   const newStatus = !product.isSold;
   const token = await getToken();
@@ -247,6 +255,7 @@ export async function toggleProductStatus(productId: string) {
   revalidatePath("/mis-publicaciones");
   revalidatePath("/");
   revalidatePath(`/product/${productId}`);
+  revalidatePath(`/vendedor/${business.slug}/productos`);
   return { success: true, isSold: newStatus };
 }
 
@@ -259,13 +268,7 @@ export async function getPromotedProducts() {
 }
 
 export async function togglePromotedStatus(productId: string) {
-  const user = await currentUser();
-  if (!user) throw new Error("No autorizado");
-
-  const email = user.emailAddresses[0].emailAddress;
-  if (email !== process.env.ADMIN_EMAIL) {
-    throw new Error("Solo el administrador puede promocionar productos");
-  }
+  await requireAdmin();
 
   const product = await import("@/lib/api").then((m) => m.getProductById(productId));
   const token = await getToken();
@@ -276,23 +279,23 @@ export async function togglePromotedStatus(productId: string) {
   return { success: true, isPromoted: !product.isPromoted };
 }
 
-export async function toggleFollowAction(sellerId: string) {
+export async function toggleFollowAction(businessId: string) {
   const user = await currentUser();
   if (!user) throw new Error("Debes iniciar sesión");
 
-  if (user.id === sellerId) return { error: "No puedes seguirte a ti mismo" };
+  if (user.id === businessId) return { error: "No puedes seguirte a ti mismo" };
 
   const token = await getToken();
-  const result = await apiToggleFollow(sellerId, user.id, token ?? undefined);
+  const result = await apiToggleFollow(businessId, user.id, token ?? undefined);
   revalidatePath(`/product/[id]`);
   return result;
 }
 
-export async function checkIfFollowing(sellerId: string) {
+export async function checkIfFollowing(businessId: string) {
   const user = await currentUser();
   if (!user) return false;
 
-  const result = await apiCheckIfFollowing(sellerId, user.id);
+  const result = await apiCheckIfFollowing(businessId, user.id);
   return result.isFollowing;
 }
 
@@ -305,17 +308,14 @@ export async function getFlashOffers() {
 }
 
 export async function injectMenuHacker(jsonData: string) {
-  const user = await currentUser();
-  if (!user || user.emailAddresses[0].emailAddress !== process.env.ADMIN_EMAIL) {
-    throw new Error("Acceso denegado: Solo el admin puede inyectar menús");
-  }
+  await requireAdmin();
 
   const data = JSON.parse(jsonData);
   const { emailDueño, platos } = data;
 
-  const seller = await getSellerByEmail(emailDueño);
-  if (!seller) throw new Error(`No se encontró ningún vendedor con el email: ${emailDueño}`);
-  if (!seller.isRestaurant)
+  const business = await getBusinessByEmail(emailDueño);
+  if (!business) throw new Error(`No se encontró ningún vendedor con el email: ${emailDueño}`);
+  if (!business.isRestaurant)
     throw new Error("¡Cuidado! Este usuario está registrado como tienda, no como restaurante.");
 
   const token = await getToken();
@@ -328,7 +328,7 @@ export async function injectMenuHacker(jsonData: string) {
       category: plato.categoria || "Otros",
       type: "EATS",
       description: plato.description,
-      sellerId: seller.id,
+      businessId: business.id,
       isFlashOffer: false,
       images: [plato.imageUrl || "https://via.placeholder.com/400"],
     }, token ?? undefined);
@@ -341,17 +341,14 @@ export async function injectMenuHacker(jsonData: string) {
 }
 
 export async function createProductAdmin(data: {
-  sellerId: string;
+  businessId: string;
   title: string;
   price: number;
   category: string;
   imageUrl: string;
   description?: string;
 }) {
-  const user = await currentUser();
-  if (!user || user.emailAddresses[0]?.emailAddress !== process.env.ADMIN_EMAIL) {
-    throw new Error("Acceso denegado: Solo el admin puede crear productos desde este panel");
-  }
+  await requireAdmin();
 
   const token = await getToken();
   await apiCreateProduct({
@@ -360,7 +357,7 @@ export async function createProductAdmin(data: {
     currency: "USD",
     category: data.category,
     description: data.description || "Sin descripción",
-    sellerId: data.sellerId,
+    businessId: data.businessId,
     type: "MARKETPLACE",
     isFlashOffer: false,
     images: [data.imageUrl],
@@ -372,7 +369,7 @@ export async function createProductAdmin(data: {
   return { success: true, message: "Producto creado correctamente." };
 }
 
-export async function createSellerAdmin(data: {
+export async function createBusinessAdmin(data: {
   storeName: string;
   email: string;
   phoneNumber?: string;
@@ -380,35 +377,32 @@ export async function createSellerAdmin(data: {
   isRestaurant?: boolean;
   isWholesale?: boolean;
 }) {
-  const user = await currentUser();
-  if (!user || user.emailAddresses[0]?.emailAddress !== process.env.ADMIN_EMAIL) {
-    throw new Error("Acceso denegado: Solo el admin puede crear vendedores desde este panel");
-  }
+  await requireAdmin();
 
   const token = await getToken();
-  const { seller } = await apiCreateSeller({
+  const { business } = await apiCreateBusiness({
     storeName: data.storeName,
     email: data.email,
     phoneNumber: data.phoneNumber || undefined,
     description: data.description || undefined,
   }, token ?? undefined);
 
-  await updateSeller(seller.id, {
+  await updateBusiness(business.id, {
     isVerified: true,
     ...(data.isRestaurant && { isRestaurant: true }),
     ...(data.isWholesale && { isWholesale: true }),
   }, token ?? undefined);
 
   revalidatePath("/admin");
-  revalidatePath("/admin/sellers");
+  revalidatePath("/admin/businesses");
   revalidatePath("/admin/products");
   return { success: true, message: "Vendedor creado correctamente." };
 }
 
-export async function getGroupedSellers() {
+export async function getGroupedBusinesses() {
   try {
-    const sellers = await getSellers({ isFeatured: true });
-    return sellers
+    const businesses = await getBusinesses({ isFeatured: true });
+    return businesses
       .filter((s) => s.products && s.products.length > 0)
       .sort((a, b) => b._count.products - a._count.products);
   } catch {
@@ -416,18 +410,12 @@ export async function getGroupedSellers() {
   }
 }
 
-export async function toggleSellerFeaturedStatus(sellerId: string) {
-  const user = await currentUser();
-  if (!user) throw new Error("No autorizado");
+export async function toggleBusinessFeaturedStatus(businessId: string) {
+  await requireAdmin();
 
-  const email = user.emailAddresses[0].emailAddress;
-  if (email !== process.env.ADMIN_EMAIL) {
-    throw new Error("Solo el administrador puede destacar tiendas");
-  }
-
-  const seller = await import("@/lib/api").then((m) => m.getSellerById(sellerId));
+  const business = await import("@/lib/api").then((m) => m.getBusinessById(businessId));
   const token = await getToken();
-  const updated = await updateSeller(sellerId, { isFeatured: !seller.isFeatured }, token ?? undefined);
+  const updated = await updateBusiness(businessId, { isFeatured: !business.isFeatured }, token ?? undefined);
 
   revalidatePath("/");
   revalidatePath("/admin");

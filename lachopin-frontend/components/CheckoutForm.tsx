@@ -87,7 +87,7 @@ export default function CheckoutForm() {
        // Usamos un emoji o marcador para separar
        message += `▪️ ${item.quantity}x ${item.title} - $${item.price * item.quantity}\n`;
        // Si quieres incluir el vendedor:
-       // message += `   (Vendedor: ${item.seller?.storeName || 'Desconocido'})\n`;
+       // message += `   (Vendedor: ${item.business?.storeName || 'Desconocido'})\n`;
     });
 
     message += `\n💰 *TOTAL A PAGAR: $${cartTotal}*`;

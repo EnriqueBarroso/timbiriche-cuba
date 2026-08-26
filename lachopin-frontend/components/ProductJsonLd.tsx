@@ -7,7 +7,7 @@ interface ProductJsonLdProps {
   currency: string;
   imageUrl: string;
   url: string;
-  sellerName: string;
+  businessName: string;
   isSold: boolean;
 }
 
@@ -18,7 +18,7 @@ export default function ProductJsonLd({
   currency,
   imageUrl,
   url,
-  sellerName,
+  businessName,
   isSold,
 }: ProductJsonLdProps) {
   // Mapear monedas locales a USD para schema.org (CUP y MLC no son reconocidas)
@@ -42,9 +42,11 @@ export default function ProductJsonLd({
       availability: isSold
         ? "https://schema.org/SoldOut"
         : "https://schema.org/InStock",
+      // "seller" es el término del vocabulario schema.org (no renombrar aunque
+      // internamente ya no hablemos de "sellers" sino de "businesses").
       seller: {
         "@type": "Person",
-        name: sellerName,
+        name: businessName,
       },
     },
   };

@@ -1,5 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
-import { getSellerByEmail } from "@/lib/api";
+import { getBusinessByOwnerId } from "@/lib/api";
 import { redirect } from "next/navigation";
 import VenderForm from "../VenderForm";
 
@@ -9,10 +9,9 @@ export default async function VenderPage() {
   const user = await currentUser();
   if (!user) return redirect("/");
 
-  const email = user.emailAddresses[0].emailAddress;
-  const seller = await getSellerByEmail(email).catch(() => null);
+  const business = await getBusinessByOwnerId(user.id).catch(() => null);
 
-  if (!seller || !seller.phoneNumber) redirect("/perfil");
+  if (!business || !business.phoneNumber) redirect("/perfil");
 
   return <VenderForm />;
 }

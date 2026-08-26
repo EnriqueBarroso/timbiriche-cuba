@@ -6,7 +6,7 @@ import { LayoutDashboard, Store, PackagePlus } from "lucide-react";
 
 const TABS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/sellers", label: "Vendedores", icon: Store },
+  { href: "/admin/businesses", label: "Vendedores", icon: Store },
   { href: "/admin/products", label: "Productos", icon: PackagePlus },
 ];
 

@@ -6,7 +6,7 @@ export interface ProductImage {
   productId: string;
 }
 
-export interface SellerBasic {
+export interface BusinessBasic {
   id: string;
   storeName: string;
   slug: string | null;
@@ -36,9 +36,9 @@ export interface Product {
   isPromoted: boolean;
   isFlashOffer: boolean;
   views: number;
-  sellerId: string;
+  businessId: string;
   createdAt: string | Date;
   updatedAt: string | Date;
   images: ProductImage[];
-  seller: SellerBasic;
+  business: BusinessBasic;
 }

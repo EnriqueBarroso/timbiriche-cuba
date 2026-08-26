@@ -6,6 +6,15 @@ Monorepo con dos paquetes independientes (sin package.json raíz):
 - **lachopin-api/** — NestJS 11 + Prisma (PostgreSQL/Supabase), desplegado por separado.
   ⚠️ `lachopin-api/` está en `.gitignore` (contiene `.env` con credenciales de BD) — no se versiona desde este repo.
 
+## Enfoque del proyecto
+
+Lachopin está en transición de marketplace P2P (particulares vendiendo a particulares) hacia una
+**plataforma B2B multi-tenant** para negocios en Cuba: varios negocios operando sobre la misma base,
+cada uno con su propia tienda pública y panel de gestión. El modelo `Seller` fue renombrado a
+`Business` (schema, backend y frontend) para reflejar ese enfoque; sigue siendo 1:1 con `User`
+(`Business.ownerUserId`, un usuario = un negocio) — el aislamiento multi-tenant completo (varios
+usuarios/roles por negocio) todavía no se ha hecho.
+
 ## Cómo correr el proyecto
 
 ```bash
@@ -14,7 +23,7 @@ cd lachopin-frontend
 npm install
 npm run dev
 
-# Backend (puerto configurable via .env, default 3000 -> usar 3001 si choca con frontend)
+# Backend (http://localhost:3002 — puerto fijado en lachopin-api/.env vía PORT)
 cd lachopin-api
 npm install
 npm run start:dev
@@ -30,7 +39,7 @@ npm run start:dev
 - `components/` — UI (ProductCard, CategoryCard, HeroCarousel, Navbar, Newsletter, MainWrapper, ui/* shadcn-style).
 - `contexts/` — `CartContext` (persistencia localStorage), `FavoritesContext`.
 - `lib/`:
-  - `api.ts` — cliente HTTP (`apiFetch`) hacia el backend, tipos Product/Seller/Order/Favorite.
+  - `api.ts` — cliente HTTP (`apiFetch`) hacia el backend, tipos Product/Business/Order/Favorite.
   - `actions.ts` — Server Actions (checks de admin, gestión de productos/vendedores).
   - `categories.ts` — definición única de categorías (id, label, icon, **image**, subcategories) — fuente para `/categorias` y filtros.
   - `utils.ts` — helpers (`isAdmin`, `formatPrice`, `optimizeImage`, `BLUR_PLACEHOLDER`).
@@ -45,20 +54,20 @@ npm run start:dev
 
 ## Estructura — Backend (lachopin-api)
 
-- `src/auth/` — `ClerkAuthGuard` (verifica Bearer token con `@clerk/backend`).
-- `src/products/`, `src/sellers/`, `src/orders/`, `src/users/` — CRUD + lógica de negocio (filtros, vistas, ofertas flash, seguidores, verificación de vendedores).
+- `src/auth/` — `ClerkAuthGuard` (verifica Bearer token con `@clerk/backend`), `clerk-client.ts` (instancia de `@clerk/backend` para resolver usuarios desde el backend).
+- `src/products/`, `src/businesses/`, `src/orders/`, `src/users/` — CRUD + lógica de negocio (filtros, vistas, ofertas flash, seguidores, verificación de negocios).
 - `src/prisma.service.ts` — conexión Prisma singleton.
 - `main.ts` — CORS desde `FRONTEND_URL`, Helmet, `ValidationPipe` global (`whitelist`, `forbidNonWhitelisted`, `transform`).
 
 ## Modelos Prisma (compartidos)
 
-- **User** — id, email; relaciones a `orders` y `favorites`.
-- **Product** — title, description, price, currency, category, images[], isActive, isSold, isPromoted, isFlashOffer, views, sellerId, `type: MARKETPLACE | EATS`.
+- **User** — id, email; relaciones a `orders`, `favorites` y `business` (el negocio del que es dueño, 1:1).
+- **Product** — title, description, price, currency, category, images[], isActive, isSold, isPromoted, isFlashOffer, views, businessId, `type: MARKETPLACE | EATS`.
 - **ProductImage** — url, productId.
-- **Seller** — storeName, slug, email, phoneNumber, isVerified, isRestaurant, isFeatured, rating, reviews, avatar, coverImage, address, openTime/closeTime, acceptsZelle, zelleEmail.
-- **Order** — buyerId, productId, sellerId, status (default `"CONTACTADO"`).
+- **Business** (antes `Seller`) — ownerUserId (FK única a `User.id`), storeName, slug, email, phoneNumber, isVerified, isRestaurant, isFeatured, rating, reviews, avatar, coverImage, address, openTime/closeTime, acceptsZelle, zelleEmail.
+- **Order** — buyerId, productId, businessId, status (default `"CONTACTADO"`).
 - **Favorite** — (userId, productId) unique.
-- **Follower** — (followerId, sellerId) unique.
+- **Follower** — (followerId, businessId) unique.
 
 ## Variables de entorno
 
@@ -72,7 +81,17 @@ npm run start:dev
 
 - Frontend: Clerk (`/sign-in`, `/sign-up`, middleware en `proxy.ts`). Usa `forceRedirectUrl` / `afterSignOutUrl` (NO usar `afterSignInUrl`/`afterSignUpUrl`, deprecados).
 - Backend: `ClerkAuthGuard` valida Bearer token.
-- Admin: chequeo hardcoded por email (`process.env.ADMIN_EMAIL`) vía `currentUser().email` en `lib/utils.ts` / `lib/actions.ts`.
+- Admin: chequeo hardcoded por email (`process.env.ADMIN_EMAIL`) vía `isAdmin()` en `lib/utils.ts`, centralizado en `lib/actions.ts` a través del helper privado `requireAdmin()` (evita repetir el check en cada Server Action).
+- `Business.ownerUserId` es una FK única a `User.id` (1:1, un usuario = un negocio). La resolución de "el negocio del usuario autenticado" ya no compara emails: se hace por esa FK — `BusinessesService.getBusinessIdForClerkUser`/`findByOwnerUserId` en el backend, `getBusinessByOwnerId` en el frontend. `getBusinessByEmail`/`findByEmail` se mantienen solo para lookups por email de contacto conocido (p. ej. herramientas de admin), no para resolver el negocio del usuario actual.
+
+### Estado de seguridad (ownership guards)
+
+- ✅ **Corregido**: `products`, `businesses` y `orders` ya validan ownership en el backend, no solo en el frontend.
+  - `ProductsController`: `POST /products` (`ProductCreateOwnershipGuard`) y `PATCH`/`DELETE /products/:id` (`ProductOwnershipGuard`) verifican que el `businessId` pertenezca al usuario autenticado.
+  - `BusinessesController`: `PATCH /businesses/:id` (`BusinessOwnershipGuard`) verifica que el perfil pertenezca al usuario autenticado.
+  - `OrdersController`: `POST /orders` fuerza `buyerId` desde el token (no desde el body); `GET /orders` requiere `ClerkAuthGuard` y filtra a pedidos donde el usuario es buyer o business.
+  - Todos estos guards viven junto a su controller (`src/products/guards/`, `src/businesses/guards/`) y reutilizan `BusinessesService.getBusinessIdForClerkUser`.
+- ⚠️ **Pendiente**: los campos admin-only (`isVerified`, `isFeatured` en `Business`; `isPromoted` en `Product`) todavía no tienen gate en el backend — hoy solo el frontend restringe quién los cambia (`togglePromotedStatus`, `toggleBusinessFeaturedStatus` en `lib/actions.ts`, gateadas por `requireAdmin()`). Cualquier negocio autenticado podría en teoría setearlos vía `PATCH` directo a la API. Cerrar esto cuando se trabaje un sistema de roles real (hoy solo existe el email hardcoded de admin, sin roles en Clerk/DB).
 
 ## Imágenes (Cloudinary + Next/Image)
 

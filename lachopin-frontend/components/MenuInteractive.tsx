@@ -7,7 +7,7 @@ import MenuItemCard from "@/components/MenuItemCard";
 import FloatingCartBar from "@/components/FloatingCartBar";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function MenuInteractive({ seller, groupedProducts, categories, slug }: any) {
+export default function MenuInteractive({ business, groupedProducts, categories, slug }: any) {
   // 👇 INICIALIZAMOS EL ROUTER AQUÍ
   const router = useRouter(); 
 
@@ -16,7 +16,7 @@ export default function MenuInteractive({ seller, groupedProducts, categories, s
 
   // Solo extraemos los platos de la categoría seleccionada
   const activeProducts = groupedProducts[activeCategory] || [];
-  const phoneNumber = seller.phoneNumber || "";
+  const phoneNumber = business.phoneNumber || "";
 
   return (
     <main className="min-h-screen bg-gray-100 flex justify-center font-sans">
@@ -29,7 +29,7 @@ export default function MenuInteractive({ seller, groupedProducts, categories, s
           <div className="absolute inset-0 z-0 bg-gray-900">
             <img 
               // Si el restaurante no ha subido portada, le ponemos una de comida genérica hermosa
-              src={seller.coverImage || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80"} 
+              src={business.coverImage || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80"} 
               alt="Portada del restaurante" 
               className="w-full h-full object-cover opacity-70"
             />
@@ -56,14 +56,14 @@ export default function MenuInteractive({ seller, groupedProducts, categories, s
             {/* Logo Circular del Restaurante */}
             <div className="w-20 h-20 bg-white rounded-full p-1 shadow-2xl mb-3 border border-gray-100 relative">
                <img 
-                 src={seller.avatar || `https://ui-avatars.com/api/?name=${seller.storeName}&background=D32F2F&color=fff`} 
+                 src={business.avatar || `https://ui-avatars.com/api/?name=${business.storeName}&background=D32F2F&color=fff`} 
                  alt="Logo" 
                  className="w-full h-full rounded-full object-cover" 
                />
             </div>
 
             <h1 className="text-3xl font-black tracking-tight mb-2 drop-shadow-lg text-center leading-none">
-              {seller.storeName || "Menú"}
+              {business.storeName || "Menú"}
             </h1>
             
             <span className="inline-flex items-center gap-1.5 bg-green-500/20 border border-green-500/40 text-green-50 text-[11px] font-black px-3 py-1.5 rounded-full backdrop-blur-md shadow-sm uppercase tracking-widest mt-1">
@@ -116,7 +116,7 @@ export default function MenuInteractive({ seller, groupedProducts, categories, s
                       title: product.title,
                       description: product.description,
                       price: product.price,
-                      sellerId: seller.id,
+                      businessId: business.id,
                       image: product.images[0]?.url 
                     }}
                   />
@@ -137,8 +137,8 @@ export default function MenuInteractive({ seller, groupedProducts, categories, s
 
         {/* Carrito Flotante */}
         <FloatingCartBar 
-          sellerName={seller.storeName || "Restaurante"} 
-          sellerPhoneNumber={phoneNumber} 
+          businessName={business.storeName || "Restaurante"} 
+          businessPhoneNumber={phoneNumber} 
         />
       </div>
     </main>

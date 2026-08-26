@@ -8,7 +8,7 @@ export interface ProductImage {
   productId: string;
 }
 
-export interface SellerInProduct {
+export interface BusinessInProduct {
   id: string;
   storeName: string;
   slug: string | null;
@@ -34,14 +34,14 @@ export interface ApiProduct {
   isPromoted: boolean;
   isFlashOffer: boolean;
   views: number;
-  sellerId: string;
+  businessId: string;
   createdAt: string;
   updatedAt: string;
   images: ProductImage[];
-  seller: SellerInProduct;
+  business: BusinessInProduct;
 }
 
-export interface ProductInSeller {
+export interface ProductInBusiness {
   id: string;
   title: string;
   description: string;
@@ -58,9 +58,10 @@ export interface ProductInSeller {
   images: ProductImage[];
 }
 
-export interface ApiSeller {
+export interface ApiBusiness {
   id: string;
   storeName: string;
+  description: string | null;
   email: string;
   slug: string | null;
   isWholesale: boolean;
@@ -77,7 +78,7 @@ export interface ApiSeller {
   acceptsZelle: boolean;
   zelleEmail: string | null;
   createdAt: string;
-  products: ProductInSeller[];
+  products: ProductInBusiness[];
   _count: {
     followers: number;
     products: number;
@@ -86,8 +87,8 @@ export interface ApiSeller {
 
 export interface ApiFollowing {
   followerId: string;
-  sellerId: string;
-  seller: {
+  businessId: string;
+  business: {
     id: string;
     storeName: string;
     slug: string | null;
@@ -103,9 +104,9 @@ export interface ApiOrder {
   status: string;
   buyerId: string;
   productId: string;
-  sellerId: string;
+  businessId: string;
   product: { id: string; title: string; price: number; currency: string };
-  seller: { id: string; storeName: string; slug: string | null; avatar: string | null };
+  business: { id: string; storeName: string; slug: string | null; avatar: string | null };
 }
 
 export interface ProductsPage {
@@ -129,7 +130,7 @@ export interface ProductFilters {
   maxPrice?: number;
   limit?: number;
   page?: number;
-  sellerId?: string;
+  businessId?: string;
 }
 
 export interface UpdateProductPayload {
@@ -145,7 +146,7 @@ export interface UpdateProductPayload {
   images?: string[];
 }
 
-export interface UpdateSellerPayload {
+export interface UpdateBusinessPayload {
   storeName?: string;
   email?: string;
   phoneNumber?: string;
@@ -274,7 +275,7 @@ export async function createProduct(
     price: number;
     currency?: string;
     category: string;
-    sellerId: string;
+    businessId: string;
     type?: ProductType;
     isFlashOffer?: boolean;
     images?: string[];
@@ -289,16 +290,17 @@ export async function createProduct(
 }
 
 // ---------------------------------------------------------------------------
-// Sellers
+// Businesses
 // ---------------------------------------------------------------------------
 
-export interface SellerFilters {
+export interface BusinessFilters {
   isVerified?: boolean;
   isFeatured?: boolean;
   isRestaurant?: boolean;
+  category?: string;
 }
 
-export interface CreateSellerPayload {
+export interface CreateBusinessPayload {
   email: string;
   storeName: string;
   avatar?: string;
@@ -308,53 +310,67 @@ export interface CreateSellerPayload {
   isVerified?: boolean;
 }
 
-export async function createSeller(
-  data: CreateSellerPayload,
+export async function createBusiness(
+  data: CreateBusinessPayload,
   token?: string,
-): Promise<{ message: string; seller: ApiSeller }> {
-  return apiFetch<{ message: string; seller: ApiSeller }>('/sellers', {
+): Promise<{ message: string; business: ApiBusiness }> {
+  return apiFetch<{ message: string; business: ApiBusiness }>('/businesses', {
     method: 'POST',
     body: JSON.stringify(data),
     token,
   });
 }
 
-export async function getSellers(filters?: SellerFilters): Promise<ApiSeller[]> {
+export async function getBusinesses(filters?: BusinessFilters): Promise<ApiBusiness[]> {
   const query = buildQuery({ ...filters });
-  return apiFetch<ApiSeller[]>(`/sellers${query}`);
+  return apiFetch<ApiBusiness[]>(`/businesses${query}`);
 }
 
-export async function getSellerById(id: string): Promise<ApiSeller> {
-  if (!id) throw new Error('getSellerById: id es requerido.');
-  return apiFetch<ApiSeller>(`/sellers/${id}`);
+export async function getBusinessById(id: string): Promise<ApiBusiness> {
+  if (!id) throw new Error('getBusinessById: id es requerido.');
+  return apiFetch<ApiBusiness>(`/businesses/${id}`);
 }
 
-export async function getSellerBySlug(slug: string): Promise<ApiSeller> {
-  if (!slug) throw new Error('getSellerBySlug: slug es requerido.');
-  return apiFetch<ApiSeller>(`/sellers/slug/${slug}`);
+export async function getBusinessBySlug(slug: string): Promise<ApiBusiness> {
+  if (!slug) throw new Error('getBusinessBySlug: slug es requerido.');
+  return apiFetch<ApiBusiness>(`/businesses/slug/${slug}`);
 }
 
-export async function getSellerByEmail(email: string): Promise<ApiSeller | null> {
+// Lookup por email de contacto del negocio (no del usuario autenticado): úsalo
+// solo cuando el email en sí es el dato conocido (p. ej. herramientas de
+// admin). Para resolver "el negocio del usuario actual" usa getBusinessByOwnerId.
+export async function getBusinessByEmail(email: string): Promise<ApiBusiness | null> {
   if (!email) return null;
   try {
-    return await apiFetch<ApiSeller>(`/sellers/email/${encodeURIComponent(email)}`);
+    return await apiFetch<ApiBusiness>(`/businesses/email/${encodeURIComponent(email)}`);
   } catch (error: unknown) {
     if (error instanceof Error && error.message.includes('404')) return null;
     throw error;
   }
 }
 
-export async function getSellerProducts(sellerId: string): Promise<ApiProduct[]> {
-  if (!sellerId) throw new Error('getSellerProducts: sellerId es requerido.');
-  return apiFetch<ApiProduct[]>(`/sellers/${sellerId}/products`);
+// Resuelve el negocio del usuario de Clerk autenticado vía Business.ownerUserId.
+export async function getBusinessByOwnerId(userId: string): Promise<ApiBusiness | null> {
+  if (!userId) return null;
+  try {
+    return await apiFetch<ApiBusiness>(`/businesses/owner/${encodeURIComponent(userId)}`);
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes('404')) return null;
+    throw error;
+  }
 }
 
-export async function updateSeller(
+export async function getBusinessProducts(businessId: string): Promise<ApiProduct[]> {
+  if (!businessId) throw new Error('getBusinessProducts: businessId es requerido.');
+  return apiFetch<ApiProduct[]>(`/businesses/${businessId}/products`);
+}
+
+export async function updateBusiness(
   id: string,
-  data: UpdateSellerPayload,
+  data: UpdateBusinessPayload,
   token?: string,
-): Promise<ApiSeller> {
-  return apiFetch<ApiSeller>(`/sellers/${id}`, {
+): Promise<ApiBusiness> {
+  return apiFetch<ApiBusiness>(`/businesses/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
     token,
@@ -362,15 +378,15 @@ export async function updateSeller(
 }
 
 export async function getFollowing(userId: string): Promise<ApiFollowing[]> {
-  return apiFetch<ApiFollowing[]>(`/sellers/following?userId=${encodeURIComponent(userId)}`);
+  return apiFetch<ApiFollowing[]>(`/businesses/following?userId=${encodeURIComponent(userId)}`);
 }
 
 export async function toggleFollow(
-  sellerId: string,
+  businessId: string,
   followerId: string,
   token?: string,
 ): Promise<{ isFollowing: boolean }> {
-  return apiFetch<{ isFollowing: boolean }>(`/sellers/${sellerId}/follow`, {
+  return apiFetch<{ isFollowing: boolean }>(`/businesses/${businessId}/follow`, {
     method: 'POST',
     body: JSON.stringify({ followerId }),
     token,
@@ -378,11 +394,11 @@ export async function toggleFollow(
 }
 
 export async function checkIfFollowing(
-  sellerId: string,
+  businessId: string,
   userId: string,
 ): Promise<{ isFollowing: boolean }> {
   return apiFetch<{ isFollowing: boolean }>(
-    `/sellers/${sellerId}/is-following?userId=${encodeURIComponent(userId)}`,
+    `/businesses/${businessId}/is-following?userId=${encodeURIComponent(userId)}`,
   );
 }
 
@@ -393,7 +409,7 @@ export async function checkIfFollowing(
 export interface CreateOrderPayload {
   buyerId: string;
   productId: string;
-  sellerId: string;
+  businessId: string;
 }
 
 export interface CreateOrderResponse {

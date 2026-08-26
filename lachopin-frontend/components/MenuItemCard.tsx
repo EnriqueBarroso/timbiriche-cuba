@@ -9,7 +9,7 @@ interface MenuItemProps {
     title: string;
     description: string;
     price: number;
-    sellerId: string;
+    businessId: string;
     image?: string; 
   };
 }
@@ -23,7 +23,7 @@ export default function MenuItemCard({ product }: MenuItemProps) {
   const hasValidImage = typeof product.image === "string" && (product.image.startsWith("http") || product.image.startsWith("/"));
 
   const handleAdd = () => {
-    addItem({ id: product.id, title: product.title, price: product.price }, product.sellerId);
+    addItem({ id: product.id, title: product.title, price: product.price }, product.businessId);
   };
 
   const handleDecrease = () => {

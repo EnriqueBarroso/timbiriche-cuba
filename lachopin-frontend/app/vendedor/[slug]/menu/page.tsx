@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getSellerBySlug } from "@/lib/api";
+import { getBusinessBySlug } from "@/lib/api";
 import MenuInteractive from "@/components/MenuInteractive";
 
 interface MenuPageProps {
@@ -9,12 +9,12 @@ interface MenuPageProps {
 export default async function EatsMenuPage({ params }: MenuPageProps) {
   const { slug } = await params;
 
-  const seller = await getSellerBySlug(slug).catch(() => null);
-  if (!seller) notFound();
+  const business = await getBusinessBySlug(slug).catch(() => null);
+  if (!business) notFound();
 
   // 2. Agrupamos los platos por categoría desde el servidor
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const groupedProducts = seller.products.reduce((acc: any, product: any) => {
+  const groupedProducts = business.products.reduce((acc: any, product: any) => {
     const category = product.category || "Otros"; 
     if (!acc[category]) {
       acc[category] = [];
@@ -28,7 +28,7 @@ export default async function EatsMenuPage({ params }: MenuPageProps) {
   // 3. Renderizamos el componente cliente con todo el diseño
   return (
     <MenuInteractive 
-      seller={seller} 
+      business={business} 
       groupedProducts={groupedProducts} 
       categories={categories} 
       slug={slug} 

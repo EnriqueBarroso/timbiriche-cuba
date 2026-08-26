@@ -6,11 +6,11 @@ import { useCartStore } from "@/lib/store/useCartStore";
 
 // Recibimos los datos del restaurante como props desde la página principal
 interface FloatingCartBarProps {
-    sellerName: string;
-    sellerPhoneNumber: string;
+    businessName: string;
+    businessPhoneNumber: string;
 }
 
-export default function FloatingCartBar({ sellerName, sellerPhoneNumber }: FloatingCartBarProps) {
+export default function FloatingCartBar({ businessName, businessPhoneNumber }: FloatingCartBarProps) {
     const [isOpen, setIsOpen] = useState(false);
     const { items, getTotalItems, getTotalPrice, clearCart } = useCartStore();
 
@@ -23,7 +23,7 @@ export default function FloatingCartBar({ sellerName, sellerPhoneNumber }: Float
     // Hito 3: Compilador del mensaje de WhatsApp
     const handleWhatsAppCheckout = () => {
         let message = `¡Hola! Quisiera hacer un pedido 🛒\n\n`;
-        message += `*Restaurante:* ${sellerName}\n`;
+        message += `*Restaurante:* ${businessName}\n`;
         message += `*Cliente:* [Escribe tu nombre y dirección aquí]\n\n`;
         message += `*Mi Pedido:*\n`;
 
@@ -37,7 +37,7 @@ export default function FloatingCartBar({ sellerName, sellerPhoneNumber }: Float
         // Codificamos el texto para que la URL sea válida
         const encodedMessage = encodeURIComponent(message);
         // Aseguramos que el número no tenga espacios ni el signo +
-        const cleanPhone = sellerPhoneNumber.replace(/\D/g, '');
+        const cleanPhone = businessPhoneNumber.replace(/\D/g, '');
 
         const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
 
@@ -73,7 +73,7 @@ export default function FloatingCartBar({ sellerName, sellerPhoneNumber }: Float
 
                         {/* Header Modal */}
                         <div className="flex justify-between items-center mb-4 pb-4 border-b">
-                            <h2 className="text-lg font-bold text-gray-900">Tu Pedido en {sellerName}</h2>
+                            <h2 className="text-lg font-bold text-gray-900">Tu Pedido en {businessName}</h2>
                             <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600">
                                 <X size={24} />
                             </button>
@@ -96,7 +96,7 @@ export default function FloatingCartBar({ sellerName, sellerPhoneNumber }: Float
                                             >-</button>
                                             <span className="px-2 text-sm font-semibold">{item.quantity}</span>
                                             <button
-                                                onClick={() => useCartStore.getState().addItem(item, useCartStore.getState().sellerId!)} 
+                                                onClick={() => useCartStore.getState().addItem(item, useCartStore.getState().businessId!)} 
                                                 className="px-3 py-1 text-gray-500 hover:bg-gray-50"
                                             >+</button>
                                         </div>

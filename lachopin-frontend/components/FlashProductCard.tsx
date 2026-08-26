@@ -10,7 +10,7 @@ interface FlashProduct {
   price: number;
   currency: string;
   images: { id: string; url: string }[];
-  seller?: { storeName: string } | null;
+  business?: { storeName: string } | null;
 }
 
 export default function FlashProductCard({ product }: { product: FlashProduct }) {
@@ -46,9 +46,9 @@ export default function FlashProductCard({ product }: { product: FlashProduct })
         <span className="text-red-600 font-bold text-sm lg:text-base">
           {formatPrice(product.price, product.currency)}
         </span>
-        {product.seller?.storeName && (
+        {product.business?.storeName && (
           <p className="text-[10px] lg:text-xs text-gray-400 truncate mt-1">
-            {product.seller.storeName}
+            {product.business.storeName}
           </p>
         )}
       </div>

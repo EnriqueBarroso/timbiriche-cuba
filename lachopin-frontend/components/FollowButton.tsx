@@ -6,14 +6,14 @@ import { useRouter } from "next/navigation";
 import { UserPlus, UserMinus } from "lucide-react";
 
 interface FollowButtonProps {
-  sellerId: string;
+  businessId: string;
   isFollowingInitial: boolean;
   isMe: boolean;
   isLoggedIn: boolean;
 }
 
 export default function FollowButton({
-  sellerId,
+  businessId,
   isFollowingInitial,
   isMe,
   isLoggedIn,
@@ -37,7 +37,7 @@ export default function FollowButton({
     // 3. Ejecutar la acción del servidor en background
     startTransition(async () => {
       try {
-        const result = await toggleFollowAction(sellerId);
+        const result = await toggleFollowAction(businessId);
         
         // Si hay error (ej. intentar seguirse a sí mismo), revertir visualmente
         if (result && "error" in result) {
