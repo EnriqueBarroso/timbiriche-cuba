@@ -8,24 +8,34 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronRight, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { JOIN_WHATSAPP_URL } from "@/components/JoinLaChopinFloatingCTA";
 
 // 📝 Datos de tus banners
 const BANNERS = [
   {
-    id: "categorias",
-    title: "Todo lo que necesitas, cerca de ti",
+    id: "negocios-cerca",
+    title: "Negocios cubanos cerca de ti",
     subtitle: "Comida, tiendas, hogar y más — cada negocio con su propio catálogo.",
-    cta: "Ver tiendas",
+    cta: "Explorar tiendas",
     href: "/tiendas",
     image: "/banners/banner-categorias.webp",
+  },
+  {
+    id: "tienes-negocio",
+    title: "¿Tienes un negocio?",
+    subtitle: "Únete a LaChopin y ten tu propia tienda con pedidos directos por WhatsApp.",
+    cta: "Contáctanos",
+    href: JOIN_WHATSAPP_URL,
+    external: true,
+    image: "/banners/banner-whatsapp.webp",
   },
   {
     id: "whatsapp",
     title: "Pedidos directos, sin intermediarios",
     subtitle: "Habla directo con cada negocio por WhatsApp.",
-    cta: "Explorar tiendas",
-    href: "/tiendas",
-    image: "/banners/banner-whatsapp.webp",
+    cta: "Cómo funciona",
+    href: "/como-funciona",
+    image: "/banners/banner-premium.webp",
   },
 ];
 
@@ -85,10 +95,17 @@ export default function HeroCarousel() {
                 </p>
 
                 <Button asChild variant="default" className="w-fit">
-                  <Link href={banner.href}>
-                    {banner.cta}
-                    <ChevronRight className="w-4 h-4" />
-                  </Link>
+                  {banner.external ? (
+                    <a href={banner.href} target="_blank" rel="noopener noreferrer">
+                      {banner.cta}
+                      <ChevronRight className="w-4 h-4" />
+                    </a>
+                  ) : (
+                    <Link href={banner.href}>
+                      {banner.cta}
+                      <ChevronRight className="w-4 h-4" />
+                    </Link>
+                  )}
                 </Button>
               </div>
             </div>

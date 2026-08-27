@@ -217,7 +217,7 @@ export default async function Home({ searchParams }: Props) {
         <HeroCarousel />
 
         {/* VERTICALES — Tiendas / Eats / Mayoristas */}
-        <section className="pt-6 md:pt-8">
+        <section id="tipos-negocio" className="pt-6 md:pt-8 scroll-mt-24">
           <AnimateOnScroll direction="up">
             <div className="rounded-3xl p-5 md:p-8" style={{ backgroundColor: CREAM }}>
               <h2 className="text-sm font-black uppercase tracking-widest mb-4" style={{ color: TERRACOTTA }}>

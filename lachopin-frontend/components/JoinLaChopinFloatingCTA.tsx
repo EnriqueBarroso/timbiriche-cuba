@@ -6,7 +6,9 @@ import { MessageCircle, X } from "lucide-react";
 const WHATSAPP_MESSAGE = encodeURIComponent(
   "Hola, quiero información sobre tener mi tienda en LaChopin",
 );
-const WHATSAPP_URL = `https://wa.me/34666953174?text=${WHATSAPP_MESSAGE}`;
+// Exportado para reutilizar el mismo enlace/mensaje en otros CTAs de
+// captación (ej. el slide del hero), en vez de duplicar la constante.
+export const JOIN_WHATSAPP_URL = `https://wa.me/34666953174?text=${WHATSAPP_MESSAGE}`;
 
 // sessionStorage (no localStorage): el pedido es que no reaparezca en la
 // misma sesión de navegación, no que quede descartado para siempre.
@@ -45,7 +47,7 @@ export default function JoinLaChopinFloatingCTA({
     <div className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-40 animate-in slide-in-from-bottom-4 fade-in duration-500">
       <div className="relative">
         <a
-          href={WHATSAPP_URL}
+          href={JOIN_WHATSAPP_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 bg-[#25D366] text-white pl-4 pr-5 py-3 rounded-full shadow-xl hover:brightness-105 active:scale-95 transition-all max-w-[230px] sm:max-w-xs"
