@@ -77,6 +77,7 @@ export interface ApiBusiness {
   rating: number;
   acceptsZelle: boolean;
   zelleEmail: string | null;
+  cupExchangeRate: number | null;
   createdAt: string;
   products: ProductInBusiness[];
   _count: {
@@ -161,6 +162,7 @@ export interface UpdateBusinessPayload {
   isVerified?: boolean;
   isRestaurant?: boolean;
   isFeatured?: boolean;
+  cupExchangeRate?: number;
 }
 
 // ---------------------------------------------------------------------------

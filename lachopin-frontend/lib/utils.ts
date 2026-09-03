@@ -30,6 +30,18 @@ export function formatPrice(amount: number, currency: string = "USD") {
 
   return `$${number} ${currency}`;
 }
+
+// Precio en su moneda original + equivalente en CUP calculado al vuelo con la
+// tasa del negocio (nunca se guarda en BD porque la tasa cambia con el tiempo).
+export function formatDualPrice(
+  amount: number,
+  currency: string,
+  cupExchangeRate?: number | null,
+) {
+  const base = formatPrice(amount, currency);
+  if (!cupExchangeRate || currency === "CUP") return base;
+  return `${base} · ${formatPrice(amount * cupExchangeRate, "CUP")}`;
+}
 // Placeholder blur genérico (gris neutro, ~100 bytes)
 export const BLUR_PLACEHOLDER =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIklEQVQYV2N88ODBfwYGBgZGRkYGJgYKABMDhYCRYhMA/70EBf4CmOkAAAAASUVORK5CYII=";

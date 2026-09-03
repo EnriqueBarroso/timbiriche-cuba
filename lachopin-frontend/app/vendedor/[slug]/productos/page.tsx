@@ -63,7 +63,7 @@ export default async function BusinessProductsPage({ params }: Props) {
           </Link>
         </div>
 
-        <ProductsList products={products} slug={slug} />
+        <ProductsList products={products} slug={slug} cupExchangeRate={business.cupExchangeRate} />
       </div>
     </main>
   );

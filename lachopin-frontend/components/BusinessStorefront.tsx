@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { MapPin, Clock, ShoppingBag, MessageCircle, ArrowLeft, Images } from "lucide-react";
 import type { ApiBusiness, ProductInBusiness } from "@/lib/api";
-import { formatPrice } from "@/lib/utils";
+import { formatDualPrice, formatPrice } from "@/lib/utils";
 import { CATEGORIES } from "@/lib/categories";
 
 // Los productos de tipo EATS usan texto libre en español ("Entradas",
@@ -265,8 +265,8 @@ function ProductCard({
       <div className="p-4 flex flex-col gap-1.5">
         <div className="flex items-start justify-between gap-3">
           <h3 className="font-bold text-gray-900 leading-snug">{product.title}</h3>
-          <span className="shrink-0 font-black" style={{ color: TERRACOTTA }}>
-            {formatPrice(product.price, product.currency)}
+          <span className="shrink-0 font-black text-right" style={{ color: TERRACOTTA }}>
+            {formatDualPrice(product.price, product.currency, business.cupExchangeRate)}
           </span>
         </div>
         {product.description && (

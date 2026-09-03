@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, PackageOpen, Pencil, Images } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { formatDualPrice } from "@/lib/utils";
 import type { ApiProduct } from "@/lib/api";
 import AvailabilityToggle from "./AvailabilityToggle";
 import DeleteProductButton from "./DeleteProductButton";
@@ -34,9 +34,10 @@ function categoryLabel(category: string) {
 interface Props {
   products: ApiProduct[];
   slug: string;
+  cupExchangeRate?: number | null;
 }
 
-export default function ProductsList({ products, slug }: Props) {
+export default function ProductsList({ products, slug, cupExchangeRate }: Props) {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("Todos");
 
@@ -109,7 +110,7 @@ export default function ProductsList({ products, slug }: Props) {
         ) : (
           <div className="flex flex-col gap-3">
             {filteredProducts.map((product) => (
-              <ProductRow key={product.id} product={product} slug={slug} />
+              <ProductRow key={product.id} product={product} slug={slug} cupExchangeRate={cupExchangeRate} />
             ))}
           </div>
         )}
@@ -118,7 +119,15 @@ export default function ProductsList({ products, slug }: Props) {
   );
 }
 
-function ProductRow({ product, slug }: { product: ApiProduct; slug: string }) {
+function ProductRow({
+  product,
+  slug,
+  cupExchangeRate,
+}: {
+  product: ApiProduct;
+  slug: string;
+  cupExchangeRate?: number | null;
+}) {
   const image = product.images?.[0]?.url || null;
   const extraImages = (product.images?.length || 0) - 1;
 
@@ -146,7 +155,7 @@ function ProductRow({ product, slug }: { product: ApiProduct; slug: string }) {
         </h3>
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-black text-sm" style={{ color: TERRACOTTA }}>
-            {formatPrice(product.price, product.currency)}
+            {formatDualPrice(product.price, product.currency, cupExchangeRate)}
           </span>
           {!product.isActive ? (
             <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">

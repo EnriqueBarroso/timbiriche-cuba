@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { getBusinessBySlug, getBusinessByOwnerId, updateBusiness as apiUpdateBusiness } from "@/lib/api";
-import { Save, ArrowLeft, Clock, MapPin, Store } from "lucide-react";
+import { Save, ArrowLeft, Clock, MapPin, Store, DollarSign } from "lucide-react";
 import Link from "next/link";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { isAdmin } from "@/lib/utils";
@@ -35,6 +35,9 @@ export default async function EditBusinessPage({ params }: { params: Promise<{ s
       address: formData.get("address") as string,
       openTime: formData.get("openTime") as string,
       closeTime: formData.get("closeTime") as string,
+      cupExchangeRate: formData.get("cupExchangeRate")
+        ? Number(formData.get("cupExchangeRate"))
+        : undefined,
     };
 
     const { getToken } = await auth();
@@ -117,6 +120,30 @@ export default async function EditBusinessPage({ params }: { params: Promise<{ s
                 <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Cierre</label>
                 <input name="closeTime" type="time" defaultValue={business.closeTime || "23:00"} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl font-bold" />
               </div>
+            </div>
+          </section>
+
+          <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
+            <div className="flex items-center gap-2 mb-2 text-red-600">
+              <DollarSign size={18} />
+              <h2 className="font-black uppercase text-xs tracking-widest">Tasa de Cambio</h2>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">CUP por 1 USD</label>
+              <input
+                name="cupExchangeRate"
+                type="number"
+                step="0.01"
+                min="0"
+                inputMode="decimal"
+                defaultValue={business.cupExchangeRate ?? ""}
+                placeholder="Ej: 400"
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl font-bold focus:ring-2 focus:ring-red-500 outline-none"
+              />
+              <p className="text-xs text-gray-400 mt-1 ml-1">
+                Cuántos CUP equivalen a 1 USD — usado para mostrar tus precios en ambas monedas.
+              </p>
             </div>
           </section>
 
