@@ -6,9 +6,9 @@ export const dynamic = "force-dynamic";
 
 // Ruta retirada: la gestión de catálogo vive ahora en /vendedor/[slug]/productos.
 // Se mantiene como redirect (en vez de borrarse) porque varios flujos activos
-// todavía enlazan aquí (VenderForm.tsx en modo edición, /vender/nuevo-plato,
-// /editar/[id], y los botones "Entrar" del Navbar vía forceRedirectUrl) — así
-// ningún enlace existente queda roto.
+// todavía enlazan aquí (/vender/nuevo-plato, /editar/[id], y los botones
+// "Entrar" del Navbar vía forceRedirectUrl) — así ningún enlace existente
+// queda roto.
 export default async function MyProductsRedirectPage() {
   const user = await currentUser();
   if (!user) return redirect("/");

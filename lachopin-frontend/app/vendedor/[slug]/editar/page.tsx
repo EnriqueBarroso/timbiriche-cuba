@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { getBusinessBySlug, getBusinessByOwnerId, updateBusiness as apiUpdateBusiness } from "@/lib/api";
-import { Save, ArrowLeft, Clock, MapPin, Store, DollarSign } from "lucide-react";
+import { Save, ArrowLeft, Clock, MapPin, Store, DollarSign, Wallet } from "lucide-react";
 import Link from "next/link";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { isAdmin } from "@/lib/utils";
@@ -38,6 +38,8 @@ export default async function EditBusinessPage({ params }: { params: Promise<{ s
       cupExchangeRate: formData.get("cupExchangeRate")
         ? Number(formData.get("cupExchangeRate"))
         : undefined,
+      acceptsZelle: formData.get("acceptsZelle") === "on",
+      zelleEmail: formData.get("zelleEmail") as string,
     };
 
     const { getToken } = await auth();
@@ -144,6 +146,33 @@ export default async function EditBusinessPage({ params }: { params: Promise<{ s
               <p className="text-xs text-gray-400 mt-1 ml-1">
                 Cuántos CUP equivalen a 1 USD — usado para mostrar tus precios en ambas monedas.
               </p>
+            </div>
+          </section>
+
+          <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
+            <div className="flex items-center gap-2 mb-2 text-red-600">
+              <Wallet size={18} />
+              <h2 className="font-black uppercase text-xs tracking-widest">Métodos de Pago</h2>
+            </div>
+
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                name="acceptsZelle"
+                defaultChecked={business.acceptsZelle}
+                className="w-5 h-5 rounded accent-red-600"
+              />
+              <span className="font-bold text-sm text-gray-700">Acepto pagos por Zelle</span>
+            </label>
+
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Correo o teléfono de Zelle</label>
+              <input
+                name="zelleEmail"
+                defaultValue={business.zelleEmail || ""}
+                placeholder="ejemplo@correo.com o +1234567890"
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-medium"
+              />
             </div>
           </section>
 

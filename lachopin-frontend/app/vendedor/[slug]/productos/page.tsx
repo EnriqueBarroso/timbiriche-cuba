@@ -55,11 +55,11 @@ export default async function BusinessProductsPage({ params }: Props) {
 
         <div className="px-5 mb-5">
           <Link
-            href={`/vendedor/${slug}/productos/nuevo`}
+            href={business.isRestaurant ? "/vender/nuevo-plato" : `/vendedor/${slug}/productos/nuevo`}
             className="w-full flex items-center justify-center gap-2 text-white py-3.5 rounded-2xl font-black text-base shadow-lg active:scale-[0.98] transition-all hover:brightness-105"
             style={{ backgroundColor: TERRACOTTA }}
           >
-            <Plus size={20} /> Agregar producto
+            <Plus size={20} /> {business.isRestaurant ? "Agregar plato" : "Agregar producto"}
           </Link>
         </div>
 

@@ -209,26 +209,6 @@ export async function updateProduct(productId: string, data: {
 }
 
 // 6. ACTUALIZAR PERFIL
-export async function updateProfile(data: {
-  storeName: string;
-  phoneNumber: string;
-  avatar?: string;
-  acceptsZelle?: boolean;
-  zelleEmail?: string;
-  isRestaurant?: boolean;
-}) {
-  const user = await currentUser();
-  if (!user) throw new Error("No autorizado");
-
-  const business = await getBusinessByOwnerId(user.id);
-  if (!business) throw new Error("No se encontró perfil de vendedor");
-
-  const token = await getToken();
-  await updateBusiness(business.id, data, token ?? undefined);
-  revalidatePath("/perfil");
-  revalidatePath(`/vendedor/${business.slug}`);
-}
-
 export async function syncUserAction() {
   const user = await currentUser();
   if (!user) return;
