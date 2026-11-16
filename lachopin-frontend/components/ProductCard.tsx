@@ -62,7 +62,8 @@ export function ProductCard({ product, compact = false, categoryLabel }: Product
 
   const isSold = product.isSold || false;
   const isFlashOffer = product.isFlashOffer || false;
-  const acceptsZelle = business?.acceptsZelle || false;
+  const zelleEmail = business?.zelleEmail || "";
+  const acceptsZelle = !!business?.acceptsZelle && !!zelleEmail && !zelleEmail.toLowerCase().endsWith("@demo.lachopin.com");
   const createdAt = product.createdAt;
 
   const favoriteData = { id: product.id, title, price, image: mainImage, currency, business };
