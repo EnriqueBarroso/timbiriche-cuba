@@ -1,16 +1,12 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import type { FormEvent } from "react";
 import { MessageCircle, Send } from "lucide-react";
 import { getLaChopinWhatsAppUrl } from "@/lib/contact";
 
 export default function QuoteRequestForm() {
-  const [submitting, setSubmitting] = useState(false);
-
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmitting(true);
-
     const formData = new FormData(event.currentTarget);
     const fields = [
       ["Nombre", formData.get("name")],
@@ -31,7 +27,6 @@ export default function QuoteRequestForm() {
     ].join("\n");
 
     window.open(getLaChopinWhatsAppUrl(message), "_blank", "noopener,noreferrer");
-    setSubmitting(false);
   }
 
   return (
@@ -73,8 +68,8 @@ export default function QuoteRequestForm() {
         <textarea id="details" name="details" rows={4} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm" placeholder="Describe tu tienda, catálogo o funcionalidades que necesitas." />
       </div>
 
-      <button type="submit" disabled={submitting} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#B84C24] px-5 py-3 font-bold text-white transition hover:brightness-110 disabled:opacity-60">
-        {submitting ? <Send size={18} /> : <MessageCircle size={18} />}
+      <button type="submit" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#B84C24] px-5 py-3 font-bold text-white transition hover:brightness-110 disabled:opacity-60">
+        <MessageCircle size={18} />
         Enviar solicitud por WhatsApp
       </button>
       <p className="text-xs leading-relaxed text-gray-400">
