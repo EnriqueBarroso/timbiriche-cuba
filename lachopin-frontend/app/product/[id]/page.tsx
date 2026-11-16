@@ -121,7 +121,8 @@ export default async function ProductPage({ params }: Props) {
 
   // Datos de Zelle
   const acceptsZelle = product.business?.acceptsZelle || false;
-  const zelleEmail = product.business?.zelleEmail || '';
+  const zelleEmail = product.business?.zelleEmail || "";
+  const hasVerifiedZelleContact = acceptsZelle && !!zelleEmail && !zelleEmail.toLowerCase().endsWith("@demo.lachopin.com");
 
   return (
     <div className="min-h-screen pb-32 bg-gray-50">
@@ -166,7 +167,7 @@ export default async function ProductPage({ params }: Props) {
                 <span className="text-3xl font-extrabold text-blue-600">
                   {formatPrice(product.price, currency)}
                 </span>
-                {acceptsZelle && (
+                {hasVerifiedZelleContact && (
                   <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-md border border-purple-100 flex items-center gap-1">
                     <Wallet size={12} /> Acepta Zelle
                   </span>
@@ -222,7 +223,7 @@ export default async function ProductPage({ params }: Props) {
           </div>
 
           {/* BLOQUE DE ZELLE */}
-          {!isOwner && acceptsZelle && (
+          {!isOwner && hasVerifiedZelleContact && (
             <div className="p-5 mb-4 bg-purple-600 rounded-2xl shadow-lg shadow-purple-200 border border-purple-500 text-white animate-in zoom-in-95 duration-300">
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
@@ -320,7 +321,7 @@ export default async function ProductPage({ params }: Props) {
                   className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white h-12 md:h-14 rounded-full font-bold flex items-center justify-center gap-1.5 md:gap-2 shadow-lg shadow-green-200/50 active:scale-95 transition-all"
                 >
                   <MessageCircle size={22} fill="white" className="text-white shrink-0" />
-                  <span className="text-sm md:text-base">{acceptsZelle ? "Pagar con Zelle" : "Contactar"}</span>
+                  <span className="text-sm md:text-base">{hasVerifiedZelleContact ? "Pagar con Zelle" : "Contactar"}</span>
                 </a>
               ) : (
                 <button disabled className="flex-1 bg-gray-100 text-gray-400 h-12 md:h-14 rounded-full font-bold flex items-center justify-center gap-1.5 md:gap-2 cursor-not-allowed border border-gray-200">
