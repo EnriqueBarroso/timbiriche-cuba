@@ -1,7 +1,8 @@
 import { MessageCircle, Mail, HelpCircle, FileQuestion } from "lucide-react";
 import Link from "next/link";
+import { LACHOPIN_CONTACT_EMAIL, getLaChopinWhatsAppUrl } from "@/lib/contact";
 
-const WHATSAPP_SUPPORT = "https://wa.me/34666953174";
+const WHATSAPP_SUPPORT = getLaChopinWhatsAppUrl();
 
 const faqs = [
   {
@@ -41,7 +42,7 @@ const faqs = [
     question: "¿Cuánto cuesta tener una tienda?",
     answer: (
       <>
-        Cobramos una cuota mensual de mantenimiento por gestionar tu tienda.{" "}
+        El precio depende del tipo de tienda, las funcionalidades y la modalidad de gestión. Te enviaremos una propuesta antes de comenzar.{" "}
         <a
           href={WHATSAPP_SUPPORT}
           target="_blank"
@@ -98,9 +99,9 @@ const contactMethods = [
   {
     icon: <Mail className="w-6 h-6" />,
     title: "Email",
-    description: "soporte@lachopin.com",
+    description: LACHOPIN_CONTACT_EMAIL,
     action: "Enviar email",
-    href: "mailto:soporte@lachopin.com",
+    href: `mailto:${LACHOPIN_CONTACT_EMAIL}`,
     color: "blue",
   },
 ];

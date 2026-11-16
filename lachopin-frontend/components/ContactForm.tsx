@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Mail, MapPin, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { sendContactEmail } from "@/app/contacto/actions";
+import { LACHOPIN_CONTACT_EMAIL } from "@/lib/contact";
 
 export default function ContactForm() {
   const [pending, setPending] = useState(false);
@@ -36,7 +37,7 @@ export default function ContactForm() {
           <div className="space-y-6">
             <div className="flex items-center gap-4">
               <Mail className="w-6 h-6 text-blue-200" />
-              <span>hola@lachopin.com</span>
+              <a href={`mailto:${LACHOPIN_CONTACT_EMAIL}`} className="hover:underline">{LACHOPIN_CONTACT_EMAIL}</a>
             </div>
             <div className="flex items-center gap-4">
               <MapPin className="w-6 h-6 text-blue-200" />

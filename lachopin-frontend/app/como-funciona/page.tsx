@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getLaChopinWhatsAppUrl } from "@/lib/contact";
 import {
   MessageCircle,
   Store,
@@ -15,15 +16,12 @@ import {
 const TERRACOTTA = "#B84C24";
 const CREAM = "#FBF3EA";
 
-const WHATSAPP_MESSAGE = encodeURIComponent(
-  "¡Hola! Quiero solicitar mi tienda en LaChopin.",
-);
-const WHATSAPP_URL = `https://wa.me/5350000000?text=${WHATSAPP_MESSAGE}`;
+const WHATSAPP_URL = getLaChopinWhatsAppUrl("Hola, quiero información sobre los servicios digitales de LaChopin.");
 
 export const metadata: Metadata = {
-  title: "Cómo funciona",
+  title: "Cómo funciona LaChopin",
   description:
-    "Qué es LaChopin y cómo gestionar tu catálogo si ya tienes tu tienda con nosotros.",
+    "Descubre negocios cubanos y conoce cómo crear o gestionar tu tienda digital con LaChopin.",
 };
 
 const FEATURES = [
@@ -39,8 +37,8 @@ const FEATURES = [
   },
   {
     icon: Sparkles,
-    title: "Mantenimiento incluido",
-    description: "Nosotros mantenemos tu tienda funcionando, tú solo atiendes pedidos.",
+    title: "Acompañamiento técnico",
+    description: "Puedes contratar mantenimiento o recibir la tienda para gestionarla por tu cuenta.",
   },
 ];
 
@@ -90,13 +88,11 @@ export default function ComoFuncionaPage() {
         </span>
 
         <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-5 leading-tight">
-          Tu tienda online, sin complicaciones
+          Descubre LaChopin y digitaliza tu negocio
         </h1>
 
         <p className="text-lg text-gray-600 leading-relaxed mb-10 max-w-xl mx-auto">
-          LaChopin le da a tu negocio una tienda online personalizada, con tu catálogo
-          y tus datos de contacto, para que tus clientes te encuentren y pidan directo
-          por WhatsApp.
+          LaChopin conecta a quienes buscan productos y servicios en Cuba con negocios locales. También diseñamos páginas web, catálogos y tiendas digitales para los comercios que quieren crecer en Internet.
         </p>
 
         <div className="grid sm:grid-cols-3 gap-4 mb-12 text-left">
@@ -125,7 +121,7 @@ export default function ComoFuncionaPage() {
         </a>
 
         <p className="text-sm text-gray-400 mt-4">
-          Te contactamos en menos de 24 horas para configurar tu tienda.
+          Solicita una propuesta adaptada a tu negocio, con alcance y condiciones definidos.
         </p>
       </section>
 

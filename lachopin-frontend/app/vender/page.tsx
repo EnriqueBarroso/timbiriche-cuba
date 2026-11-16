@@ -1,18 +1,16 @@
 import type { Metadata } from "next";
 import { MessageCircle, Store, Smartphone, Sparkles } from "lucide-react";
+import { getLaChopinWhatsAppUrl } from "@/lib/contact";
 
 const TERRACOTTA = "#B84C24";
 const CREAM = "#FBF3EA";
 
-const WHATSAPP_MESSAGE = encodeURIComponent(
-  "¡Hola! Quiero solicitar mi tienda en LaChopin.",
-);
-const WHATSAPP_URL = `https://wa.me/5350000000?text=${WHATSAPP_MESSAGE}`;
+const WHATSAPP_URL = getLaChopinWhatsAppUrl("Hola, quiero información sobre los servicios digitales de LaChopin.");
 
 export const metadata: Metadata = {
-  title: "Solicita tu tienda",
+  title: "Servicios digitales para tu negocio",
   description:
-    "Tu negocio con tienda online personalizada y pedidos por WhatsApp en LaChopin.",
+    "Diseño y desarrollo de páginas web, catálogos y tiendas digitales para negocios en Cuba.",
 };
 
 const FEATURES = [
@@ -49,8 +47,7 @@ export default function VenderLandingPage() {
         </h1>
 
         <p className="text-lg text-gray-600 leading-relaxed mb-10 max-w-xl mx-auto">
-          Creamos tu tienda online personalizada, con tu catálogo y tus datos de contacto,
-          para que tus clientes te encuentren y pidan directo por WhatsApp.
+          Creamos páginas web, catálogos y tiendas digitales para negocios en Cuba. Tus clientes podrán conocer tus productos y contactar directamente contigo.
         </p>
 
         <div className="grid sm:grid-cols-3 gap-4 mb-12 text-left">
@@ -79,7 +76,7 @@ export default function VenderLandingPage() {
         </a>
 
         <p className="text-sm text-gray-400 mt-4">
-          Te contactamos en menos de 24 horas para configurar tu tienda.
+          Cuéntanos qué necesitas y te enviaremos una propuesta con alcance, precio y plazos definidos.
         </p>
       </div>
     </div>

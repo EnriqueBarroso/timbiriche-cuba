@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { MessageCircle, X } from "lucide-react";
+import { getLaChopinWhatsAppUrl } from "@/lib/contact";
 
-const WHATSAPP_MESSAGE = encodeURIComponent(
-  "Hola, quiero información sobre tener mi tienda en LaChopin",
-);
+const WHATSAPP_MESSAGE = "Hola, quiero información sobre tener mi negocio en LaChopin";
 // Exportado para reutilizar el mismo enlace/mensaje en otros CTAs de
 // captación (ej. el slide del hero), en vez de duplicar la constante.
-export const JOIN_WHATSAPP_URL = `https://wa.me/34666953174?text=${WHATSAPP_MESSAGE}`;
+export const JOIN_WHATSAPP_URL = getLaChopinWhatsAppUrl(WHATSAPP_MESSAGE);
 
 // sessionStorage (no localStorage): el pedido es que no reaparezca en la
 // misma sesión de navegación, no que quede descartado para siempre.
