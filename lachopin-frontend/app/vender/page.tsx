@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { MessageCircle, Store, Smartphone, Sparkles } from "lucide-react";\nimport { getLaChopinWhatsAppUrl } from "@/lib/contact";
+import { MessageCircle, Store, Smartphone, Sparkles } from "lucide-react";
+import { getLaChopinWhatsAppUrl } from "@/lib/contact";
 
 const TERRACOTTA = "#B84C24";
 const CREAM = "#FBF3EA";
