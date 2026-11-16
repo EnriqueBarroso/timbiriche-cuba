@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";\nimport { getLaChopinWhatsAppUrl } from "@/lib/contact";
+import Link from "next/link";
+import { getLaChopinWhatsAppUrl } from "@/lib/contact";
 import {
   MessageCircle,
   Store,
