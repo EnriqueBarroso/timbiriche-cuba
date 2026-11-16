@@ -23,6 +23,7 @@ const NAV_LINKS = [
   { label: "Eats", href: "/eats" },
   { label: "Mayoristas", href: "/mayoristas" },
   { label: "Cómo funciona", href: "/como-funciona" },
+  { label: "Servicios digitales", href: "/servicios-digitales" },
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
