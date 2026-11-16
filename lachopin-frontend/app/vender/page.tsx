@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import { MessageCircle, Store, Smartphone, Sparkles } from "lucide-react";
+import { MessageCircle, Store, Smartphone, Sparkles } from "lucide-react";\nimport { getLaChopinWhatsAppUrl } from "@/lib/contact";
 
 const TERRACOTTA = "#B84C24";
 const CREAM = "#FBF3EA";
 
-const WHATSAPP_MESSAGE = encodeURIComponent(
-  "¡Hola! Quiero solicitar mi tienda en LaChopin.",
-);
-const WHATSAPP_URL = `https://wa.me/5350000000?text=${WHATSAPP_MESSAGE}`;
+const WHATSAPP_URL = getLaChopinWhatsAppUrl("Hola, quiero información sobre los servicios digitales de LaChopin.");
 
 export const metadata: Metadata = {
   title: "Solicita tu tienda",
@@ -79,7 +76,7 @@ export default function VenderLandingPage() {
         </a>
 
         <p className="text-sm text-gray-400 mt-4">
-          Te contactamos en menos de 24 horas para configurar tu tienda.
+          Cuéntanos qué necesitas y te enviaremos una propuesta con alcance, precio y plazos definidos.
         </p>
       </div>
     </div>
