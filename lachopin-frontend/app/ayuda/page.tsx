@@ -99,9 +99,9 @@ const contactMethods = [
   {
     icon: <Mail className="w-6 h-6" />,
     title: "Email",
-    description: "{LACHOPIN_CONTACT_EMAIL}",
+    description: LACHOPIN_CONTACT_EMAIL,
     action: "Enviar email",
-    href: "mailto:soporte@lachopin.com",
+    href: `mailto:${LACHOPIN_CONTACT_EMAIL}`,
     color: "blue",
   },
 ];
