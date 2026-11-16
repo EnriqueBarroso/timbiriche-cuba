@@ -73,7 +73,13 @@ export default async function EatsHubPage() {
                                             {restaurant.storeName}
                                         </h2>
 
-                                        {restaurant.address && (\n                                            <div className="flex items-center gap-1 text-sm text-gray-500 mb-4">\n                                                <MapPin size={14} /> {restaurant.address}\n                                            </div>\n                                        )}\n\n                                        <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-4">
+                                        {restaurant.address && (
+                                            <div className="flex items-center gap-1 text-sm text-gray-500 mb-4">
+                                                <MapPin size={14} /> {restaurant.address}
+                                            </div>
+                                        )}
+
+                                        <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-4">
                                             <span className="text-sm font-medium text-gray-500">
                                                 {restaurant._count.products} platos
                                             </span>
