@@ -1,7 +1,7 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { MessageCircle, Send } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { getLaChopinWhatsAppUrl } from "@/lib/contact";
 
 export default function QuoteRequestForm() {
