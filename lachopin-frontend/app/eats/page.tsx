@@ -1,6 +1,6 @@
 import { getBusinesses } from "@/lib/api";
 import Link from "next/link";
-import { UtensilsCrossed, Star, MapPin, Clock, ChevronRight } from "lucide-react";
+import { UtensilsCrossed, MapPin, ChevronRight } from "lucide-react";
 import { optimizeImage } from "@/lib/utils";
 import JoinLaChopinFloatingCTA from "@/components/JoinLaChopinFloatingCTA";
 
@@ -65,13 +65,7 @@ export default async function EatsHubPage() {
                                                 alt={restaurant.storeName}
                                                 className="w-16 h-16 rounded-xl border-4 border-white shadow-sm object-cover bg-white"
                                             />
-                                        </div>
-                                        {/* Rating en la esquina */}
-                                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1 text-sm font-bold text-gray-800 shadow-sm">
-                                            <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                                            {restaurant.rating.toFixed(1)}
-                                        </div>
-                                    </div>
+                                        </div>                                    </div>
 
                                     {/* Info del Restaurante */}
                                     <div className="pt-10 pb-5 px-6 flex-1 flex flex-col">
@@ -79,13 +73,7 @@ export default async function EatsHubPage() {
                                             {restaurant.storeName}
                                         </h2>
 
-                                        <div className="flex items-center gap-3 text-sm text-gray-500 mb-4">
-                                            <span className="flex items-center gap-1"><Clock size={14} /> 20-30 min</span>
-                                            <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                            <span className="flex items-center gap-1"><MapPin size={14} /> Local</span>
-                                        </div>
-
-                                        <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-4">
+                                        {restaurant.address && (\n                                            <div className="flex items-center gap-1 text-sm text-gray-500 mb-4">\n                                                <MapPin size={14} /> {restaurant.address}\n                                            </div>\n                                        )}\n\n                                        <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-4">
                                             <span className="text-sm font-medium text-gray-500">
                                                 {restaurant._count.products} platos
                                             </span>
