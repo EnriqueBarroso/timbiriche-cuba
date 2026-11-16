@@ -92,9 +92,7 @@ export default function ComoFuncionaPage() {
         </h1>
 
         <p className="text-lg text-gray-600 leading-relaxed mb-10 max-w-xl mx-auto">
-          LaChopin le da a tu negocio una tienda online personalizada, con tu catálogo
-          y tus datos de contacto, para que tus clientes te encuentren y pidan directo
-          por WhatsApp.
+          LaChopin conecta a quienes buscan productos y servicios en Cuba con negocios locales. También diseñamos páginas web, catálogos y tiendas digitales para los comercios que quieren crecer en Internet.
         </p>
 
         <div className="grid sm:grid-cols-3 gap-4 mb-12 text-left">
